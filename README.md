@@ -31,3 +31,13 @@ Initial goals are:
 * No initial support for channel-binding
 * Well tested
 * The fewer external dependencies, the better
+
+
+## Contributing
+
+Please submit [Push Requests](https://github.com/ongres/scram) for code contributions.
+Make sure to compile with `mvn -Psafer` before submitting a PR.
+
+Releases (on the master branch only) must be verified with:
+
+    mvn -Psafer -Pmaster-branch
