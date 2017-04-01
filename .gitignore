@@ -1,0 +1,10 @@
+.idea/
+target/
+*.iml
+nbactions.xml
+nb-configuration.xml
+/bin/
+.project
+.classpath
+.settings/
+hs_err*.log
