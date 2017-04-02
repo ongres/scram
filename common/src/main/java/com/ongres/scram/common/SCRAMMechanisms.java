@@ -49,9 +49,9 @@ public enum SCRAMMechanisms implements SCRAMMechanism {
 
     private static final String SCRAM_MECHANISM_NAME_PREFIX = "SCRAM-";
 
-    private String mechanismName;
-    private String hashAlgorithmName;
-    private String hmacAlgorithmName;
+    private final String mechanismName;
+    private final String hashAlgorithmName;
+    private final String hmacAlgorithmName;
 
     SCRAMMechanisms(String localMechanismName, String hashAlgorithmName, String hmacAlgorithmName) {
         this.mechanismName = SCRAM_MECHANISM_NAME_PREFIX + checkNotNull(localMechanismName, "localMechanismName");
