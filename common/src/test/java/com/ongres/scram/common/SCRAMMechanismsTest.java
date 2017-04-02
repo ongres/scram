@@ -24,30 +24,50 @@
 package com.ongres.scram.common;
 
 
-import org.junit.Assert;
 import org.junit.Test;
+
+import javax.crypto.Mac;
+import java.security.MessageDigest;
+
+import static org.junit.Assert.*;
 
 
 public class SCRAMMechanismsTest {
     @Test
     public void TestHashSupportedByJVM() {
+        MessageDigest messageDigest;
         for(SCRAMMechanisms scramMechanism : SCRAMMechanisms.values()) {
             try {
-                scramMechanism.getMessageDigestInstance();
+                messageDigest = scramMechanism.getMessageDigestInstance();
             } catch(RuntimeException ex) {
-                Assert.fail(ex.getMessage());
+                fail(ex.getMessage());
+                return;
             }
+            assertNotNull("got a null MessageDigest", messageDigest);
+            assertEquals(
+                    "algorithm name and obtained algorithm name differ",
+                    scramMechanism.getHashAlgorithmName(),
+                    messageDigest.getAlgorithm()
+            );
         }
     }
 
     @Test
     public void TestHMACSupportedByJVM() {
+        Mac hmac;
         for(SCRAMMechanisms scramMechanism : SCRAMMechanisms.values()) {
             try {
-                scramMechanism.getMacInstance();
+                hmac = scramMechanism.getMacInstance();
             } catch(RuntimeException ex) {
-                Assert.fail(ex.getMessage());
+                fail(ex.getMessage());
+                return;
             }
+            assertNotNull("got a null HMAC", hmac);
+            assertEquals(
+                    "algorithm name and obtained algorithm name differ",
+                    scramMechanism.getHmacAlgorithmName(),
+                    hmac.getAlgorithm()
+            );
         }
     }
 }

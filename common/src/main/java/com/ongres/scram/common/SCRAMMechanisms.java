@@ -63,6 +63,28 @@ public enum SCRAMMechanisms implements SCRAMMechanism {
         return mechanismName;
     }
 
+    /**
+     * Method that returns the name of the hash algorithm.
+     * It is protected since should be of no interest for direct users.
+     * The instance is supposed to provide abstractions over the algorithm names,
+     * and are not meant to be directly exposed.
+     * @return The name of the hash algorithm
+     */
+    protected String getHashAlgorithmName() {
+        return hashAlgorithmName;
+    }
+
+    /**
+     * Method that returns the name of the HMAC algorithm.
+     * It is protected since should be of no interest for direct users.
+     * The instance is supposed to provide abstractions over the algorithm names,
+     * and are not meant to be directly exposed.
+     * @return The name of the HMAC algorithm
+     */
+    protected String getHmacAlgorithmName() {
+        return hmacAlgorithmName;
+    }
+
     public MessageDigest getMessageDigestInstance() {
         MessageDigest messageDigest;
         try {
