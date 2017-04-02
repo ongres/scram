@@ -24,6 +24,9 @@
 package com.ongres.scram.common;
 
 
+import com.ongres.scram.common.util.USASCIIUtils;
+
+
 public enum StringPreparations implements StringPreparation {
     /**
      * Implementation of StringPreparation that performs no preparation.
@@ -32,11 +35,27 @@ public enum StringPreparations implements StringPreparation {
      * this implementation will normalize non-printable US-ASCII characters similarly to what SaslPrep does
      * (i.e., removing them).
      */
-    NO_PREPARATION
+    NO_PREPARATION {
+        @Override
+        protected String doNormalize(String value) throws IllegalArgumentException {
+            return USASCIIUtils.toPrintable(value);
+        }
+    }
     ;
 
-    @Override
+    protected abstract String doNormalize(String value) throws IllegalArgumentException;
+
     public String normalize(String value) throws IllegalArgumentException {
-        return null;
+        if(null == value || value.isEmpty()) {
+            throw new IllegalArgumentException("null or empty value");
+        }
+
+        String normalized = doNormalize(value);
+
+        if(null == normalized || normalized.isEmpty()) {
+            throw new IllegalArgumentException("null or empty value after normalization");
+        }
+
+        return normalized;
     }
 }
