@@ -28,6 +28,8 @@ import com.ongres.scram.common.util.CharAttribute;
 import com.ongres.scram.common.util.AbstractStringWritable;
 import com.ongres.scram.common.util.CharAttributeValue;
 
+import static com.ongres.scram.common.util.Preconditions.checkNotNull;
+
 
 /**
  * Construct and write generic CharAttibute-Value pairs.
@@ -39,7 +41,10 @@ public class AbstractSaslCharAttributeValue extends AbstractStringWritable imple
     public final String value;
 
     public AbstractSaslCharAttributeValue(CharAttribute charAttribute, String value) {
-        this.charAttribute = charAttribute;
+        this.charAttribute = checkNotNull(charAttribute, "attribute");
+        if(null != value && value.isEmpty()) {
+            throw new IllegalArgumentException("Value should be either null or non-empty");
+        }
         this.value = value;
     }
 
@@ -55,6 +60,12 @@ public class AbstractSaslCharAttributeValue extends AbstractStringWritable imple
 
     @Override
     public StringBuffer writeTo(StringBuffer sb) {
+        sb.append(charAttribute.getChar());
+
+        if(null != value) {
+            sb.append('=').append(SaslName.toSaslName(value));
+        }
+
         return sb;
     }
 }
