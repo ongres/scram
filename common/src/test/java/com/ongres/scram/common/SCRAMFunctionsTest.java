@@ -33,12 +33,12 @@ import static org.junit.Assert.assertTrue;
 public class SCRAMFunctionsTest {
     private static final String[] VALUES_NO_CHARS_TO_BE_ESCAPED = new String[] { "asdf", "''--%%21", "   ttt???" };
     private static final String[] VALUES_TO_BE_ESCAPED = new String[] {
-            ",",    "=",    "a,b",  "===",          "a=",   ",=,",          "=2C",      "=3D"
+            ",",    "=",    "a,b",      "===",          "a=",   ",=,",          "=2C",      "=3D"
     };
     private static final String[] ESCAPED_VALUES = new String[] {
-            "=2C",  "=3D",  "a=2C", "=3D=3D=3D",    "a=3D", "=2C=3D=2C",    "=3D2C",    "=3D3D"
+            "=2C",  "=3D",  "a=2Cb",    "=3D=3D=3D",    "a=3D", "=2C=3D=2C",    "=3D2C",    "=3D3D"
     };
-    private static final String[] INVALID_SASL_NAMES = new String[] { "as,df", "a=b", "   ttt???=2D" };
+    private static final String[] INVALID_SASL_NAMES = new String[] { "=", "as,df", "a=b", "   ttt???=2D" };
 
     @Test
     public void toSaslNameNoCharactersToBeEscaped() {
@@ -63,8 +63,8 @@ public class SCRAMFunctionsTest {
 
     @Test
     public void fromSaslNameWithCharactersToBeUnescaped() {
-        for(String s : ESCAPED_VALUES) {
-            assertEquals(s, SCRAMFunctions.fromSaslName(s));
+        for(int i = 0; i < ESCAPED_VALUES.length; i++) {
+            assertEquals(VALUES_TO_BE_ESCAPED[i], SCRAMFunctions.fromSaslName(ESCAPED_VALUES[i]));
         }
     }
 

@@ -36,17 +36,95 @@ public class SCRAMFunctions {
      * @see <a href="https://tools.ietf.org/html/rfc5802#section-7">[RFC5802] Section 7: Formal Syntax</a>
      */
     public static String toSaslName(String value) {
-        return null;
+        if(null == value || value.isEmpty()) {
+            return value;
+        }
+
+        int nComma = 0, nEqual = 0;
+        char[] originalChars = value.toCharArray();
+
+        // Fast path
+        for(char c : originalChars) {
+            if(',' == c) { nComma++; }
+            else if('=' == c) { nEqual++; }
+        }
+        if(nComma == 0 && nEqual == 0) {
+            return value;
+        }
+
+        // Replace chars
+        char[] saslChars = new char[originalChars.length + nComma * 2 + nEqual * 2];
+        int i = 0;
+        for(char c : originalChars) {
+            if(',' == c) {
+                saslChars[i++] = '=';
+                saslChars[i++] = '2';
+                saslChars[i++] = 'C';
+            } else if('=' == c) {
+                saslChars[i++] = '=';
+                saslChars[i++] = '3';
+                saslChars[i++] = 'D';
+            } else {
+                saslChars[i++] = c;
+            }
+        }
+
+        return new String(saslChars);
     }
 
     /**
      * Given a saslName, return a non-escaped String.
      * @param value The saslName
      * @return The saslName, unescaped
-     * @throws IllegalArgumentException If a ',' character is present, or a '=' not followed by either '2C' or '3C'
+     * @throws IllegalArgumentException If a ',' character is present, or a '=' not followed by either '2C' or '3D'
      * @see <a href="https://tools.ietf.org/html/rfc5802#section-7">[RFC5802] Section 7: Formal Syntax</a>
      */
     public static String fromSaslName(String value) throws IllegalArgumentException {
-        return null;
+        if(null == value || value.isEmpty()) {
+            return value;
+        }
+
+        int nEqual = 0;
+        char[] orig = value.toCharArray();
+
+        // Fast path
+        for(int i = 0; i < orig.length; i++) {
+            if(orig[i] == ',') {
+                throw new IllegalArgumentException("Invalid ',' character present in saslName");
+            }
+            if(orig[i] == '=') {
+                nEqual++;
+                if(i + 2 > orig.length - 1) {
+                    throw new IllegalArgumentException("Invalid '=' character present in saslName");
+                }
+                if(! (orig[i+1] == '2' && orig[i+2] == 'C' || orig[i+1] == '3' && orig[i+2] == 'D')) {
+                    throw new IllegalArgumentException(
+                            "Invalid char '=" + orig[i+1] + orig[i+2] + "' found in saslName"
+                    );
+                }
+            }
+        }
+        if(nEqual == 0) {
+            return value;
+        }
+
+        // Replace characters
+        char[] replaced = new char[orig.length - nEqual * 2];
+
+        for(int r = 0, o = 0; r < replaced.length; r++) {
+            if('=' == orig[o]) {
+                if(orig[o+1] == '2' && orig[o+2] == 'C') {
+                    replaced[r] = ',';
+                } else if(orig[o+1] == '3' && orig[o+2] == 'D') {
+                    replaced[r] = '=';
+                }
+                o += 3;
+            } else {
+                replaced[r] = orig[o];
+                o += 1;
+            }
+        }
+
+        return new String(replaced);
     }
 }
