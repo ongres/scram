@@ -25,15 +25,15 @@ package com.ongres.scram.common;
 
 
 /**
- * Class with static methods that provide the building blocks for generating the elements of SCRAM messages.
+ * Class with static methods that provide support for converting to/from salNames.
+ * @see <a href="https://tools.ietf.org/html/rfc5802#section-7">[RFC5802] Section 7: Formal Syntax</a>
  */
-public class SCRAMFunctions {
+public class SaslName {
     /**
      * Given a value-safe-char (normalized UTF-8 String),
      * return one where characters ',' and '=' are represented by '=2C' or '=3D', respectively.
      * @param value The value to convert so saslName
      * @return The saslName, with caracter escaped (if any)
-     * @see <a href="https://tools.ietf.org/html/rfc5802#section-7">[RFC5802] Section 7: Formal Syntax</a>
      */
     public static String toSaslName(String value) {
         if(null == value || value.isEmpty()) {
@@ -77,7 +77,6 @@ public class SCRAMFunctions {
      * @param value The saslName
      * @return The saslName, unescaped
      * @throws IllegalArgumentException If a ',' character is present, or a '=' not followed by either '2C' or '3D'
-     * @see <a href="https://tools.ietf.org/html/rfc5802#section-7">[RFC5802] Section 7: Formal Syntax</a>
      */
     public static String fromSaslName(String value) throws IllegalArgumentException {
         if(null == value || value.isEmpty()) {

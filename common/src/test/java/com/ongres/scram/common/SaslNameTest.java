@@ -30,7 +30,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 
-public class SCRAMFunctionsTest {
+public class SaslNameTest {
     private static final String[] VALUES_NO_CHARS_TO_BE_ESCAPED = new String[] { "asdf", "''--%%21", "   ttt???" };
     private static final String[] VALUES_TO_BE_ESCAPED = new String[] {
             ",",    "=",    "a,b",      "===",          "a=",   ",=,",          "=2C",      "=3D"
@@ -43,28 +43,28 @@ public class SCRAMFunctionsTest {
     @Test
     public void toSaslNameNoCharactersToBeEscaped() {
         for(String s : VALUES_NO_CHARS_TO_BE_ESCAPED) {
-            assertEquals(s, SCRAMFunctions.toSaslName(s));
+            assertEquals(s, SaslName.toSaslName(s));
         }
     }
 
     @Test
     public void toSaslNameWithCharactersToBeEscaped() {
         for(int i = 0; i < VALUES_TO_BE_ESCAPED.length; i++) {
-            assertEquals(ESCAPED_VALUES[i], SCRAMFunctions.toSaslName(VALUES_TO_BE_ESCAPED[i]));
+            assertEquals(ESCAPED_VALUES[i], SaslName.toSaslName(VALUES_TO_BE_ESCAPED[i]));
         }
     }
 
     @Test
     public void fromSaslNameNoCharactersToBeEscaped() {
         for(String s : VALUES_NO_CHARS_TO_BE_ESCAPED) {
-            assertEquals(s, SCRAMFunctions.fromSaslName(s));
+            assertEquals(s, SaslName.fromSaslName(s));
         }
     }
 
     @Test
     public void fromSaslNameWithCharactersToBeUnescaped() {
         for(int i = 0; i < ESCAPED_VALUES.length; i++) {
-            assertEquals(VALUES_TO_BE_ESCAPED[i], SCRAMFunctions.fromSaslName(ESCAPED_VALUES[i]));
+            assertEquals(VALUES_TO_BE_ESCAPED[i], SaslName.fromSaslName(ESCAPED_VALUES[i]));
         }
     }
 
@@ -73,7 +73,7 @@ public class SCRAMFunctionsTest {
         int n = 0;
         for(String s : INVALID_SASL_NAMES) {
             try {
-                assertEquals(s, SCRAMFunctions.fromSaslName(s));
+                assertEquals(s, SaslName.fromSaslName(s));
             } catch (IllegalArgumentException e) {
                 n++;
             }
