@@ -21,12 +21,8 @@
  */
 
 
-package com.ongres.scram.common;
+package com.ongres.scram.common.util;
 
-
-import com.ongres.scram.common.util.CharAttribute;
-import com.ongres.scram.common.util.AbstractStringWritable;
-import com.ongres.scram.common.util.CharAttributeValue;
 
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 
@@ -36,11 +32,11 @@ import static com.ongres.scram.common.util.Preconditions.checkNotNull;
  *
  * Concrete sub-classes should also provide a static parse(String) creation method.
  */
-public class AbstractSaslCharAttributeValue extends AbstractStringWritable implements CharAttributeValue {
+public class AbstractCharAttributeValue extends AbstractStringWritable implements CharAttributeValue {
     public final CharAttribute charAttribute;
     public final String value;
 
-    public AbstractSaslCharAttributeValue(CharAttribute charAttribute, String value) {
+    public AbstractCharAttributeValue(CharAttribute charAttribute, String value) {
         this.charAttribute = checkNotNull(charAttribute, "attribute");
         if(null != value && value.isEmpty()) {
             throw new IllegalArgumentException("Value should be either null or non-empty");
@@ -63,7 +59,7 @@ public class AbstractSaslCharAttributeValue extends AbstractStringWritable imple
         sb.append(charAttribute.getChar());
 
         if(null != value) {
-            sb.append('=').append(SaslName.toSaslName(value));
+            sb.append('=').append(value);
         }
 
         return sb;

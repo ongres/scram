@@ -21,18 +21,15 @@
  */
 
 
-package com.ongres.scram.common;
+package com.ongres.scram.common.util;
 
 
-import com.ongres.scram.common.util.CharAttribute;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 
-public class AbstractSaslCharAttributeValueTest {
+public class AbstractCharAttributeValueTest {
     private class MockCharAttribute implements CharAttribute {
         private final char c;
 
@@ -49,7 +46,7 @@ public class AbstractSaslCharAttributeValueTest {
     @Test
     public void constructorNullAttribute() {
         try {
-            assertNotNull(new AbstractSaslCharAttributeValue((CharAttribute) null, "value"));
+            assertNotNull(new AbstractCharAttributeValue((CharAttribute) null, "value"));
         } catch(IllegalArgumentException e) {
             return;
         }
@@ -60,7 +57,7 @@ public class AbstractSaslCharAttributeValueTest {
     @Test
     public void constructorEmptyValue() {
         try {
-            assertNotNull(new AbstractSaslCharAttributeValue(new MockCharAttribute('c'), ""));
+            assertNotNull(new AbstractCharAttributeValue(new MockCharAttribute('c'), ""));
         } catch(IllegalArgumentException e) {
             return;
         }
@@ -75,7 +72,7 @@ public class AbstractSaslCharAttributeValueTest {
         for(String s : legalValues) {
             assertEquals(
                     "" + c + '=' + s,
-                    new AbstractSaslCharAttributeValue(new MockCharAttribute(c), s).toString()
+                    new AbstractCharAttributeValue(new MockCharAttribute(c), s).toString()
             );
         }
     }
@@ -85,7 +82,7 @@ public class AbstractSaslCharAttributeValueTest {
         char c = 'd';
         assertEquals(
                 "" + c,
-                new AbstractSaslCharAttributeValue(new MockCharAttribute(c), null).toString()
+                new AbstractCharAttributeValue(new MockCharAttribute(c), null).toString()
         );
     }
 
@@ -94,11 +91,10 @@ public class AbstractSaslCharAttributeValueTest {
         char c = 'a';
         MockCharAttribute mockCharAttribute = new MockCharAttribute(c);
         String[] values = new String[]   {  "a=b",      "c,a",      ",",    "=,",       "=,,="          };
-        String[] expected = new String[] {  "a=3Db",    "c=2Ca",    "=2C",  "=3D=2C",   "=3D=2C=2C=3D"  };
-        for(int i = 0; i < expected.length; i++) {
+        for(int i = 0; i < values.length; i++) {
             assertEquals(
-                    "" + c + '=' + expected[i],
-                    new AbstractSaslCharAttributeValue(mockCharAttribute, values[i]).toString()
+                    "" + c + '=' + values[i],
+                    new AbstractCharAttributeValue(mockCharAttribute, values[i]).toString()
             );
         }
     }
