@@ -24,6 +24,8 @@
 package com.ongres.scram.common;
 
 
+import com.ongres.scram.common.util.CharAttribute;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,7 +37,7 @@ import static com.ongres.scram.common.util.Preconditions.checkNotNull;
  *
  * Not all the available attributes may be available in this implementation.
  */
-public enum SCRAMAttributes {
+public enum SCRAMAttributes implements CharAttribute {
     /**
      * This attribute specifies the name of the user whose password is used for authentication
      * (a.k.a. "authentication identity" [<a href="https://tools.ietf.org/html/rfc4422">RFC4422</a>]).
@@ -67,7 +69,7 @@ public enum SCRAMAttributes {
      *
      * The syntax of this field is the same as that of the "n" field with respect to quoting of '=' and ','.
      */
-    AUTHID('a'),
+    AUTHZID('a'),
 
     /**
      * This attribute specifies a sequence of random printable ASCII characters excluding ','
@@ -127,6 +129,7 @@ public enum SCRAMAttributes {
         this.attributeChar = checkNotNull(attributeChar, "attributeChar");
     }
 
+    @Override
     public char getChar() {
         return attributeChar;
     }
