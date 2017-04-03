@@ -24,6 +24,9 @@
 package com.ongres.scram.common;
 
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 
 
@@ -47,6 +50,24 @@ public enum SCRAMAttributes {
      * The characters ',' or '=' in usernames are sent as '=2C' and '=3D' respectively.
      */
     USERNAME('n'),
+
+    /**
+     * This is an optional attribute, and is part of the GS2 [<a href="https://tools.ietf.org/html/rfc5801">RFC5801</a>]
+     * bridge between the GSS-API and SASL. This attribute specifies an authorization identity.
+     * A client may include it in its first message to the server if it wants to authenticate as one user,
+     * but subsequently act as a different user. This is typically used by an administrator to perform some management
+     * task on behalf of another user, or by a proxy in some situations.
+     *
+     * If this attribute is omitted (as it normally would be), the authorization identity is assumed to be derived
+     * from the username specified with the (required) "n" attribute.
+     *
+     * The server always authenticates the user specified by the "n" attribute.
+     * If the "a" attribute specifies a different user, the server associates that identity with the connection after
+     * successful authentication and authorization checks.
+     *
+     * The syntax of this field is the same as that of the "n" field with respect to quoting of '=' and ','.
+     */
+    AUTHID('a'),
 
     /**
      * This attribute specifies a sequence of random printable ASCII characters excluding ','
@@ -108,5 +129,26 @@ public enum SCRAMAttributes {
 
     public char getChar() {
         return attributeChar;
+    }
+
+    private static final Map<Character, SCRAMAttributes> REVERSE_MAPPING = new HashMap<Character, SCRAMAttributes>();
+    static {
+        for(SCRAMAttributes scramAttribute : values()) {
+            REVERSE_MAPPING.put(scramAttribute.getChar(), scramAttribute);
+        }
+    }
+
+    /**
+     * Find a SCRAMAttribute by its character.
+     * @param c The character.
+     * @return The SCRAMAttribute that has that character.
+     * @throws IllegalArgumentException If no SCRAMAttribute has this character.
+     */
+    public static SCRAMAttributes byChar(char c) throws IllegalArgumentException {
+        if(! REVERSE_MAPPING.containsKey(c)) {
+            throw new IllegalArgumentException("Attribute with char '" + c + "' does not exist");
+        }
+
+        return REVERSE_MAPPING.get(c);
     }
 }
