@@ -45,6 +45,17 @@ public class GS2AttributeValue extends AbstractCharAttributeValue {
      * @throws IllegalArgumentException If the String is an invalid GS2AttributeValue
      */
     public static GS2AttributeValue parse(String value) throws IllegalArgumentException {
-        return null;
+        if(null == value) {
+            return null;
+        }
+
+        if(value.length() < 1 || value.length() == 2 || (value.length() > 2 && value.charAt(1) != '=')) {
+            throw new IllegalArgumentException("Invalid GS2AttributeValue");
+        }
+
+        return new GS2AttributeValue(
+                GS2Attributes.byChar(value.charAt(0)),
+                value.length() > 2 ? value.substring(2) : null
+        );
     }
 }

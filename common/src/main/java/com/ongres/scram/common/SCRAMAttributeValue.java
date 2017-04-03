@@ -48,6 +48,14 @@ public class SCRAMAttributeValue extends AbstractCharAttributeValue {
      * @throws IllegalArgumentException If the String is an invalid SCRAMAttributeValue
      */
     public static SCRAMAttributeValue parse(String value) throws IllegalArgumentException {
-        return null;
+        if(null == value) {
+            return null;
+        }
+
+        if(value.length() < 3 || value.charAt(1) != '=') {
+            throw new IllegalArgumentException("Invalid SCRAMAttributeValue '" + value + "'");
+        }
+
+        return new SCRAMAttributeValue(SCRAMAttributes.byChar(value.charAt(0)), value.substring(2));
     }
 }
