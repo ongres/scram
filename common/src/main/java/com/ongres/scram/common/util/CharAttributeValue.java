@@ -25,8 +25,12 @@ package com.ongres.scram.common.util;
 
 
 /**
- * Augments a {@link CharAttribute} with a String value.
+ * Augments a {@link CharAttribute} with a String value and the method(s) to write its data to a StringBuffer.
  */
-public interface CharAttributeValue extends CharAttribute {
+public interface CharAttributeValue extends CharAttribute, StringWritable {
+    /**
+     * Returns the value associated with the {@link CharAttribute}
+     * @return The String value or null if no value is associated
+     */
     String getValue();
 }
