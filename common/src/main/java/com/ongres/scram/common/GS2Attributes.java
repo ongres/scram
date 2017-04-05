@@ -75,4 +75,8 @@ public enum GS2Attributes implements CharAttribute {
 
         throw new IllegalArgumentException("Invalid GS2Attribute character '" + c + "'");
     }
+
+    public static GS2Attributes byGS2CbindFlag(GS2CbindFlag cbindFlag) {
+        return byChar(cbindFlag.getChar());
+    }
 }
