@@ -106,7 +106,7 @@ public class CharAttributeValueCSVTest {
 
         for(int n : numberEntries) {
             for(String s : ONE_ARG_VALUES) {
-                assertArrayEquals(new String[] {}, CharAttributeValueCSV.parseFrom(s, n, 1));
+                assertArrayEquals(new String[] { null }, CharAttributeValueCSV.parseFrom(s, n, 1));
             }
         }
     }

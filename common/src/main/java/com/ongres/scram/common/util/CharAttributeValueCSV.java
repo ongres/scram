@@ -86,14 +86,10 @@ public class CharAttributeValueCSV {
 
         String[] split = value.split(",");
 
-        if(split.length == 0 || offset >= split.length) {
-            return new String[0];
-        }
-
         return Arrays.copyOfRange(
                 split,
                 offset,
-                n == 0 ? split.length : Math.min(offset + n, split.length)
+                (n == 0 ? split.length : n) + offset
         );
     }
 
