@@ -24,10 +24,21 @@
 package com.ongres.scram.common.util;
 
 
+import java.util.Arrays;
+
+import static com.ongres.scram.common.util.Preconditions.checkNotNull;
+
+
 /**
  * Helper class to generate Comma Separated Values of {@link CharAttributeValue}s
  */
 public class CharAttributeValueCSV {
+    private static void writeCharAttributeValueToStringBuffer(CharAttributeValue value, StringBuffer sb) {
+        if(null != value) {
+            value.writeTo(sb);
+        }
+    }
+
     /**
      * Write a sequence of {@link CharAttributeValueCSV}s to a StringBuffer.
      * Null {@link CharAttributeValueCSV}s are not printed, but separator is still used.
@@ -38,6 +49,19 @@ public class CharAttributeValueCSV {
      * @throws IllegalArgumentException If sb is null
      */
     public static StringBuffer writeTo(StringBuffer sb, CharAttributeValue... values) throws IllegalArgumentException {
+        checkNotNull(sb, "sb");
+        if(null == values || values.length == 0) {
+            return sb;
+        }
+
+        writeCharAttributeValueToStringBuffer(values[0], sb);
+        int i = 1;
+        while (i < values.length) {
+            sb.append(',');
+            writeCharAttributeValueToStringBuffer(values[i], sb);
+            i++;
+        }
+
         return sb;
     }
 
@@ -51,7 +75,26 @@ public class CharAttributeValueCSV {
      * @throws IllegalArgumentException If value is null or either limit or offset are negative
      */
     public static String[] parseFrom(String value, int limit, int offset) throws IllegalArgumentException {
-        return null;
+        checkNotNull(value, "value");
+        if(limit < 0 || offset < 0) {
+            throw new IllegalArgumentException("Limit and offset have to be >= 0");
+        }
+
+        if(value.isEmpty()) {
+            return new String[0];
+        }
+
+        String[] split = value.split(",");
+
+        if(split.length == 0 || offset >= split.length) {
+            return new String[0];
+        }
+
+        return Arrays.copyOfRange(
+                split,
+                offset,
+                limit == 0 ? split.length : Math.min(offset + limit, split.length)
+        );
     }
 
     /**
