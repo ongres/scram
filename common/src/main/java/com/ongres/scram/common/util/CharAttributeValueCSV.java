@@ -69,14 +69,14 @@ public class CharAttributeValueCSV {
      * Parse a String with a {@link CharAttributeValueCSV} into its composing {@link CharAttributeValue}s
      * represented as Strings. No validation is performed on the individual attribute-values returned.
      * @param value The String with the set of attribute-values
-     * @param limit Maximum number of entries to return. 0 means unlimited
+     * @param n Number of entries to return (entries will be null of there were not enough). 0 means unlimited
      * @param offset How many entries to skip before start returning
      * @return An array of Strings which represent the individual attribute-values
-     * @throws IllegalArgumentException If value is null or either limit or offset are negative
+     * @throws IllegalArgumentException If value is null or either n or offset are negative
      */
-    public static String[] parseFrom(String value, int limit, int offset) throws IllegalArgumentException {
+    public static String[] parseFrom(String value, int n, int offset) throws IllegalArgumentException {
         checkNotNull(value, "value");
-        if(limit < 0 || offset < 0) {
+        if(n < 0 || offset < 0) {
             throw new IllegalArgumentException("Limit and offset have to be >= 0");
         }
 
@@ -93,7 +93,7 @@ public class CharAttributeValueCSV {
         return Arrays.copyOfRange(
                 split,
                 offset,
-                limit == 0 ? split.length : Math.min(offset + limit, split.length)
+                n == 0 ? split.length : Math.min(offset + n, split.length)
         );
     }
 
@@ -102,12 +102,12 @@ public class CharAttributeValueCSV {
      * represented as Strings. No validation is performed on the individual attribute-values returned.
      * Elements are returned starting from the first available attribute-value.
      * @param value The String with the set of attribute-values
-     * @param limit Maximum number of entries to return. 0 means unlimited
+     * @param n Number of entries to return (entries will be null of there were not enough). 0 means unlimited
      * @return An array of Strings which represent the individual attribute-values
-     * @throws IllegalArgumentException If value is null or limit is negative
+     * @throws IllegalArgumentException If value is null or n is negative
      */
-    public static String[] parseFrom(String value, int limit)  throws IllegalArgumentException {
-        return parseFrom(value, limit, 0);
+    public static String[] parseFrom(String value, int n)  throws IllegalArgumentException {
+        return parseFrom(value, n, 0);
     }
 
     /**

@@ -85,22 +85,28 @@ public class CharAttributeValueCSVTest {
             assertArrayEquals(new String[] {s}, CharAttributeValueCSV.parseFrom(s));
         }
 
-        int[] limits = new int[] { 0, 1, 100 };
-        for(int limit : limits) {
+        int[] numberEntries = new int[] { 0, 1 };
+        for(int n : numberEntries) {
             for(String s : ONE_ARG_VALUES) {
-                assertArrayEquals(new String[] {s}, CharAttributeValueCSV.parseFrom(s, limit));
+                assertArrayEquals(new String[] {s}, CharAttributeValueCSV.parseFrom(s, n));
             }
         }
-
-        for(int limit : limits) {
-            for(String s : ONE_ARG_VALUES) {
-                assertArrayEquals(new String[] {s}, CharAttributeValueCSV.parseFrom(s, limit, 0));
-            }
+        for(String s : ONE_ARG_VALUES) {
+            assertArrayEquals(new String[] {s, null, null}, CharAttributeValueCSV.parseFrom(s, 3));
         }
 
-        for(int limit : limits) {
+        for(int n : numberEntries) {
             for(String s : ONE_ARG_VALUES) {
-                assertArrayEquals(new String[] {}, CharAttributeValueCSV.parseFrom(s, limit, 1));
+                assertArrayEquals(new String[] {s}, CharAttributeValueCSV.parseFrom(s, n, 0));
+            }
+        }
+        for(String s : ONE_ARG_VALUES) {
+            assertArrayEquals(new String[] {s, null, null}, CharAttributeValueCSV.parseFrom(s, 3, 0));
+        }
+
+        for(int n : numberEntries) {
+            for(String s : ONE_ARG_VALUES) {
+                assertArrayEquals(new String[] {}, CharAttributeValueCSV.parseFrom(s, n, 1));
             }
         }
     }
@@ -123,13 +129,18 @@ public class CharAttributeValueCSVTest {
         );
 
         assertArrayEquals(
-                new String[] { "r=fyko+d2lbbFgONRv9qkxdawL" },
+                new String[] { "r=fyko+d2lbbFgONRv9qkxdawL", null },
                 CharAttributeValueCSV.parseFrom(SEVERAL_VALUES_STRING, 2, 3)
         );
 
         assertArrayEquals(
-                new String[] { },
+                new String[] { null, null },
                 CharAttributeValueCSV.parseFrom(SEVERAL_VALUES_STRING, 2, 4)
+        );
+
+        assertArrayEquals(
+                new String[] { "n", "", "n=user", "r=fyko+d2lbbFgONRv9qkxdawL", null },
+                CharAttributeValueCSV.parseFrom(SEVERAL_VALUES_STRING, 5)
         );
     }
 }
