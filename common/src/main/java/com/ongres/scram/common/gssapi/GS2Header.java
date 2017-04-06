@@ -26,7 +26,7 @@ package com.ongres.scram.common.gssapi;
 
 import com.ongres.scram.common.SCRAMStringFormatting;
 import com.ongres.scram.common.util.AbstractStringWritable;
-import com.ongres.scram.common.util.CharAttributeValueCSV;
+import com.ongres.scram.common.util.StringWritableCSV;
 
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 
@@ -93,7 +93,7 @@ public class GS2Header extends AbstractStringWritable {
 
     @Override
     public StringBuffer writeTo(StringBuffer sb) {
-        return CharAttributeValueCSV.writeTo(sb, cbind, authzid);
+        return StringWritableCSV.writeTo(sb, cbind, authzid);
     }
 
     /**
@@ -105,7 +105,7 @@ public class GS2Header extends AbstractStringWritable {
     public static GS2Header parseFrom(String message) throws IllegalArgumentException {
         checkNotNull(message, "Null message");
 
-        String[] gs2HeaderSplit = CharAttributeValueCSV.parseFrom(message, 2);
+        String[] gs2HeaderSplit = StringWritableCSV.parseFrom(message, 2);
         if(gs2HeaderSplit.length == 0) {
             throw new IllegalArgumentException("Invalid number of fields for the GS2 Header");
         }

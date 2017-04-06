@@ -24,23 +24,25 @@
 package com.ongres.scram.common.util;
 
 
-import com.ongres.scram.common.SCRAMAttributeValue;
-import com.ongres.scram.common.SCRAMAttributes;
 import com.ongres.scram.common.gssapi.GS2AttributeValue;
 import com.ongres.scram.common.gssapi.GS2Attributes;
+import com.ongres.scram.common.SCRAMAttributeValue;
+import com.ongres.scram.common.SCRAMAttributes;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
-public class CharAttributeValueCSVTest {
+public class StringWritableCSVTest {
     private static final String[] ONE_ARG_VALUES = new String[] { "c=channel", "i=4096", "a=authzid", "n" };
     private static final String SEVERAL_VALUES_STRING = "n,,n=user,r=fyko+d2lbbFgONRv9qkxdawL";
 
     @Test
     public void writeToNullOrEmpty() {
-        assertTrue(CharAttributeValueCSV.writeTo(new StringBuffer()).length() == 0);
-        assertTrue(CharAttributeValueCSV.writeTo(new StringBuffer(), new CharAttributeValue[]{}).length() == 0);
+        assertTrue(StringWritableCSV.writeTo(new StringBuffer()).length() == 0);
+        assertTrue(StringWritableCSV.writeTo(new StringBuffer(), new CharAttributeValue[]{}).length() == 0);
     }
 
     @Test
@@ -53,7 +55,7 @@ public class CharAttributeValueCSVTest {
         };
 
         for(int i = 0; i < pairs.length; i++) {
-            assertEquals(ONE_ARG_VALUES[i], CharAttributeValueCSV.writeTo(new StringBuffer(), pairs[i]).toString());
+            assertEquals(ONE_ARG_VALUES[i], StringWritableCSV.writeTo(new StringBuffer(), pairs[i]).toString());
         }
     }
 
@@ -61,7 +63,7 @@ public class CharAttributeValueCSVTest {
     public void writeToSeveralArgs() {
         assertEquals(
                 SEVERAL_VALUES_STRING,
-                CharAttributeValueCSV.writeTo(
+                StringWritableCSV.writeTo(
                         new StringBuffer(),
                         new GS2AttributeValue(GS2Attributes.CLIENT_NOT, null),
                         null,
@@ -74,37 +76,37 @@ public class CharAttributeValueCSVTest {
 
     @Test
     public void parseFromEmpty() {
-        assertArrayEquals(new String[]{}, CharAttributeValueCSV.parseFrom(""));
+        assertArrayEquals(new String[]{}, StringWritableCSV.parseFrom(""));
     }
 
     @Test
     public void parseFromOneArgWithLimitsOffsets() {
         for(String s : ONE_ARG_VALUES) {
-            assertArrayEquals(new String[] {s}, CharAttributeValueCSV.parseFrom(s));
+            assertArrayEquals(new String[] {s}, StringWritableCSV.parseFrom(s));
         }
 
         int[] numberEntries = new int[] { 0, 1 };
         for(int n : numberEntries) {
             for(String s : ONE_ARG_VALUES) {
-                assertArrayEquals(new String[] {s}, CharAttributeValueCSV.parseFrom(s, n));
+                assertArrayEquals(new String[] {s}, StringWritableCSV.parseFrom(s, n));
             }
         }
         for(String s : ONE_ARG_VALUES) {
-            assertArrayEquals(new String[] {s, null, null}, CharAttributeValueCSV.parseFrom(s, 3));
+            assertArrayEquals(new String[] {s, null, null}, StringWritableCSV.parseFrom(s, 3));
         }
 
         for(int n : numberEntries) {
             for(String s : ONE_ARG_VALUES) {
-                assertArrayEquals(new String[] {s}, CharAttributeValueCSV.parseFrom(s, n, 0));
+                assertArrayEquals(new String[] {s}, StringWritableCSV.parseFrom(s, n, 0));
             }
         }
         for(String s : ONE_ARG_VALUES) {
-            assertArrayEquals(new String[] {s, null, null}, CharAttributeValueCSV.parseFrom(s, 3, 0));
+            assertArrayEquals(new String[] {s, null, null}, StringWritableCSV.parseFrom(s, 3, 0));
         }
 
         for(int n : numberEntries) {
             for(String s : ONE_ARG_VALUES) {
-                assertArrayEquals(new String[] { null }, CharAttributeValueCSV.parseFrom(s, n, 1));
+                assertArrayEquals(new String[] { null }, StringWritableCSV.parseFrom(s, n, 1));
             }
         }
     }
@@ -113,32 +115,32 @@ public class CharAttributeValueCSVTest {
     public void parseFromSeveralArgsWithLimitsOffsets() {
         assertArrayEquals(
                 new String[] { "n", "", "n=user", "r=fyko+d2lbbFgONRv9qkxdawL" },
-                CharAttributeValueCSV.parseFrom(SEVERAL_VALUES_STRING)
+                StringWritableCSV.parseFrom(SEVERAL_VALUES_STRING)
         );
 
         assertArrayEquals(
                 new String[] { "n", "" },
-                CharAttributeValueCSV.parseFrom(SEVERAL_VALUES_STRING, 2)
+                StringWritableCSV.parseFrom(SEVERAL_VALUES_STRING, 2)
         );
 
         assertArrayEquals(
                 new String[] { "", "n=user" },
-                CharAttributeValueCSV.parseFrom(SEVERAL_VALUES_STRING, 2, 1)
+                StringWritableCSV.parseFrom(SEVERAL_VALUES_STRING, 2, 1)
         );
 
         assertArrayEquals(
                 new String[] { "r=fyko+d2lbbFgONRv9qkxdawL", null },
-                CharAttributeValueCSV.parseFrom(SEVERAL_VALUES_STRING, 2, 3)
+                StringWritableCSV.parseFrom(SEVERAL_VALUES_STRING, 2, 3)
         );
 
         assertArrayEquals(
                 new String[] { null, null },
-                CharAttributeValueCSV.parseFrom(SEVERAL_VALUES_STRING, 2, 4)
+                StringWritableCSV.parseFrom(SEVERAL_VALUES_STRING, 2, 4)
         );
 
         assertArrayEquals(
                 new String[] { "n", "", "n=user", "r=fyko+d2lbbFgONRv9qkxdawL", null },
-                CharAttributeValueCSV.parseFrom(SEVERAL_VALUES_STRING, 5)
+                StringWritableCSV.parseFrom(SEVERAL_VALUES_STRING, 5)
         );
     }
 }

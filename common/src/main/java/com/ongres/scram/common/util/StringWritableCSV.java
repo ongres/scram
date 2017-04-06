@@ -30,35 +30,35 @@ import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 
 
 /**
- * Helper class to generate Comma Separated Values of {@link CharAttributeValue}s
+ * Helper class to generate Comma Separated Values of {@link StringWritable}s
  */
-public class CharAttributeValueCSV {
-    private static void writeCharAttributeValueToStringBuffer(CharAttributeValue value, StringBuffer sb) {
+public class StringWritableCSV {
+    private static void writeStringWritableToStringBuffer(StringWritable value, StringBuffer sb) {
         if(null != value) {
             value.writeTo(sb);
         }
     }
 
     /**
-     * Write a sequence of {@link CharAttributeValueCSV}s to a StringBuffer.
-     * Null {@link CharAttributeValueCSV}s are not printed, but separator is still used.
+     * Write a sequence of {@link StringWritableCSV}s to a StringBuffer.
+     * Null {@link StringWritable}s are not printed, but separator is still used.
      * Separator is a comma (',')
      * @param sb The sb to write to
      * @param values Zero or more attribute-value pairs to write
      * @return The same sb, with data filled in (if any)
      * @throws IllegalArgumentException If sb is null
      */
-    public static StringBuffer writeTo(StringBuffer sb, CharAttributeValue... values) throws IllegalArgumentException {
+    public static StringBuffer writeTo(StringBuffer sb, StringWritable... values) throws IllegalArgumentException {
         checkNotNull(sb, "sb");
         if(null == values || values.length == 0) {
             return sb;
         }
 
-        writeCharAttributeValueToStringBuffer(values[0], sb);
+        writeStringWritableToStringBuffer(values[0], sb);
         int i = 1;
         while (i < values.length) {
             sb.append(',');
-            writeCharAttributeValueToStringBuffer(values[i], sb);
+            writeStringWritableToStringBuffer(values[i], sb);
             i++;
         }
 
@@ -66,7 +66,7 @@ public class CharAttributeValueCSV {
     }
 
     /**
-     * Parse a String with a {@link CharAttributeValueCSV} into its composing {@link CharAttributeValue}s
+     * Parse a String with a {@link StringWritableCSV} into its composing Strings
      * represented as Strings. No validation is performed on the individual attribute-values returned.
      * @param value The String with the set of attribute-values
      * @param n Number of entries to return (entries will be null of there were not enough). 0 means unlimited
@@ -94,7 +94,7 @@ public class CharAttributeValueCSV {
     }
 
     /**
-     * Parse a String with a {@link CharAttributeValueCSV} into its composing {@link CharAttributeValue}s
+     * Parse a String with a {@link StringWritableCSV} into its composing Strings
      * represented as Strings. No validation is performed on the individual attribute-values returned.
      * Elements are returned starting from the first available attribute-value.
      * @param value The String with the set of attribute-values
@@ -107,7 +107,7 @@ public class CharAttributeValueCSV {
     }
 
     /**
-     * Parse a String with a {@link CharAttributeValueCSV} into its composing {@link CharAttributeValue}s
+     * Parse a String with a {@link StringWritableCSV} into its composing Strings
      * represented as Strings. No validation is performed on the individual attribute-values returned.
      * All the available attribute-values will be returned.
      * @param value The String with the set of attribute-values
