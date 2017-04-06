@@ -24,11 +24,32 @@
 package com.ongres.scram.common.util;
 
 
+import java.security.SecureRandom;
+
+
 /**
  * Utility static methods for cryptography related tasks.
  */
 public class CryptoUtil {
+    private static final int MIN_ASCII_PRINTABLE_RANGE = 0x21;
+    private static final int MAX_ASCII_PRINTABLE_RANGE = 0x7e;
+    private static final int EXCLUDED_CHAR = (int) ','; // 0x2c
+
     public static String nonce(int size) {
-        return null;
+        if(size <= 0) {
+            throw new IllegalArgumentException("Size must be positive");
+        }
+
+        SecureRandom random = new SecureRandom();
+        char[] chars = new char[size];
+        int r;
+        for(int i = 0; i < size;) {
+            r = random.nextInt(MAX_ASCII_PRINTABLE_RANGE - MIN_ASCII_PRINTABLE_RANGE + 1) + MIN_ASCII_PRINTABLE_RANGE;
+            if(r != EXCLUDED_CHAR) {
+                chars[i++] = (char) r;
+            }
+        }
+
+        return new String(chars);
     }
 }
