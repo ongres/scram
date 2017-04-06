@@ -27,6 +27,8 @@ package com.ongres.scram.common;
 import com.ongres.scram.common.util.AbstractStringWritable;
 import com.ongres.scram.common.util.CharAttributeValueCSV;
 
+import static com.ongres.scram.common.util.Preconditions.checkNotNull;
+
 
 /**
  * GSS Header. Format:
@@ -55,8 +57,17 @@ public class GS2Header extends AbstractStringWritable {
      * @throws IllegalArgumentException If the channel binding flag and argument are invalid
      */
     public GS2Header(GS2CbindFlag cbindFlag, String cbName, String authzid) throws IllegalArgumentException {
-        this.cbind = null;
-        this.authzid = null;
+        checkNotNull(cbindFlag, "cbindFlag");
+        if(cbindFlag == GS2CbindFlag.CHANNEL_BINDING_REQUIRED ^ cbName != null) {
+            throw new IllegalArgumentException("Specify channel binding flag and value together, or none");
+        }
+        // TODO: cbName is not being properly validated
+        cbind = new GS2AttributeValue(GS2Attributes.byGS2CbindFlag(cbindFlag), cbName);
+
+        this.authzid =
+                authzid == null ?
+                        null :
+                        new GS2AttributeValue(GS2Attributes.AUTHZID, SaslName.toSaslName(authzid));
     }
 
     /**
@@ -91,6 +102,18 @@ public class GS2Header extends AbstractStringWritable {
      * @throws IllegalArgumentException If the format/values of the String do not conform to a GS2Header
      */
     public static GS2Header parseFrom(String message) throws IllegalArgumentException {
-        return null;
+        checkNotNull(message, "Null message");
+
+        String[] gs2HeaderSplit = CharAttributeValueCSV.parseFrom(message, 2);
+        if(gs2HeaderSplit.length == 0) {
+            throw new IllegalArgumentException("Invalid number of fields for the GS2 Header");
+        }
+
+        GS2AttributeValue gs2cbind = GS2AttributeValue.parse(gs2HeaderSplit[0]);
+        return new GS2Header(
+                GS2CbindFlag.byChar(gs2cbind.getChar()),
+                gs2cbind.getValue(),
+                gs2HeaderSplit[1] == null ? null : GS2AttributeValue.parse(gs2HeaderSplit[1]).getValue()
+        );
     }
 }
