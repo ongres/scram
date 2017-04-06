@@ -21,41 +21,53 @@
  */
 
 
-package com.ongres.scram.common;
+package com.ongres.scram.common.gssapi;
 
 
-import com.ongres.scram.common.util.AbstractCharAttributeValue;
+import com.ongres.scram.common.util.CharAttribute;
+
 
 /**
- * Parse and write GS2 Attribute-Value pairs.
+ * Possible values of a GS2 Cbind Flag (channel binding; part of GS2 header).
+ * These values are sent by the client, and so are interpreted from this perspective.
+ *
+ * @see <a href="https://tools.ietf.org/html/rfc5802#section-7">[RFC5802] Formal Syntax</a>
  */
-public class GS2AttributeValue extends AbstractCharAttributeValue {
-    public GS2AttributeValue(GS2Attributes attribute, String value) {
-        super(attribute, value);
-    }
-
-    public static StringBuffer writeTo(StringBuffer sb, GS2Attributes attribute, String value) {
-        return new GS2AttributeValue(attribute, value).writeTo(sb);
-    }
+public enum GS2CbindFlag implements CharAttribute {
+    /**
+     * Client doesn't support channel binding.
+     */
+    CLIENT_NOT('n'),
 
     /**
-     * Parses a potential GS2AttributeValue String.
-     * @param value The string that contains the Attribute-Value pair (where value is optional).
-     * @return The parsed class, or null if the String was null.
-     * @throws IllegalArgumentException If the String is an invalid GS2AttributeValue
+     * Client does support channel binding but thinks the server does not.
      */
-    public static GS2AttributeValue parse(String value) throws IllegalArgumentException {
-        if(null == value) {
-            return null;
+    CLIENT_YES_SERVER_NOT('y'),
+
+    /**
+     * Client requires channel binding. The selected channel binding follows "p=".
+     */
+    CHANNEL_BINDING_REQUIRED('p')
+    ;
+
+    private final char flag;
+
+    GS2CbindFlag(char flag) {
+        this.flag = flag;
+    }
+
+    @Override
+    public char getChar() {
+        return flag;
+    }
+
+    public static GS2CbindFlag byChar(char c) {
+        switch(c) {
+            case 'n':   return CLIENT_NOT;
+            case 'y':   return CLIENT_YES_SERVER_NOT;
+            case 'p':   return CHANNEL_BINDING_REQUIRED;
         }
 
-        if(value.length() < 1 || value.length() == 2 || (value.length() > 2 && value.charAt(1) != '=')) {
-            throw new IllegalArgumentException("Invalid GS2AttributeValue");
-        }
-
-        return new GS2AttributeValue(
-                GS2Attributes.byChar(value.charAt(0)),
-                value.length() > 2 ? value.substring(2) : null
-        );
+        throw new IllegalArgumentException("Invalid GS2CbindFlag character '" + c + "'");
     }
 }

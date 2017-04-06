@@ -30,7 +30,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 
-public class SaslNameTest {
+public class SCRAMStringFormattingTest {
     private static final String[] VALUES_NO_CHARS_TO_BE_ESCAPED = new String[] { "asdf", "''--%%21", "   ttt???" };
     private static final String[] VALUES_TO_BE_ESCAPED = new String[] {
             ",",    "=",    "a,b",      "===",          "a=",   ",=,",          "=2C",      "=3D"
@@ -43,28 +43,28 @@ public class SaslNameTest {
     @Test
     public void toSaslNameNoCharactersToBeEscaped() {
         for(String s : VALUES_NO_CHARS_TO_BE_ESCAPED) {
-            assertEquals(s, SaslName.toSaslName(s));
+            assertEquals(s, SCRAMStringFormatting.toSaslName(s));
         }
     }
 
     @Test
     public void toSaslNameWithCharactersToBeEscaped() {
         for(int i = 0; i < VALUES_TO_BE_ESCAPED.length; i++) {
-            assertEquals(ESCAPED_VALUES[i], SaslName.toSaslName(VALUES_TO_BE_ESCAPED[i]));
+            assertEquals(ESCAPED_VALUES[i], SCRAMStringFormatting.toSaslName(VALUES_TO_BE_ESCAPED[i]));
         }
     }
 
     @Test
     public void fromSaslNameNoCharactersToBeEscaped() {
         for(String s : VALUES_NO_CHARS_TO_BE_ESCAPED) {
-            assertEquals(s, SaslName.fromSaslName(s));
+            assertEquals(s, SCRAMStringFormatting.fromSaslName(s));
         }
     }
 
     @Test
     public void fromSaslNameWithCharactersToBeUnescaped() {
         for(int i = 0; i < ESCAPED_VALUES.length; i++) {
-            assertEquals(VALUES_TO_BE_ESCAPED[i], SaslName.fromSaslName(ESCAPED_VALUES[i]));
+            assertEquals(VALUES_TO_BE_ESCAPED[i], SCRAMStringFormatting.fromSaslName(ESCAPED_VALUES[i]));
         }
     }
 
@@ -73,7 +73,7 @@ public class SaslNameTest {
         int n = 0;
         for(String s : INVALID_SASL_NAMES) {
             try {
-                assertEquals(s, SaslName.fromSaslName(s));
+                assertEquals(s, SCRAMStringFormatting.fromSaslName(s));
             } catch (IllegalArgumentException e) {
                 n++;
             }

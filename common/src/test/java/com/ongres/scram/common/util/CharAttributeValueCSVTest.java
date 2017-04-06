@@ -24,15 +24,13 @@
 package com.ongres.scram.common.util;
 
 
-import com.ongres.scram.common.GS2AttributeValue;
-import com.ongres.scram.common.GS2Attributes;
 import com.ongres.scram.common.SCRAMAttributeValue;
 import com.ongres.scram.common.SCRAMAttributes;
+import com.ongres.scram.common.gssapi.GS2AttributeValue;
+import com.ongres.scram.common.gssapi.GS2Attributes;
 import org.junit.Test;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 
 public class CharAttributeValueCSVTest {

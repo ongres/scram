@@ -21,7 +21,7 @@
  */
 
 
-package com.ongres.scram.common;
+package com.ongres.scram.common.stringprep;
 
 
 import com.ongres.scram.common.util.USASCIIUtils;

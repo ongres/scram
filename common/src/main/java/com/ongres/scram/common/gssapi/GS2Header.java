@@ -21,9 +21,10 @@
  */
 
 
-package com.ongres.scram.common;
+package com.ongres.scram.common.gssapi;
 
 
+import com.ongres.scram.common.SCRAMStringFormatting;
 import com.ongres.scram.common.util.AbstractStringWritable;
 import com.ongres.scram.common.util.CharAttributeValueCSV;
 
@@ -67,7 +68,7 @@ public class GS2Header extends AbstractStringWritable {
         this.authzid =
                 authzid == null ?
                         null :
-                        new GS2AttributeValue(GS2Attributes.AUTHZID, SaslName.toSaslName(authzid));
+                        new GS2AttributeValue(GS2Attributes.AUTHZID, SCRAMStringFormatting.toSaslName(authzid));
     }
 
     /**

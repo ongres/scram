@@ -21,7 +21,7 @@
  */
 
 
-package com.ongres.scram.common;
+package com.ongres.scram.common.gssapi;
 
 
 import org.junit.Test;

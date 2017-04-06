@@ -21,13 +21,11 @@
  */
 
 
-package com.ongres.scram.common;
+package com.ongres.scram.common.gssapi;
 
 
 import org.junit.Test;
 
-import static com.ongres.scram.common.SCRAMAttributes.CLIENT_PROOF;
-import static com.ongres.scram.common.SCRAMAttributes.USERNAME;
 import static org.junit.Assert.*;
 
 

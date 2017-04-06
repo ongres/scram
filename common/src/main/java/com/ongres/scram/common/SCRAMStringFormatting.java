@@ -28,7 +28,7 @@ package com.ongres.scram.common;
  * Class with static methods that provide support for converting to/from salNames.
  * @see <a href="https://tools.ietf.org/html/rfc5802#section-7">[RFC5802] Section 7: Formal Syntax</a>
  */
-public class SaslName {
+public class SCRAMStringFormatting {
     /**
      * Given a value-safe-char (normalized UTF-8 String),
      * return one where characters ',' and '=' are represented by '=2C' or '=3D', respectively.

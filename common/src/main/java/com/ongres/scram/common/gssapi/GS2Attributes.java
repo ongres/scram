@@ -21,9 +21,10 @@
  */
 
 
-package com.ongres.scram.common;
+package com.ongres.scram.common.gssapi;
 
 
+import com.ongres.scram.common.SCRAMAttributes;
 import com.ongres.scram.common.util.CharAttribute;
 
 
