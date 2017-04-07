@@ -34,36 +34,30 @@ import static org.junit.Assert.assertTrue;
 
 public class ClientFirstMessageTest  {
     private static final String NONCE = "fyko+d2lbbFgONRv9qkxdawL";
-    private static final ClientFirstMessage.NonceProvider MOCK_NONCE_PROVIDER = length -> NONCE;
 
     @Test(expected = IllegalArgumentException.class)
     public void constructorTestInvalid1() {
-        new ClientFirstMessage(null, null, null, "a", 3);
+        new ClientFirstMessage(null, null, null, "a", NONCE);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void constructorTestInvalid2() {
-        new ClientFirstMessage(GS2CbindFlag.CLIENT_NOT, "cbind", null, "a", 3);
+        new ClientFirstMessage(GS2CbindFlag.CLIENT_NOT, "cbind", null, "a", NONCE);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void constructorTestInvalid3() {
-        new ClientFirstMessage(GS2CbindFlag.CLIENT_YES_SERVER_NOT, "cbind", null, "a", 3);
+        new ClientFirstMessage(GS2CbindFlag.CLIENT_YES_SERVER_NOT, "cbind", null, "a", NONCE);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void constructorTestInvalid4() {
-        new ClientFirstMessage(GS2CbindFlag.CHANNEL_BINDING_REQUIRED, null, null, "a", 3);
+        new ClientFirstMessage(GS2CbindFlag.CHANNEL_BINDING_REQUIRED, null, null, "a", NONCE);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void constructorTestInvalid5() {
-        new ClientFirstMessage(GS2CbindFlag.CLIENT_NOT, null, null, null, 3);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void constructorTestInvalid6() {
-        new ClientFirstMessage(GS2CbindFlag.CLIENT_YES_SERVER_NOT, null, null, "a", -3);
+        new ClientFirstMessage(GS2CbindFlag.CLIENT_NOT, null, null, null, NONCE);
     }
 
     private void assertClientFirstMessage(String expected, ClientFirstMessage clientFirstMessage) {
@@ -74,31 +68,19 @@ public class ClientFirstMessageTest  {
     public void writeToValidValues() {
         assertClientFirstMessage(
                 "n,,n=user,r=" + NONCE,
-                new ClientFirstMessage(
-                        GS2CbindFlag.CLIENT_NOT, null, null, "user",
-                        NONCE.length(), MOCK_NONCE_PROVIDER
-                )
+                new ClientFirstMessage(GS2CbindFlag.CLIENT_NOT, null, null, "user",NONCE)
         );
         assertClientFirstMessage(
                 "y,,n=user,r=" + NONCE,
-                new ClientFirstMessage(
-                        GS2CbindFlag.CLIENT_YES_SERVER_NOT, null, null, "user",
-                        NONCE.length(), MOCK_NONCE_PROVIDER
-                )
+                new ClientFirstMessage(GS2CbindFlag.CLIENT_YES_SERVER_NOT, null, null, "user",NONCE)
         );
         assertClientFirstMessage(
                 "p=blah,,n=user,r=" + NONCE,
-                new ClientFirstMessage(
-                        GS2CbindFlag.CHANNEL_BINDING_REQUIRED, "blah", null, "user",
-                        NONCE.length(), MOCK_NONCE_PROVIDER
-                )
+                new ClientFirstMessage(GS2CbindFlag.CHANNEL_BINDING_REQUIRED, "blah", null, "user",NONCE)
         );
         assertClientFirstMessage(
                 "p=blah,a=authzid,n=user,r=" + NONCE,
-                new ClientFirstMessage(
-                        GS2CbindFlag.CHANNEL_BINDING_REQUIRED, "blah", "authzid", "user",
-                        NONCE.length(), MOCK_NONCE_PROVIDER
-                )
+                new ClientFirstMessage(GS2CbindFlag.CHANNEL_BINDING_REQUIRED, "blah", "authzid", "user",NONCE)
         );
     }
 

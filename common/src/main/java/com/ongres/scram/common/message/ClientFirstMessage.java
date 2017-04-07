@@ -30,14 +30,12 @@ import com.ongres.scram.common.SCRAMStringFormatting;
 import com.ongres.scram.common.gssapi.GS2CbindFlag;
 import com.ongres.scram.common.gssapi.GS2Header;
 import com.ongres.scram.common.util.CharAttributeValue;
-import com.ongres.scram.common.util.CryptoUtil;
 import com.ongres.scram.common.util.StringWritable;
 import com.ongres.scram.common.util.StringWritableCSV;
 
 import java.util.Optional;
 
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
-import static com.ongres.scram.common.util.Preconditions.gt0;
 
 
 /**
@@ -64,24 +62,6 @@ public class ClientFirstMessage implements StringWritable {
         this.nonce = nonce;
     }
 
-    @FunctionalInterface
-    protected interface NonceProvider {
-        String getNonce(int length);
-    }
-
-    protected ClientFirstMessage(
-            GS2CbindFlag gs2CbindFlag, String cbind, String authzid, String user, int nonceLength,
-            NonceProvider nonceProvider
-    ) throws IllegalArgumentException {
-        checkNotNull(gs2CbindFlag, "gs2CbindFlag");
-        checkNotNull(user, "user");
-        gt0(nonceLength, "nonceLength");
-
-        gs2Header = new GS2Header(gs2CbindFlag, cbind, authzid);
-        this.user = new SCRAMAttributeValue(SCRAMAttributes.USERNAME, SCRAMStringFormatting.toSaslName(user));
-        nonce = new SCRAMAttributeValue(SCRAMAttributes.NONCE, nonceProvider.getNonce(nonceLength));
-    }
-
     /**
      * Constructs a message with the specified channel binding flag;
      * a channel binding name and/or authizd if either is specified (not null); the username and the nonce length.
@@ -89,33 +69,38 @@ public class ClientFirstMessage implements StringWritable {
      * @param cbind The channel binding name, if the channel binding flag was set to required
      * @param authzid An optional authzid (alternate authorization id)
      * @param user The username
-     * @param nonceLength Desired length of the nonce
-     * @throws IllegalArgumentException If channel binding flag, user or nonceLength are null;
-     *                                  nonceLength is not positive;
+     * @param nonce The nonce
+     * @throws IllegalArgumentException If channel binding flag, user or nonce are null;
      *                                  or if channel binding is required and no channel binding name is provided
      */
     public ClientFirstMessage(
-            GS2CbindFlag gs2CbindFlag, String cbind, String authzid, String user, int nonceLength
+            GS2CbindFlag gs2CbindFlag, String cbind, String authzid, String user, String nonce
     ) throws IllegalArgumentException {
-        this(gs2CbindFlag, cbind, authzid, user, nonceLength, CryptoUtil::nonce);
+        checkNotNull(gs2CbindFlag, "gs2CbindFlag");
+        checkNotNull(user, "user");
+        checkNotNull(nonce, "nonce");
+
+        gs2Header = new GS2Header(gs2CbindFlag, cbind, authzid);
+        this.user = new SCRAMAttributeValue(SCRAMAttributes.USERNAME, SCRAMStringFormatting.toSaslName(user));
+        this.nonce = new SCRAMAttributeValue(SCRAMAttributes.NONCE, nonce);
     }
 
     /**
      * Constructs a message with the specified username and the nonce length,
      * and the indicated non-channel binding mode: either client supported or not.
      * @param user The username
-     * @param nonceLength Desired length of the nonce
-     * @throws IllegalArgumentException If user or nonceLength are null or nonceLength is not positive
+     * @param nonce The nonce
+     * @throws IllegalArgumentException If user or nonce are null
      */
     public ClientFirstMessage(
-            boolean clientChannelBinding, String user, int nonceLength
+            boolean clientChannelBinding, String user, String nonce
     ) throws IllegalArgumentException {
         this(
                 clientChannelBinding ? GS2CbindFlag.CLIENT_YES_SERVER_NOT : GS2CbindFlag.CLIENT_NOT,
                 null,
                 null,
                 user,
-                nonceLength
+                nonce
         );
     }
 
@@ -123,11 +108,11 @@ public class ClientFirstMessage implements StringWritable {
      * Constructs a message with the specified username and the nonce length,
      * with no support (both client and server) for channel binding.
      * @param user The username
-     * @param nonceLength Desired length of the nonce
-     * @throws IllegalArgumentException If user or nonceLength are null or nonceLength is not positive
+     * @param nonce The nonce
+     * @throws IllegalArgumentException If user or nonce are null
      */
-    public ClientFirstMessage(String user, int nonceLength) throws IllegalArgumentException {
-        this(false, user, nonceLength);
+    public ClientFirstMessage(String user, String nonce) throws IllegalArgumentException {
+        this(false, user, nonce);
     }
 
     public GS2CbindFlag getChannelBindingFlag() {
