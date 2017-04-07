@@ -11,6 +11,7 @@
     <version>0.10-SNAPSHOT</version>
     <modules>
         <module>common</module>
+        <module>client</module>
     </modules>
     <packaging>pom</packaging>
 
