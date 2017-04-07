@@ -21,41 +21,33 @@
  */
 
 
-package com.ongres.scram.common.gssapi;
+package com.ongres.scram.common.util;
 
 
-import com.ongres.scram.common.util.AbstractCharAttributeValue;
+import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 
-/**
- * Parse and write GS2 Attribute-Value pairs.
- */
-public class GS2AttributeValue extends AbstractCharAttributeValue {
-    public GS2AttributeValue(GS2Attributes attribute, String value) {
-        super(attribute, value);
-    }
 
-    public static StringBuffer writeTo(StringBuffer sb, GS2Attributes attribute, String value) {
-        return new GS2AttributeValue(attribute, value).writeTo(sb);
-    }
-
+public class UsAsciiUtils {
     /**
-     * Parses a potential GS2AttributeValue String.
-     * @param value The string that contains the Attribute-Value pair (where value is optional).
-     * @return The parsed class, or null if the String was null.
-     * @throws IllegalArgumentException If the String is an invalid GS2AttributeValue
+     * Removes non-printable characters from the US-ASCII String.
+     * @param value The original String
+     * @return The possibly modified String, without non-printable US-ASCII characters.
+     * @throws IllegalArgumentException If the String is null or contains non US-ASCII characters.
      */
-    public static GS2AttributeValue parse(String value) throws IllegalArgumentException {
-        if(null == value) {
-            return null;
+    public static String toPrintable(String value) throws IllegalArgumentException {
+        checkNotNull(value, "value");
+
+        char[] printable = new char[value.length()];
+        int i = 0;
+        for(char chr : value.toCharArray()) {
+            int c = (int) chr;
+            if (c < 0 || c >= 127) {
+                throw new IllegalArgumentException("value contains character '" + chr + "' which is non US-ASCII");
+            } else if (c > 32) {
+                printable[i++] = chr;
+            }
         }
 
-        if(value.length() < 1 || value.length() == 2 || (value.length() > 2 && value.charAt(1) != '=')) {
-            throw new IllegalArgumentException("Invalid GS2AttributeValue");
-        }
-
-        return new GS2AttributeValue(
-                GS2Attributes.byChar(value.charAt(0)),
-                value.length() > 2 ? value.substring(2) : null
-        );
+        return i == value.length() ? value : new String(printable, 0, i);
     }
 }

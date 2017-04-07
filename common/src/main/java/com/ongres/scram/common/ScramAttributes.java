@@ -37,7 +37,7 @@ import static com.ongres.scram.common.util.Preconditions.checkNotNull;
  *
  * Not all the available attributes may be available in this implementation.
  */
-public enum SCRAMAttributes implements CharAttribute {
+public enum ScramAttributes implements CharAttribute {
     /**
      * This attribute specifies the name of the user whose password is used for authentication
      * (a.k.a. "authentication identity" [<a href="https://tools.ietf.org/html/rfc4422">RFC4422</a>]).
@@ -125,7 +125,7 @@ public enum SCRAMAttributes implements CharAttribute {
 
     private final char attributeChar;
 
-    SCRAMAttributes(char attributeChar) {
+    ScramAttributes(char attributeChar) {
         this.attributeChar = checkNotNull(attributeChar, "attributeChar");
     }
 
@@ -134,9 +134,9 @@ public enum SCRAMAttributes implements CharAttribute {
         return attributeChar;
     }
 
-    private static final Map<Character, SCRAMAttributes> REVERSE_MAPPING = new HashMap<Character, SCRAMAttributes>();
+    private static final Map<Character, ScramAttributes> REVERSE_MAPPING = new HashMap<Character, ScramAttributes>();
     static {
-        for(SCRAMAttributes scramAttribute : values()) {
+        for(ScramAttributes scramAttribute : values()) {
             REVERSE_MAPPING.put(scramAttribute.getChar(), scramAttribute);
         }
     }
@@ -147,7 +147,7 @@ public enum SCRAMAttributes implements CharAttribute {
      * @return The SCRAMAttribute that has that character.
      * @throws IllegalArgumentException If no SCRAMAttribute has this character.
      */
-    public static SCRAMAttributes byChar(char c) throws IllegalArgumentException {
+    public static ScramAttributes byChar(char c) throws IllegalArgumentException {
         if(! REVERSE_MAPPING.containsKey(c)) {
             throw new IllegalArgumentException("Attribute with char '" + c + "' does not exist");
         }

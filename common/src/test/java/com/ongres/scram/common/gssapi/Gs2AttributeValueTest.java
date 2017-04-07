@@ -29,11 +29,11 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 
-public class GS2AttributeValueTest {
+public class Gs2AttributeValueTest {
     @Test
     public void constructorAllowsNullValue() {
         try {
-            assertNotNull(new GS2AttributeValue(GS2Attributes.CHANNEL_BINDING_REQUIRED, null));
+            assertNotNull(new Gs2AttributeValue(Gs2Attributes.CHANNEL_BINDING_REQUIRED, null));
         } catch(IllegalArgumentException e) {
             fail("A null value is valid and cannot throw an IllegalArgumentException");
         }
@@ -41,16 +41,16 @@ public class GS2AttributeValueTest {
 
     @Test
     public void parseNullValue() {
-        assertNull(GS2AttributeValue.parse(null));
+        assertNull(Gs2AttributeValue.parse(null));
     }
 
     @Test
     public void parseIllegalValuesStructure() {
-        String[] values = new String[] { "", "as", "asdfjkl",  GS2Attributes.CHANNEL_BINDING_REQUIRED.getChar() + "=" };
+        String[] values = new String[] { "", "as", "asdfjkl",  Gs2Attributes.CHANNEL_BINDING_REQUIRED.getChar() + "=" };
         int n = 0;
         for(String value : values) {
             try {
-                assertNotNull(GS2AttributeValue.parse(value));
+                assertNotNull(Gs2AttributeValue.parse(value));
             } catch(IllegalArgumentException e) {
                 n++;
             }
@@ -66,7 +66,7 @@ public class GS2AttributeValueTest {
         int n = 0;
         for(String value : values) {
             try {
-                assertNotNull(GS2AttributeValue.parse(value));
+                assertNotNull(Gs2AttributeValue.parse(value));
             } catch(IllegalArgumentException e) {
                 n++;
             }
@@ -79,7 +79,7 @@ public class GS2AttributeValueTest {
     public void parseLegalValues() {
         String[] values = new String[] { "n", "y", "p=value", "a=authzid" };
         for(String value : values) {
-            assertNotNull(GS2AttributeValue.parse(value));
+            assertNotNull(Gs2AttributeValue.parse(value));
         }
     }
 }

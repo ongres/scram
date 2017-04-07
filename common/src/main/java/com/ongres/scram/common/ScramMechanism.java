@@ -24,50 +24,18 @@
 package com.ongres.scram.common;
 
 
-import org.junit.Test;
-
 import javax.crypto.Mac;
 import java.security.MessageDigest;
 
-import static org.junit.Assert.*;
 
-
-public class SCRAMMechanismsTest {
-    @Test
-    public void TestHashSupportedByJVM() {
-        MessageDigest messageDigest;
-        for(SCRAMMechanisms scramMechanism : SCRAMMechanisms.values()) {
-            try {
-                messageDigest = scramMechanism.getMessageDigestInstance();
-            } catch(RuntimeException ex) {
-                fail(ex.getMessage());
-                return;
-            }
-            assertNotNull("got a null MessageDigest", messageDigest);
-            assertEquals(
-                    "algorithm name and obtained algorithm name differ",
-                    scramMechanism.getHashAlgorithmName(),
-                    messageDigest.getAlgorithm()
-            );
-        }
-    }
-
-    @Test
-    public void TestHMACSupportedByJVM() {
-        Mac hmac;
-        for(SCRAMMechanisms scramMechanism : SCRAMMechanisms.values()) {
-            try {
-                hmac = scramMechanism.getMacInstance();
-            } catch(RuntimeException ex) {
-                fail(ex.getMessage());
-                return;
-            }
-            assertNotNull("got a null HMAC", hmac);
-            assertEquals(
-                    "algorithm name and obtained algorithm name differ",
-                    scramMechanism.getHmacAlgorithmName(),
-                    hmac.getAlgorithm()
-            );
-        }
-    }
+/**
+ * Definition of the functionality to be provided by every ScramMechanism.
+ *
+ * Every ScramMechanism implemented must provide implementations of their respective {@link MessageDigest}
+ * and {@link Mac} that will not throw a RuntimeException on any JVM, to guarantee true portability of this library.
+ */
+public interface ScramMechanism {
+    String getName();
+    MessageDigest getMessageDigestInstance() throws RuntimeException;
+    Mac getMacInstance() throws RuntimeException;
 }

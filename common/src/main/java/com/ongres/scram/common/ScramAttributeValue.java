@@ -21,33 +21,41 @@
  */
 
 
-package com.ongres.scram.common.util;
+package com.ongres.scram.common;
 
+
+import com.ongres.scram.common.util.AbstractCharAttributeValue;
 
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 
 
-public class USASCIIUtils {
-    /**
-     * Removes non-printable characters from the US-ASCII String.
-     * @param value The original String
-     * @return The possibly modified String, without non-printable US-ASCII characters.
-     * @throws IllegalArgumentException If the String is null or contains non US-ASCII characters.
-     */
-    public static String toPrintable(String value) throws IllegalArgumentException {
-        checkNotNull(value, "value");
+/**
+ * Parse and write SCRAM Attribute-Value pairs.
+ */
+public class ScramAttributeValue extends AbstractCharAttributeValue {
+    public ScramAttributeValue(ScramAttributes attribute, String value) {
+        super(attribute, checkNotNull(value, "value"));
+    }
 
-        char[] printable = new char[value.length()];
-        int i = 0;
-        for(char chr : value.toCharArray()) {
-            int c = (int) chr;
-            if (c < 0 || c >= 127) {
-                throw new IllegalArgumentException("value contains character '" + chr + "' which is non US-ASCII");
-            } else if (c > 32) {
-                printable[i++] = chr;
-            }
+    public static StringBuffer writeTo(StringBuffer sb, ScramAttributes attribute, String value) {
+        return new ScramAttributeValue(attribute, value).writeTo(sb);
+    }
+
+    /**
+     * Parses a potential ScramAttributeValue String.
+     * @param value The string that contains the Attribute-Value pair.
+     * @return The parsed class, or null if the String was null.
+     * @throws IllegalArgumentException If the String is an invalid ScramAttributeValue
+     */
+    public static ScramAttributeValue parse(String value) throws IllegalArgumentException {
+        if(null == value) {
+            return null;
         }
 
-        return i == value.length() ? value : new String(printable, 0, i);
+        if(value.length() < 3 || value.charAt(1) != '=') {
+            throw new IllegalArgumentException("Invalid ScramAttributeValue '" + value + "'");
+        }
+
+        return new ScramAttributeValue(ScramAttributes.byChar(value.charAt(0)), value.substring(2));
     }
 }

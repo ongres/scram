@@ -32,7 +32,7 @@ import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 /**
  * Helper class to generate Comma Separated Values of {@link StringWritable}s
  */
-public class StringWritableCSV {
+public class StringWritableCsv {
     private static void writeStringWritableToStringBuffer(StringWritable value, StringBuffer sb) {
         if(null != value) {
             value.writeTo(sb);
@@ -40,7 +40,7 @@ public class StringWritableCSV {
     }
 
     /**
-     * Write a sequence of {@link StringWritableCSV}s to a StringBuffer.
+     * Write a sequence of {@link StringWritableCsv}s to a StringBuffer.
      * Null {@link StringWritable}s are not printed, but separator is still used.
      * Separator is a comma (',')
      * @param sb The sb to write to
@@ -66,7 +66,7 @@ public class StringWritableCSV {
     }
 
     /**
-     * Parse a String with a {@link StringWritableCSV} into its composing Strings
+     * Parse a String with a {@link StringWritableCsv} into its composing Strings
      * represented as Strings. No validation is performed on the individual attribute-values returned.
      * @param value The String with the set of attribute-values
      * @param n Number of entries to return (entries will be null of there were not enough). 0 means unlimited
@@ -97,7 +97,7 @@ public class StringWritableCSV {
     }
 
     /**
-     * Parse a String with a {@link StringWritableCSV} into its composing Strings
+     * Parse a String with a {@link StringWritableCsv} into its composing Strings
      * represented as Strings. No validation is performed on the individual attribute-values returned.
      * Elements are returned starting from the first available attribute-value.
      * @param value The String with the set of attribute-values
@@ -110,7 +110,7 @@ public class StringWritableCSV {
     }
 
     /**
-     * Parse a String with a {@link StringWritableCSV} into its composing Strings
+     * Parse a String with a {@link StringWritableCsv} into its composing Strings
      * represented as Strings. No validation is performed on the individual attribute-values returned.
      * All the available attribute-values will be returned.
      * @param value The String with the set of attribute-values

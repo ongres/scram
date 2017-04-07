@@ -24,12 +24,10 @@
 package com.ongres.scram.common.message;
 
 
-import com.ongres.scram.common.gssapi.GS2CbindFlag;
+import com.ongres.scram.common.gssapi.Gs2CbindFlag;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 
 public class ClientFirstMessageTest  {
@@ -42,22 +40,22 @@ public class ClientFirstMessageTest  {
 
     @Test(expected = IllegalArgumentException.class)
     public void constructorTestInvalid2() {
-        new ClientFirstMessage(GS2CbindFlag.CLIENT_NOT, "cbind", null, "a", NONCE);
+        new ClientFirstMessage(Gs2CbindFlag.CLIENT_NOT, "cbind", null, "a", NONCE);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void constructorTestInvalid3() {
-        new ClientFirstMessage(GS2CbindFlag.CLIENT_YES_SERVER_NOT, "cbind", null, "a", NONCE);
+        new ClientFirstMessage(Gs2CbindFlag.CLIENT_YES_SERVER_NOT, "cbind", null, "a", NONCE);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void constructorTestInvalid4() {
-        new ClientFirstMessage(GS2CbindFlag.CHANNEL_BINDING_REQUIRED, null, null, "a", NONCE);
+        new ClientFirstMessage(Gs2CbindFlag.CHANNEL_BINDING_REQUIRED, null, null, "a", NONCE);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void constructorTestInvalid5() {
-        new ClientFirstMessage(GS2CbindFlag.CLIENT_NOT, null, null, null, NONCE);
+        new ClientFirstMessage(Gs2CbindFlag.CLIENT_NOT, null, null, null, NONCE);
     }
 
     private void assertClientFirstMessage(String expected, ClientFirstMessage clientFirstMessage) {
@@ -68,19 +66,19 @@ public class ClientFirstMessageTest  {
     public void writeToValidValues() {
         assertClientFirstMessage(
                 "n,,n=user,r=" + NONCE,
-                new ClientFirstMessage(GS2CbindFlag.CLIENT_NOT, null, null, "user",NONCE)
+                new ClientFirstMessage(Gs2CbindFlag.CLIENT_NOT, null, null, "user",NONCE)
         );
         assertClientFirstMessage(
                 "y,,n=user,r=" + NONCE,
-                new ClientFirstMessage(GS2CbindFlag.CLIENT_YES_SERVER_NOT, null, null, "user",NONCE)
+                new ClientFirstMessage(Gs2CbindFlag.CLIENT_YES_SERVER_NOT, null, null, "user",NONCE)
         );
         assertClientFirstMessage(
                 "p=blah,,n=user,r=" + NONCE,
-                new ClientFirstMessage(GS2CbindFlag.CHANNEL_BINDING_REQUIRED, "blah", null, "user",NONCE)
+                new ClientFirstMessage(Gs2CbindFlag.CHANNEL_BINDING_REQUIRED, "blah", null, "user",NONCE)
         );
         assertClientFirstMessage(
                 "p=blah,a=authzid,n=user,r=" + NONCE,
-                new ClientFirstMessage(GS2CbindFlag.CHANNEL_BINDING_REQUIRED, "blah", "authzid", "user",NONCE)
+                new ClientFirstMessage(Gs2CbindFlag.CHANNEL_BINDING_REQUIRED, "blah", "authzid", "user",NONCE)
         );
     }
 
@@ -88,26 +86,26 @@ public class ClientFirstMessageTest  {
     public void parseFromValidValues() {
         ClientFirstMessage m1 = ClientFirstMessage.parseFrom("n,,n=user,r=" + NONCE);
         assertTrue(
-                ! m1.isChannelBinding() && m1.getChannelBindingFlag() == GS2CbindFlag.CLIENT_NOT
+                ! m1.isChannelBinding() && m1.getChannelBindingFlag() == Gs2CbindFlag.CLIENT_NOT
                 && ! m1.getAuthzid().isPresent() && "user".equals(m1.getUser()) && NONCE.equals(m1.getNonce())
         );
 
         ClientFirstMessage m2 = ClientFirstMessage.parseFrom("y,,n=user,r=" + NONCE);
         assertTrue(
-                ! m2.isChannelBinding() && m2.getChannelBindingFlag() == GS2CbindFlag.CLIENT_YES_SERVER_NOT
+                ! m2.isChannelBinding() && m2.getChannelBindingFlag() == Gs2CbindFlag.CLIENT_YES_SERVER_NOT
                         && ! m2.getAuthzid().isPresent() && "user".equals(m2.getUser()) && NONCE.equals(m2.getNonce())
         );
 
         ClientFirstMessage m3 = ClientFirstMessage.parseFrom("y,a=user2,n=user,r=" + NONCE);
         assertTrue(
-                ! m3.isChannelBinding() && m3.getChannelBindingFlag() == GS2CbindFlag.CLIENT_YES_SERVER_NOT
+                ! m3.isChannelBinding() && m3.getChannelBindingFlag() == Gs2CbindFlag.CLIENT_YES_SERVER_NOT
                         && m3.getAuthzid().isPresent() && "user2".equals(m3.getAuthzid().get())
                         && "user".equals(m3.getUser()) && NONCE.equals(m3.getNonce())
         );
 
         ClientFirstMessage m4 = ClientFirstMessage.parseFrom("p=channel,a=user2,n=user,r=" + NONCE);
         assertTrue(
-                m4.isChannelBinding() && m4.getChannelBindingFlag() == GS2CbindFlag.CHANNEL_BINDING_REQUIRED
+                m4.isChannelBinding() && m4.getChannelBindingFlag() == Gs2CbindFlag.CHANNEL_BINDING_REQUIRED
                         && m4.getChannelBindingName().isPresent() && "channel".equals(m4.getChannelBindingName().get())
                         && m4.getAuthzid().isPresent() && "user2".equals(m4.getAuthzid().get())
                         && "user".equals(m4.getUser()) && NONCE.equals(m4.getNonce())

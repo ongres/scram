@@ -24,8 +24,7 @@
 package com.ongres.scram.common.stringprep;
 
 
-import com.ongres.scram.common.util.USASCIIUtils;
-
+import com.ongres.scram.common.util.UsAsciiUtils;
 
 public enum StringPreparations implements StringPreparation {
     /**
@@ -38,7 +37,7 @@ public enum StringPreparations implements StringPreparation {
     NO_PREPARATION {
         @Override
         protected String doNormalize(String value) throws IllegalArgumentException {
-            return USASCIIUtils.toPrintable(value);
+            return UsAsciiUtils.toPrintable(value);
         }
     }
     ;

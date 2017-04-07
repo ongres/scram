@@ -42,7 +42,7 @@ import static com.ongres.scram.common.util.Preconditions.checkNotNull;
  * {@link javax.crypto.Mac}: "Every implementation of the Java platform is required to support the following
  * standard Mac algorithms: HmacMD5, HmacSHA1, HmacSHA256".
  */
-public enum SCRAMMechanisms implements SCRAMMechanism {
+public enum ScramMechanisms implements ScramMechanism {
     SCRAM_SHA_1     (   "SHA-1",    "SHA-1",    "HmacSHA1"      ),
     SCRAM_SHA_256   (   "SHA-256",  "SHA-256",  "HmacSHA256"    )
     ;
@@ -53,7 +53,7 @@ public enum SCRAMMechanisms implements SCRAMMechanism {
     private final String hashAlgorithmName;
     private final String hmacAlgorithmName;
 
-    SCRAMMechanisms(String localMechanismName, String hashAlgorithmName, String hmacAlgorithmName) {
+    ScramMechanisms(String localMechanismName, String hashAlgorithmName, String hmacAlgorithmName) {
         this.mechanismName = SCRAM_MECHANISM_NAME_PREFIX + checkNotNull(localMechanismName, "localMechanismName");
         this.hashAlgorithmName = checkNotNull(hashAlgorithmName, "hashAlgorithmName");
         this.hmacAlgorithmName = checkNotNull(hmacAlgorithmName, "hmacAlgorithmName");

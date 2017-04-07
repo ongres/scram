@@ -33,7 +33,7 @@ import com.ongres.scram.common.util.CharAttribute;
  *
  * @see <a href="https://tools.ietf.org/html/rfc5802#section-7">[RFC5802] Formal Syntax</a>
  */
-public enum GS2CbindFlag implements CharAttribute {
+public enum Gs2CbindFlag implements CharAttribute {
     /**
      * Client doesn't support channel binding.
      */
@@ -52,7 +52,7 @@ public enum GS2CbindFlag implements CharAttribute {
 
     private final char flag;
 
-    GS2CbindFlag(char flag) {
+    Gs2CbindFlag(char flag) {
         this.flag = flag;
     }
 
@@ -61,13 +61,13 @@ public enum GS2CbindFlag implements CharAttribute {
         return flag;
     }
 
-    public static GS2CbindFlag byChar(char c) {
+    public static Gs2CbindFlag byChar(char c) {
         switch(c) {
             case 'n':   return CLIENT_NOT;
             case 'y':   return CLIENT_YES_SERVER_NOT;
             case 'p':   return CHANNEL_BINDING_REQUIRED;
         }
 
-        throw new IllegalArgumentException("Invalid GS2CbindFlag character '" + c + "'");
+        throw new IllegalArgumentException("Invalid Gs2CbindFlag character '" + c + "'");
     }
 }

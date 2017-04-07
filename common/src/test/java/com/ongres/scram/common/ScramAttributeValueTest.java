@@ -26,16 +26,16 @@ package com.ongres.scram.common;
 
 import org.junit.Test;
 
-import static com.ongres.scram.common.SCRAMAttributes.CLIENT_PROOF;
-import static com.ongres.scram.common.SCRAMAttributes.USERNAME;
+import static com.ongres.scram.common.ScramAttributes.CLIENT_PROOF;
+import static com.ongres.scram.common.ScramAttributes.USERNAME;
 import static org.junit.Assert.*;
 
 
-public class SCRAMAttributeValueTest {
+public class ScramAttributeValueTest {
     @Test
     public void constructorDoesNotAllowNullValue() {
         try {
-            assertNotNull(new SCRAMAttributeValue(SCRAMAttributes.USERNAME, null));
+            assertNotNull(new ScramAttributeValue(USERNAME, null));
         } catch(IllegalArgumentException e) {
             return;
         }
@@ -45,7 +45,7 @@ public class SCRAMAttributeValueTest {
 
     @Test
     public void parseNullValue() {
-        assertNull(SCRAMAttributeValue.parse(null));
+        assertNull(ScramAttributeValue.parse(null));
     }
 
     @Test
@@ -56,7 +56,7 @@ public class SCRAMAttributeValueTest {
         int n = 0;
         for(String value : values) {
             try {
-                assertNotNull(SCRAMAttributeValue.parse(value));
+                assertNotNull(ScramAttributeValue.parse(value));
             } catch(IllegalArgumentException e) {
                 n++;
             }
@@ -74,7 +74,7 @@ public class SCRAMAttributeValueTest {
         int n = 0;
         for(String value : values) {
             try {
-                assertNotNull(SCRAMAttributeValue.parse(value));
+                assertNotNull(ScramAttributeValue.parse(value));
             } catch(IllegalArgumentException e) {
                 n++;
             }
@@ -94,7 +94,7 @@ public class SCRAMAttributeValueTest {
         };
 
         for(String value : legalValues) {
-            assertNotNull(SCRAMAttributeValue.parse(value));
+            assertNotNull(ScramAttributeValue.parse(value));
         }
     }
 }

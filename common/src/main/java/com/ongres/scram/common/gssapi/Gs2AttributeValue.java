@@ -21,41 +21,41 @@
  */
 
 
-package com.ongres.scram.common;
+package com.ongres.scram.common.gssapi;
 
 
 import com.ongres.scram.common.util.AbstractCharAttributeValue;
 
-import static com.ongres.scram.common.util.Preconditions.checkNotNull;
-
-
 /**
- * Parse and write SCRAM Attribute-Value pairs.
+ * Parse and write GS2 Attribute-Value pairs.
  */
-public class SCRAMAttributeValue extends AbstractCharAttributeValue {
-    public SCRAMAttributeValue(SCRAMAttributes attribute, String value) {
-        super(attribute, checkNotNull(value, "value"));
+public class Gs2AttributeValue extends AbstractCharAttributeValue {
+    public Gs2AttributeValue(Gs2Attributes attribute, String value) {
+        super(attribute, value);
     }
 
-    public static StringBuffer writeTo(StringBuffer sb, SCRAMAttributes attribute, String value) {
-        return new SCRAMAttributeValue(attribute, value).writeTo(sb);
+    public static StringBuffer writeTo(StringBuffer sb, Gs2Attributes attribute, String value) {
+        return new Gs2AttributeValue(attribute, value).writeTo(sb);
     }
 
     /**
-     * Parses a potential SCRAMAttributeValue String.
-     * @param value The string that contains the Attribute-Value pair.
+     * Parses a potential Gs2AttributeValue String.
+     * @param value The string that contains the Attribute-Value pair (where value is optional).
      * @return The parsed class, or null if the String was null.
-     * @throws IllegalArgumentException If the String is an invalid SCRAMAttributeValue
+     * @throws IllegalArgumentException If the String is an invalid Gs2AttributeValue
      */
-    public static SCRAMAttributeValue parse(String value) throws IllegalArgumentException {
+    public static Gs2AttributeValue parse(String value) throws IllegalArgumentException {
         if(null == value) {
             return null;
         }
 
-        if(value.length() < 3 || value.charAt(1) != '=') {
-            throw new IllegalArgumentException("Invalid SCRAMAttributeValue '" + value + "'");
+        if(value.length() < 1 || value.length() == 2 || (value.length() > 2 && value.charAt(1) != '=')) {
+            throw new IllegalArgumentException("Invalid Gs2AttributeValue");
         }
 
-        return new SCRAMAttributeValue(SCRAMAttributes.byChar(value.charAt(0)), value.substring(2));
+        return new Gs2AttributeValue(
+                Gs2Attributes.byChar(value.charAt(0)),
+                value.length() > 2 ? value.substring(2) : null
+        );
     }
 }

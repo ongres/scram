@@ -33,11 +33,11 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 
-public class USASCIIUtilsTest {
+public class UsAsciiUtilsTest {
     @Test
     public void toPrintableNull() {
         try {
-            USASCIIUtils.toPrintable(null);
+            UsAsciiUtils.toPrintable(null);
         } catch(IllegalArgumentException ex) {
             return;
         }
@@ -51,7 +51,7 @@ public class USASCIIUtilsTest {
         int n = 0;
         for(String s : nonASCIIStrings) {
             try {
-                USASCIIUtils.toPrintable(s);
+                UsAsciiUtils.toPrintable(s);
             } catch(IllegalArgumentException ex) {
                 n++;
             }
@@ -69,7 +69,7 @@ public class USASCIIUtilsTest {
         String[] expected = new String[] { "u",     "a",                "ttt" };
 
         for(int i = 0; i < original.length; i++) {
-            assertEquals("", expected[i], USASCIIUtils.toPrintable(original[i]));
+            assertEquals("", expected[i], UsAsciiUtils.toPrintable(original[i]));
         }
     }
 
@@ -87,7 +87,7 @@ public class USASCIIUtilsTest {
             assertEquals(
                     "All printable String '" + s + "' not returning the same value",
                     s,
-                    USASCIIUtils.toPrintable(s)
+                    UsAsciiUtils.toPrintable(s)
             );
         }
     }

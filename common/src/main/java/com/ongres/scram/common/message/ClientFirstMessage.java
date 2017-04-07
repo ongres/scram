@@ -24,14 +24,14 @@
 package com.ongres.scram.common.message;
 
 
-import com.ongres.scram.common.SCRAMAttributeValue;
-import com.ongres.scram.common.SCRAMAttributes;
-import com.ongres.scram.common.SCRAMStringFormatting;
-import com.ongres.scram.common.gssapi.GS2CbindFlag;
-import com.ongres.scram.common.gssapi.GS2Header;
+import com.ongres.scram.common.ScramAttributeValue;
+import com.ongres.scram.common.ScramAttributes;
+import com.ongres.scram.common.ScramStringFormatting;
+import com.ongres.scram.common.gssapi.Gs2CbindFlag;
+import com.ongres.scram.common.gssapi.Gs2Header;
 import com.ongres.scram.common.util.CharAttributeValue;
 import com.ongres.scram.common.util.StringWritable;
-import com.ongres.scram.common.util.StringWritableCSV;
+import com.ongres.scram.common.util.StringWritableCsv;
 
 import java.util.Optional;
 
@@ -40,7 +40,7 @@ import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 
 /**
  * Constructs and parses client-first-messages.
- * Message contains a {@link GS2Header}, a username and a nonce. Formal syntax is:
+ * Message contains a {@link Gs2Header}, a username and a nonce. Formal syntax is:
  *
  * {@code
  * client-first-message-bare = [reserved-mext ","] username "," nonce ["," extensions]
@@ -52,11 +52,11 @@ import static com.ongres.scram.common.util.Preconditions.checkNotNull;
  * @see <a href="https://tools.ietf.org/html/rfc5802#section-7">[RFC5802] Section 7</a>
  */
 public class ClientFirstMessage implements StringWritable {
-    private final GS2Header gs2Header;
+    private final Gs2Header gs2Header;
     private final CharAttributeValue user;
     private final CharAttributeValue nonce;
 
-    private ClientFirstMessage(GS2Header gs2Header, CharAttributeValue user, CharAttributeValue nonce) {
+    private ClientFirstMessage(Gs2Header gs2Header, CharAttributeValue user, CharAttributeValue nonce) {
         this.gs2Header = gs2Header;
         this.user = user;
         this.nonce = nonce;
@@ -74,15 +74,15 @@ public class ClientFirstMessage implements StringWritable {
      *                                  or if channel binding is required and no channel binding name is provided
      */
     public ClientFirstMessage(
-            GS2CbindFlag gs2CbindFlag, String cbind, String authzid, String user, String nonce
+            Gs2CbindFlag gs2CbindFlag, String cbind, String authzid, String user, String nonce
     ) throws IllegalArgumentException {
         checkNotNull(gs2CbindFlag, "gs2CbindFlag");
         checkNotNull(user, "user");
         checkNotNull(nonce, "nonce");
 
-        gs2Header = new GS2Header(gs2CbindFlag, cbind, authzid);
-        this.user = new SCRAMAttributeValue(SCRAMAttributes.USERNAME, SCRAMStringFormatting.toSaslName(user));
-        this.nonce = new SCRAMAttributeValue(SCRAMAttributes.NONCE, nonce);
+        gs2Header = new Gs2Header(gs2CbindFlag, cbind, authzid);
+        this.user = new ScramAttributeValue(ScramAttributes.USERNAME, ScramStringFormatting.toSaslName(user));
+        this.nonce = new ScramAttributeValue(ScramAttributes.NONCE, nonce);
     }
 
     /**
@@ -96,7 +96,7 @@ public class ClientFirstMessage implements StringWritable {
             boolean clientChannelBinding, String user, String nonce
     ) throws IllegalArgumentException {
         this(
-                clientChannelBinding ? GS2CbindFlag.CLIENT_YES_SERVER_NOT : GS2CbindFlag.CLIENT_NOT,
+                clientChannelBinding ? Gs2CbindFlag.CLIENT_YES_SERVER_NOT : Gs2CbindFlag.CLIENT_NOT,
                 null,
                 null,
                 user,
@@ -115,12 +115,12 @@ public class ClientFirstMessage implements StringWritable {
         this(false, user, nonce);
     }
 
-    public GS2CbindFlag getChannelBindingFlag() {
+    public Gs2CbindFlag getChannelBindingFlag() {
         return gs2Header.getChannelBindingFlag();
     }
 
     public boolean isChannelBinding() {
-        return gs2Header.getChannelBindingFlag() == GS2CbindFlag.CHANNEL_BINDING_REQUIRED;
+        return gs2Header.getChannelBindingFlag() == Gs2CbindFlag.CHANNEL_BINDING_REQUIRED;
     }
 
     public Optional<String> getChannelBindingName() {
@@ -141,22 +141,22 @@ public class ClientFirstMessage implements StringWritable {
 
     @Override
     public StringBuffer writeTo(StringBuffer sb) {
-        return StringWritableCSV.writeTo(sb, gs2Header, user, nonce);
+        return StringWritableCsv.writeTo(sb, gs2Header, user, nonce);
     }
 
     public static ClientFirstMessage parseFrom(String clientFirstMessage) {
         checkNotNull(clientFirstMessage, "clientFirstMessage");
 
-        GS2Header gs2Header = GS2Header.parseFrom(clientFirstMessage);  // Takes first two fields
-        String[] userNonceString = StringWritableCSV.parseFrom(clientFirstMessage, 2, 2);
+        Gs2Header gs2Header = Gs2Header.parseFrom(clientFirstMessage);  // Takes first two fields
+        String[] userNonceString = StringWritableCsv.parseFrom(clientFirstMessage, 2, 2);
 
-        SCRAMAttributeValue user = SCRAMAttributeValue.parse(userNonceString[0]);
-        if(null == user || SCRAMAttributes.USERNAME.getChar() != user.getChar()) {
+        ScramAttributeValue user = ScramAttributeValue.parse(userNonceString[0]);
+        if(null == user || ScramAttributes.USERNAME.getChar() != user.getChar()) {
             throw new IllegalArgumentException("user must be the 3rd element of the client-first-message");
         }
 
-        SCRAMAttributeValue nonce = SCRAMAttributeValue.parse(userNonceString[1]);
-        if(null == nonce || SCRAMAttributes.NONCE.getChar() != nonce.getChar()) {
+        ScramAttributeValue nonce = ScramAttributeValue.parse(userNonceString[1]);
+        if(null == nonce || ScramAttributes.NONCE.getChar() != nonce.getChar()) {
             throw new IllegalArgumentException("nonce must be the 4th element of the client-first-message");
         }
 
