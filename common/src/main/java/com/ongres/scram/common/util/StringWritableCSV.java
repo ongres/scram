@@ -85,6 +85,9 @@ public class StringWritableCSV {
         }
 
         String[] split = value.split(",");
+        if(split.length < offset) {
+            throw new IllegalArgumentException("Not enough items for the given offset");
+        }
 
         return Arrays.copyOfRange(
                 split,

@@ -34,6 +34,7 @@ import static org.junit.Assert.assertTrue;
 
 public class ClientFirstMessageTest  {
     private static final String NONCE = "fyko+d2lbbFgONRv9qkxdawL";
+    private static final ClientFirstMessage.NonceProvider MOCK_NONCE_PROVIDER = length -> NONCE;
 
     @Test(expected = IllegalArgumentException.class)
     public void constructorTestInvalid1() {
@@ -67,6 +68,38 @@ public class ClientFirstMessageTest  {
 
     private void assertClientFirstMessage(String expected, ClientFirstMessage clientFirstMessage) {
         assertEquals(expected, clientFirstMessage.writeTo(new StringBuffer()).toString());
+    }
+
+    @Test
+    public void writeToValidValues() {
+        assertClientFirstMessage(
+                "n,,n=user,r=" + NONCE,
+                new ClientFirstMessage(
+                        GS2CbindFlag.CLIENT_NOT, null, null, "user",
+                        NONCE.length(), MOCK_NONCE_PROVIDER
+                )
+        );
+        assertClientFirstMessage(
+                "y,,n=user,r=" + NONCE,
+                new ClientFirstMessage(
+                        GS2CbindFlag.CLIENT_YES_SERVER_NOT, null, null, "user",
+                        NONCE.length(), MOCK_NONCE_PROVIDER
+                )
+        );
+        assertClientFirstMessage(
+                "p=blah,,n=user,r=" + NONCE,
+                new ClientFirstMessage(
+                        GS2CbindFlag.CHANNEL_BINDING_REQUIRED, "blah", null, "user",
+                        NONCE.length(), MOCK_NONCE_PROVIDER
+                )
+        );
+        assertClientFirstMessage(
+                "p=blah,a=authzid,n=user,r=" + NONCE,
+                new ClientFirstMessage(
+                        GS2CbindFlag.CHANNEL_BINDING_REQUIRED, "blah", "authzid", "user",
+                        NONCE.length(), MOCK_NONCE_PROVIDER
+                )
+        );
     }
 
     @Test

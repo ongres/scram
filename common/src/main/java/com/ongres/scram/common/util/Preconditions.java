@@ -42,4 +42,18 @@ public class Preconditions {
 
         return value;
     }
+
+    /**
+     * Checks that the integer argument is positive
+     * @param value The value to be checked
+     * @return The same value passed as argument
+     * @throws IllegalArgumentException If value is null
+     */
+    public static int gt0(int value, String valueName) throws IllegalArgumentException {
+        if(value <= 0) {
+            throw new IllegalArgumentException("'" + valueName + "' must be positive");
+        }
+
+        return value;
+    }
 }

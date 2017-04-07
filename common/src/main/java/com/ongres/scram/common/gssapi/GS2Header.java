@@ -29,6 +29,7 @@ import com.ongres.scram.common.util.AbstractStringWritable;
 import com.ongres.scram.common.util.StringWritableCSV;
 
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
+import java.util.Optional;
 
 
 /**
@@ -47,7 +48,7 @@ import static com.ongres.scram.common.util.Preconditions.checkNotNull;
  */
 public class GS2Header extends AbstractStringWritable {
     private final GS2AttributeValue cbind;
-    private final GS2AttributeValue authzid;
+    private final Optional<GS2AttributeValue> authzid;
 
     /**
      * Construct and validates a GS2Header.
@@ -65,10 +66,12 @@ public class GS2Header extends AbstractStringWritable {
         // TODO: cbName is not being properly validated
         cbind = new GS2AttributeValue(GS2Attributes.byGS2CbindFlag(cbindFlag), cbName);
 
-        this.authzid =
-                authzid == null ?
-                        null :
-                        new GS2AttributeValue(GS2Attributes.AUTHZID, SCRAMStringFormatting.toSaslName(authzid));
+        this.authzid = authzid == null ?
+                Optional.empty() :
+                Optional.of(
+                        new GS2AttributeValue(GS2Attributes.AUTHZID, SCRAMStringFormatting.toSaslName(authzid))
+                )
+        ;
     }
 
     /**
@@ -91,9 +94,21 @@ public class GS2Header extends AbstractStringWritable {
         this(cbindFlag, null, null);
     }
 
+    public GS2CbindFlag getChannelBindingFlag() {
+        return GS2CbindFlag.byChar(cbind.getChar());
+    }
+
+    public Optional<String> getChannelBindingName() {
+        return Optional.ofNullable(cbind.getValue());
+    }
+
+    public Optional<String> getAuthzid() {
+        return authzid.map(a -> a.getValue());
+    }
+
     @Override
     public StringBuffer writeTo(StringBuffer sb) {
-        return StringWritableCSV.writeTo(sb, cbind, authzid);
+        return StringWritableCSV.writeTo(sb, cbind, authzid.orElse(null));
     }
 
     /**
@@ -114,7 +129,8 @@ public class GS2Header extends AbstractStringWritable {
         return new GS2Header(
                 GS2CbindFlag.byChar(gs2cbind.getChar()),
                 gs2cbind.getValue(),
-                gs2HeaderSplit[1] == null ? null : GS2AttributeValue.parse(gs2HeaderSplit[1]).getValue()
+                gs2HeaderSplit[1] == null || gs2HeaderSplit[1].isEmpty() ?
+                        null : GS2AttributeValue.parse(gs2HeaderSplit[1]).getValue()
         );
     }
 }
