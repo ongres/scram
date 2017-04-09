@@ -35,12 +35,21 @@ public class CryptoUtil {
     private static final int MAX_ASCII_PRINTABLE_RANGE = 0x7e;
     private static final int EXCLUDED_CHAR = (int) ','; // 0x2c
 
-    public static String nonce(int size) {
+    private static class SecureRandomHolder {
+        private static final SecureRandom INSTANCE = new SecureRandom();
+    }
+
+    /**
+     * Generates a random string (called a 'nonce'), composed of ASCII printable characters, except comma (',').
+     * @param size The length of the nonce, in characters/bytes
+     * @param random The SecureRandom to use
+     * @return The String representing the nonce
+     */
+    public static String nonce(int size, SecureRandom random) {
         if(size <= 0) {
             throw new IllegalArgumentException("Size must be positive");
         }
 
-        SecureRandom random = new SecureRandom();
         char[] chars = new char[size];
         int r;
         for(int i = 0; i < size;) {
@@ -51,5 +60,15 @@ public class CryptoUtil {
         }
 
         return new String(chars);
+    }
+
+    /**
+     * Generates a random string (called a 'nonce'), composed of ASCII printable characters, except comma (',').
+     * It uses a default SecureRandom instance.
+     * @param size The length of the nonce, in characters/bytes
+     * @return The String representing the nonce
+     */
+    public static String nonce(int size) {
+        return nonce(size, SecureRandomHolder.INSTANCE);
     }
 }
