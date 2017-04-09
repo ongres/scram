@@ -28,11 +28,16 @@ import com.ongres.scram.common.ScramMechanisms;
 import com.ongres.scram.common.stringprep.StringPreparation;
 import com.ongres.scram.common.util.CryptoUtil;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
+import static com.ongres.scram.common.util.Preconditions.checkArgument;
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 import static com.ongres.scram.common.util.Preconditions.gt0;
 
@@ -54,8 +59,9 @@ import static com.ongres.scram.common.util.Preconditions.gt0;
  *     <li>No external nonceSupplier is provided; or if provided, it is thread-safe.</li>
  * </ul>
  * So this class, once instantiated via the {@link Builder#get()}} method, can serve for multiple users and
- * authentications. However, once the authentication starts and a {@link ClientFirstMessage} is generated, it is meant
- * to be used by a single user/authentication process.
+ * authentications. However, once the authentication starts and a
+ * {@link com.ongres.scram.common.message.ClientFirstMessage} is generated, it is meant to be used by a single
+ * user/authentication process.
  */
 public class ScramClient {
     /**
@@ -160,6 +166,22 @@ public class ScramClient {
          * @throws IllegalArgumentException If no server mechanisms are provided
          */
         public Builder serverMechanisms(String... serverMechanisms) {
+            checkArgument(null != serverMechanisms && serverMechanisms.length > 0, "serverMechanisms");
+
+            nonChannelBindingMechanism = ScramMechanisms.selectMatchingMechanism(false, serverMechanisms);
+            if(channelBinding == ChannelBinding.NO && ! nonChannelBindingMechanism.isPresent()) {
+                throw new IllegalArgumentException("Server does not support non channel binding mechanisms");
+            }
+
+            channelBindingMechanism = ScramMechanisms.selectMatchingMechanism(true, serverMechanisms);
+            if(channelBinding == ChannelBinding.YES && ! channelBindingMechanism.isPresent()) {
+                throw new IllegalArgumentException("Server does not support channel binding mechanisms");
+            }
+
+            if(! (channelBindingMechanism.isPresent() || nonChannelBindingMechanism.isPresent())) {
+                throw new IllegalArgumentException("There are no matching mechanisms between client and server");
+            }
+
             return new Builder(channelBinding, stringPreparation, nonChannelBindingMechanism, channelBindingMechanism);
         }
 
@@ -172,7 +194,7 @@ public class ScramClient {
          * @throws IllegalArgumentException If serverMechanismsCsv is null
          */
         public Builder serverMechanismsCsv(String serverMechanismsCsv) throws IllegalArgumentException {
-            return serverMechanisms("");
+            return serverMechanisms(checkNotNull(serverMechanismsCsv, "serverMechanismsCsv").split(","));
         }
     }
 
@@ -206,6 +228,15 @@ public class ScramClient {
          */
         public Builder secureRandomAlgorithmProvider(String algorithm, String provider)
         throws IllegalArgumentException {
+            checkNotNull(algorithm, "algorithm");
+            try {
+                secureRandom = null == provider ?
+                        SecureRandom.getInstance(algorithm) :
+                        SecureRandom.getInstance(algorithm, provider);
+            } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+                throw new IllegalArgumentException("Invalid algorithm or provider", e);
+            }
+
             return this;
         }
 
@@ -259,6 +290,6 @@ public class ScramClient {
      * @return A list of the IANA-registered, SCRAM supported mechanisms
      */
     public static List<String> supportedMechanisms() {
-        return null;
+        return Arrays.stream(ScramMechanisms.values()).map(m -> m.getName()).collect(Collectors.toList());
     }
 }
