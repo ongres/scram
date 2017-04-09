@@ -27,7 +27,11 @@ package com.ongres.scram.common;
 import javax.crypto.Mac;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 import static com.ongres.scram.common.util.Preconditions.gt0;
@@ -56,6 +60,8 @@ public enum ScramMechanisms implements ScramMechanism {
 
     private static final String SCRAM_MECHANISM_NAME_PREFIX = "SCRAM-";
     private static final String CHANNEL_BINDING_SUFFIX = "-PLUS";
+    private static final Map<String,ScramMechanisms> BY_NAME_MAPPING =
+            Arrays.stream(values()).collect(Collectors.toMap(v -> v.getName(), v -> v));
 
     private final String mechanismName;
     private final String hashAlgorithmName;
@@ -142,7 +148,9 @@ public enum ScramMechanisms implements ScramMechanism {
      * @return An Optional instance that contains the ScramMechanism if it was found, or empty otherwise.
      */
     public static Optional<ScramMechanisms> byName(String name) {
-        return Optional.empty();
+        checkNotNull(name, "name");
+
+        return Optional.ofNullable(BY_NAME_MAPPING.get(name));
     }
 
     /**
@@ -157,6 +165,15 @@ public enum ScramMechanisms implements ScramMechanism {
      * @return The selected mechanism, or null if no mechanism matched
      */
     public static ScramMechanisms selectMatchingMechanism(boolean channelBinding, String... peerMechanisms) {
-        return null;
+        return Arrays.stream(peerMechanisms)
+                .map(s -> BY_NAME_MAPPING.get(s))
+                .filter(m -> m != null)             // Filter out invalid names
+                .flatMap(m -> Arrays.stream(values())
+                        .filter(
+                                v -> channelBinding == v.channelBinding && v.mechanismName.equals(m.mechanismName)
+                        )
+                ).max(Comparator.comparing(c -> c.priority))
+                .get()
+        ;
     }
 }
