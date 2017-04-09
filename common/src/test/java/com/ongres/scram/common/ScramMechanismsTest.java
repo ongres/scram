@@ -28,6 +28,9 @@ import org.junit.Test;
 
 import javax.crypto.Mac;
 import java.security.MessageDigest;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 import static org.junit.Assert.*;
 
@@ -69,5 +72,60 @@ public class ScramMechanismsTest {
                     hmac.getAlgorithm()
             );
         }
+    }
+
+    private void testNames(String[] names, Predicate<Optional<ScramMechanisms>> predicate) {
+        assertEquals(
+                names.length,
+                Arrays.stream(names).map(s -> ScramMechanisms.byName(s)).filter(predicate).count()
+        );
+    }
+
+    @Test
+    public void byNameValid() {
+        testNames(
+                new String[] { "SCRAM-SHA-1", "SCRAM-SHA-1-PLUS", "SCRAM-SHA-256", "SCRAM-SHA-256-PLUS" },
+                v -> v.isPresent()
+        );
+    }
+
+    @Test
+    public void byNameInvalid() {
+        testNames(
+                new String[] { "SCRAM-SHA", "SHA-1-PLUS", "SCRAM-SHA-256-", "SCRAM-SHA-256-PLUS!" },
+                v -> ! v.isPresent()
+        );
+    }
+
+    private void selectMatchingMechanismTest(ScramMechanisms scramMechanisms, boolean channelBinding, String... names) {
+        assertEquals(scramMechanisms, ScramMechanisms.selectMatchingMechanism(channelBinding, names));
+    }
+
+    @Test
+    public void selectMatchingMechanism() {
+        selectMatchingMechanismTest(
+                ScramMechanisms.SCRAM_SHA_1, false,
+                "SCRAM-SHA-1"
+        );
+        selectMatchingMechanismTest(
+                ScramMechanisms.SCRAM_SHA_256_PLUS, true,
+                "SCRAM-SHA-256-PLUS"
+        );
+        selectMatchingMechanismTest(
+                ScramMechanisms.SCRAM_SHA_256, false,
+                "SCRAM-SHA-1", "SCRAM-SHA-256"
+        );
+        selectMatchingMechanismTest(
+                ScramMechanisms.SCRAM_SHA_256, false,
+                "SCRAM-SHA-1", "SCRAM-SHA-256", "SCRAM-SHA-256-PLUS"
+        );
+        selectMatchingMechanismTest(
+                ScramMechanisms.SCRAM_SHA_1_PLUS, true,
+                "SCRAM-SHA-1", "SCRAM-SHA-1-PLUS", "SCRAM-SHA-256"
+        );
+        selectMatchingMechanismTest(
+                ScramMechanisms.SCRAM_SHA_256_PLUS, true,
+                "SCRAM-SHA-1", "SCRAM-SHA-1-PLUS", "SCRAM-SHA-256", "SCRAM-SHA-256-PLUS"
+        );
     }
 }

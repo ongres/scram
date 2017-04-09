@@ -35,7 +35,31 @@ import java.security.MessageDigest;
  * and {@link Mac} that will not throw a RuntimeException on any JVM, to guarantee true portability of this library.
  */
 public interface ScramMechanism {
+    /**
+     * The name of the mechanism, which must be a value registered under IANA:
+     * <a href="https://www.iana.org/assignments/sasl-mechanisms/sasl-mechanisms.xhtml#scram">
+     *      SASL SCRAM Family Mechanisms</a>
+     * @return The mechanism name
+     */
     String getName();
+
+    /**
+     * Gets a constructed {@link MessageDigest} instance, according to the algorithm of the SCRAM mechanism.
+     * @return The MessageDigest instance
+     * @throws RuntimeException If the MessageDigest instance of the algorithm is not provided by current JVM
+     */
     MessageDigest getMessageDigestInstance() throws RuntimeException;
+
+    /**
+     * Gets a constructed {@link Mac} instance, according to the algorithm of the SCRAM mechanism.
+     * @return The Mac instance
+     * @throws RuntimeException If the Mac instance of the algorithm is not provided by current JVM
+     */
     Mac getMacInstance() throws RuntimeException;
+
+    /**
+     * Whether this mechanism supports channel binding
+     * @return True if it supports channel binding, false otherwise
+     */
+    boolean supportsChannelBinding();
 }

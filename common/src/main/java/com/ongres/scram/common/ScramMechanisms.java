@@ -27,8 +27,10 @@ package com.ongres.scram.common;
 import javax.crypto.Mac;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Optional;
 
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
+import static com.ongres.scram.common.util.Preconditions.gt0;
 
 
 /**
@@ -41,26 +43,37 @@ import static com.ongres.scram.common.util.Preconditions.checkNotNull;
  *
  * {@link javax.crypto.Mac}: "Every implementation of the Java platform is required to support the following
  * standard Mac algorithms: HmacMD5, HmacSHA1, HmacSHA256".
+ *
+ * @see <a href="https://www.iana.org/assignments/sasl-mechanisms/sasl-mechanisms.xhtml#scram">
+ *      SASL SCRAM Family Mechanisms</a>
  */
 public enum ScramMechanisms implements ScramMechanism {
-    SCRAM_SHA_1     (   "SHA-1",    "SHA-1",    "HmacSHA1"      ),
-    SCRAM_SHA_256   (   "SHA-256",  "SHA-256",  "HmacSHA256"    )
+    SCRAM_SHA_1         (   "SHA-1",    "SHA-1",    "HmacSHA1",     false,  1   ),
+    SCRAM_SHA_1_PLUS    (   "SHA-1",    "SHA-1",    "HmacSHA1",     true,   1   ),
+    SCRAM_SHA_256       (   "SHA-256",  "SHA-256",  "HmacSHA256",   false,  10  ),
+    SCRAM_SHA_256_PLUS  (   "SHA-256",  "SHA-256",  "HmacSHA256",   true,   10  )
     ;
 
     private static final String SCRAM_MECHANISM_NAME_PREFIX = "SCRAM-";
+    private static final String CHANNEL_BINDING_SUFFIX = "-PLUS";
 
     private final String mechanismName;
     private final String hashAlgorithmName;
     private final String hmacAlgorithmName;
+    private final boolean channelBinding;
+    private final int priority;
 
-    ScramMechanisms(String localMechanismName, String hashAlgorithmName, String hmacAlgorithmName) {
-        this.mechanismName = SCRAM_MECHANISM_NAME_PREFIX + checkNotNull(localMechanismName, "localMechanismName");
+    ScramMechanisms(
+            String name, String hashAlgorithmName, String hmacAlgorithmName, boolean channelBinding, int priority
+    ) {
+        this.mechanismName = SCRAM_MECHANISM_NAME_PREFIX
+                + checkNotNull(name, "name")
+                + (channelBinding ? CHANNEL_BINDING_SUFFIX : "")
+        ;
         this.hashAlgorithmName = checkNotNull(hashAlgorithmName, "hashAlgorithmName");
         this.hmacAlgorithmName = checkNotNull(hmacAlgorithmName, "hmacAlgorithmName");
-    }
-
-    public String getName() {
-        return mechanismName;
+        this.channelBinding = channelBinding;
+        this.priority = gt0(priority, "priority");
     }
 
     /**
@@ -85,6 +98,17 @@ public enum ScramMechanisms implements ScramMechanism {
         return hmacAlgorithmName;
     }
 
+    @Override
+    public String getName() {
+        return mechanismName;
+    }
+
+    @Override
+    public boolean supportsChannelBinding() {
+        return channelBinding;
+    }
+
+    @Override
     public MessageDigest getMessageDigestInstance() {
         MessageDigest messageDigest;
         try {
@@ -98,6 +122,7 @@ public enum ScramMechanisms implements ScramMechanism {
         return messageDigest;
     }
 
+    @Override
     public Mac getMacInstance() {
         Mac mac;
         try {
@@ -109,5 +134,29 @@ public enum ScramMechanisms implements ScramMechanism {
         assert mac != null;
 
         return mac;
+    }
+
+    /**
+     * Gets a SCRAM mechanism, given its standard IANA name.
+     * @param name The standard IANA full name of the mechanism.
+     * @return An Optional instance that contains the ScramMechanism if it was found, or empty otherwise.
+     */
+    public static Optional<ScramMechanisms> byName(String name) {
+        return Optional.empty();
+    }
+
+    /**
+     * This class classifies SCRAM mechanisms by two properties: whether they support channel binding;
+     * and a priority, which is higher for safer algorithms (like SHA-256 vs SHA-1).
+     *
+     * Given a list of SCRAM mechanisms supported by the peer, pick one that matches the channel binding requirements
+     * and has the highest priority.
+     *
+     * @param channelBinding The type of matching mechanism searched for
+     * @param peerMechanisms
+     * @return The selected mechanism, or null if no mechanism matched
+     */
+    public static ScramMechanisms selectMatchingMechanism(boolean channelBinding, String... peerMechanisms) {
+        return null;
     }
 }
