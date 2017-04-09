@@ -31,6 +31,7 @@ public class Preconditions {
     /**
      * Checks that the argument is not null.
      * @param value The value to be checked
+     * @param valueName The name of the value that is checked in the method
      * @param <T> The type of the value
      * @return The same value passed as argument
      * @throws IllegalArgumentException If value is null
@@ -44,8 +45,21 @@ public class Preconditions {
     }
 
     /**
-     * Checks that the integer argument is positive
+     * Checks that the argument is valid, based in a check boolean condition.
+     * @param check The boolean check
+     * @param valueName The name of the value that is checked in the method
+     * @throws IllegalArgumentException
+     */
+    public static void checkArgument(boolean check, String valueName) throws IllegalArgumentException {
+        if(! check) {
+            throw new IllegalArgumentException("Argument '" + valueName + "' is not valid");
+        }
+    }
+
+    /**
+     * Checks that the integer argument is positive.
      * @param value The value to be checked
+     * @param valueName The name of the value that is checked in the method
      * @return The same value passed as argument
      * @throws IllegalArgumentException If value is null
      */
