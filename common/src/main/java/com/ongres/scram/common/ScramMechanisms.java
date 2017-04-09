@@ -161,10 +161,10 @@ public enum ScramMechanisms implements ScramMechanism {
      * and has the highest priority.
      *
      * @param channelBinding The type of matching mechanism searched for
-     * @param peerMechanisms
+     * @param peerMechanisms The mechanisms supported by the other peer
      * @return The selected mechanism, or null if no mechanism matched
      */
-    public static ScramMechanisms selectMatchingMechanism(boolean channelBinding, String... peerMechanisms) {
+    public static Optional<ScramMechanisms> selectMatchingMechanism(boolean channelBinding, String... peerMechanisms) {
         return Arrays.stream(peerMechanisms)
                 .map(s -> BY_NAME_MAPPING.get(s))
                 .filter(m -> m != null)             // Filter out invalid names
@@ -173,7 +173,6 @@ public enum ScramMechanisms implements ScramMechanism {
                                 v -> channelBinding == v.channelBinding && v.mechanismName.equals(m.mechanismName)
                         )
                 ).max(Comparator.comparing(c -> c.priority))
-                .get()
         ;
     }
 }

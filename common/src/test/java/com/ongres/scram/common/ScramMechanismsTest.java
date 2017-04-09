@@ -98,7 +98,9 @@ public class ScramMechanismsTest {
     }
 
     private void selectMatchingMechanismTest(ScramMechanisms scramMechanisms, boolean channelBinding, String... names) {
-        assertEquals(scramMechanisms, ScramMechanisms.selectMatchingMechanism(channelBinding, names));
+        assertEquals(
+                scramMechanisms, ScramMechanisms.selectMatchingMechanism(channelBinding, names).orElse(null)
+        );
     }
 
     @Test
@@ -126,6 +128,10 @@ public class ScramMechanismsTest {
         selectMatchingMechanismTest(
                 ScramMechanisms.SCRAM_SHA_256_PLUS, true,
                 "SCRAM-SHA-1", "SCRAM-SHA-1-PLUS", "SCRAM-SHA-256", "SCRAM-SHA-256-PLUS"
+        );
+        selectMatchingMechanismTest(
+                null, true,
+                "SCRAM-SHA-1", "SCRAM-SHA-256"
         );
     }
 }
