@@ -25,6 +25,8 @@ package com.ongres.scram.client;
 
 
 import com.ongres.scram.common.ScramMechanisms;
+import com.ongres.scram.common.gssapi.Gs2CbindFlag;
+import com.ongres.scram.common.message.ClientFirstMessage;
 import com.ongres.scram.common.stringprep.StringPreparation;
 import com.ongres.scram.common.util.CryptoUtil;
 
@@ -37,9 +39,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static com.ongres.scram.common.util.Preconditions.checkArgument;
-import static com.ongres.scram.common.util.Preconditions.checkNotNull;
-import static com.ongres.scram.common.util.Preconditions.gt0;
+import static com.ongres.scram.common.util.Preconditions.*;
 
 
 /**
@@ -76,19 +76,30 @@ public class ScramClient {
         /**
          * Don't use channel binding. Server must support at least one non-channel binding mechanism.
          */
-        NO,
+        NO(Gs2CbindFlag.CLIENT_NOT),
 
         /**
          * Force use of channel binding. Server must support at least one channel binding mechanism.
          * Channel binding data will need to be provided as part of the ClientFirstMessage.
          */
-        YES,
+        YES(Gs2CbindFlag.CHANNEL_BINDING_REQUIRED),
 
         /**
          * Channel binding is preferred. Non-channel binding mechanisms will be used if either the server does not
          * support channel binding, or no channel binding data is provided as part of the ClientFirstMessage
          */
-        IF_SERVER_SUPPORTS_IT;
+        IF_SERVER_SUPPORTS_IT(Gs2CbindFlag.CLIENT_YES_SERVER_NOT)
+        ;
+
+        private final Gs2CbindFlag gs2CbindFlag;
+
+        ChannelBinding(Gs2CbindFlag gs2CbindFlag) {
+            this.gs2CbindFlag = gs2CbindFlag;
+        }
+
+        public Gs2CbindFlag gs2CbindFlag() {
+            return gs2CbindFlag;
+        }
     }
 
     private final ChannelBinding channelBinding;
@@ -291,5 +302,26 @@ public class ScramClient {
      */
     public static List<String> supportedMechanisms() {
         return Arrays.stream(ScramMechanisms.values()).map(m -> m.getName()).collect(Collectors.toList());
+    }
+
+    /**
+     * Returns a {@link ClientFirstMessage.Builder} to later parametrize a {@link ClientFirstMessage}.
+     * @param user The user for the client-first-message
+     * @return The Builder
+     * @throws IllegalArgumentException If user is null or empty
+     */
+    public ClientFirstMessage.Builder clientFirstMessageBuilder(String user) throws IllegalArgumentException {
+        checkNotEmpty(user, "user");
+        return new ClientFirstMessage.Builder(channelBinding.gs2CbindFlag(), user, nonceSupplier.get());
+    }
+
+    /**
+     * Returns a {@link ClientFirstMessage} with the specified user, without channel binding or alternative authzid.
+     * @param user The user for the client-first-message
+     * @return The client-first-message instance
+     * @throws IllegalArgumentException If user is null or empty
+     */
+    public ClientFirstMessage clientFirstMessage(String user) throws IllegalArgumentException {
+        return clientFirstMessageBuilder(user).get();
     }
 }
