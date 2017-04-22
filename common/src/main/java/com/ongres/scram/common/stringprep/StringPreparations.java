@@ -26,6 +26,9 @@ package com.ongres.scram.common.stringprep;
 
 import com.ongres.scram.common.util.UsAsciiUtils;
 
+import static com.ongres.scram.common.util.Preconditions.checkNotEmpty;
+
+
 public enum StringPreparations implements StringPreparation {
     /**
      * Implementation of StringPreparation that performs no preparation.
@@ -45,9 +48,7 @@ public enum StringPreparations implements StringPreparation {
     protected abstract String doNormalize(String value) throws IllegalArgumentException;
 
     public String normalize(String value) throws IllegalArgumentException {
-        if(null == value || value.isEmpty()) {
-            throw new IllegalArgumentException("null or empty value");
-        }
+        checkNotEmpty(value, "value");
 
         String normalized = doNormalize(value);
 

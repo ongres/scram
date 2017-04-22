@@ -45,6 +45,21 @@ public class Preconditions {
     }
 
     /**
+     * Checks that the String is not null and not empty
+     * @param value The String to check
+     * @param valueName The name of the value that is checked in the method
+     * @return The same String passed as argument
+     * @throws IllegalArgumentException If value is null or empty
+     */
+    public static String checkNotEmpty(String value, String valueName) throws IllegalArgumentException {
+        if(checkNotNull(value, valueName).isEmpty()) {
+            throw new IllegalArgumentException("Empty string '" + valueName + "'");
+        }
+
+        return value;
+    }
+
+    /**
      * Checks that the argument is valid, based in a check boolean condition.
      * @param check The boolean check
      * @param valueName The name of the value that is checked in the method
