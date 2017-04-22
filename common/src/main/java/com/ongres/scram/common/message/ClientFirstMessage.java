@@ -35,6 +35,7 @@ import com.ongres.scram.common.util.StringWritableCsv;
 
 import java.util.Optional;
 
+import static com.ongres.scram.common.util.Preconditions.checkNotEmpty;
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 
 
@@ -63,56 +64,66 @@ public class ClientFirstMessage implements StringWritable {
     }
 
     /**
-     * Constructs a message with the specified channel binding flag;
-     * a channel binding name and/or authizd if either is specified (not null); the username and the nonce length.
-     * @param gs2CbindFlag The channel binding flag
-     * @param cbind The channel binding name, if the channel binding flag was set to required
-     * @param authzid An optional authzid (alternate authorization id)
-     * @param user The username
-     * @param nonce The nonce
-     * @throws IllegalArgumentException If channel binding flag, user or nonce are null;
-     *                                  or if channel binding is required and no channel binding name is provided
+     * Constructs the {@link ClientFirstMessage} with the provided options.
      */
-    public ClientFirstMessage(
-            Gs2CbindFlag gs2CbindFlag, String cbind, String authzid, String user, String nonce
-    ) throws IllegalArgumentException {
-        checkNotNull(gs2CbindFlag, "gs2CbindFlag");
-        checkNotNull(user, "user");
-        checkNotNull(nonce, "nonce");
+    public static class Builder {
+        private final Gs2CbindFlag gs2CbindFlag;
+        private final String user;
+        private final String nonce;
 
-        gs2Header = new Gs2Header(gs2CbindFlag, cbind, authzid);
-        this.user = new ScramAttributeValue(ScramAttributes.USERNAME, ScramStringFormatting.toSaslName(user));
-        this.nonce = new ScramAttributeValue(ScramAttributes.NONCE, nonce);
-    }
+        private String authzid;
+        private String cbindName;
 
-    /**
-     * Constructs a message with the specified username and the nonce length,
-     * and the indicated non-channel binding mode: either client supported or not.
-     * @param user The username
-     * @param nonce The nonce
-     * @throws IllegalArgumentException If user or nonce are null
-     */
-    public ClientFirstMessage(
-            boolean clientChannelBinding, String user, String nonce
-    ) throws IllegalArgumentException {
-        this(
-                clientChannelBinding ? Gs2CbindFlag.CLIENT_YES_SERVER_NOT : Gs2CbindFlag.CLIENT_NOT,
-                null,
-                null,
-                user,
-                nonce
-        );
-    }
+        /**
+         * Sets up the {@link ClientFirstMessage.Builder}
+         * @param gs2CbindFlag Channel binding flag
+         * @param user Username
+         * @param nonce Nonce to be used for the client-first-message
+         * @throws IllegalArgumentException If either argument is null or empty
+         */
+        public Builder(Gs2CbindFlag gs2CbindFlag, String user, String nonce) throws IllegalArgumentException {
+            this.gs2CbindFlag = checkNotNull(gs2CbindFlag, "gs2CbindFlag");
+            this.user = checkNotEmpty(user, "user");
+            this.nonce = checkNotEmpty(nonce, "nonce");
+        }
 
-    /**
-     * Constructs a message with the specified username and the nonce length,
-     * with no support (both client and server) for channel binding.
-     * @param user The username
-     * @param nonce The nonce
-     * @throws IllegalArgumentException If user or nonce are null
-     */
-    public ClientFirstMessage(String user, String nonce) throws IllegalArgumentException {
-        this(false, user, nonce);
+        /**
+         * Adds authzid (alternate role) information to the message
+         * @param authzid The authzid
+         * @throws IllegalArgumentException If authzid is null or empty
+         */
+        public Builder authzid(String authzid) throws IllegalArgumentException {
+            this.authzid = checkNotEmpty(authzid, "authzid");
+
+            return this;
+        }
+
+        /**
+         * Adds channel binding data to the message
+         * @param cbindName The channel binding name
+         * @throws IllegalArgumentException If the channel binding name is null or empty
+         */
+        public Builder channelBindingData(String cbindName) throws IllegalArgumentException {
+            this.cbindName = checkNotEmpty(cbindName, "cbindName");
+
+            return this;
+        }
+
+        /**
+         * Returns the constructed instance
+         * @return The client-first-message
+         */
+        public ClientFirstMessage get() {
+            if(Gs2CbindFlag.CHANNEL_BINDING_REQUIRED == gs2CbindFlag && null == cbindName) {
+                throw new IllegalArgumentException("Channel binding name is required if channel binding is specified");
+            }
+
+            return new ClientFirstMessage(
+                    new Gs2Header(gs2CbindFlag, cbindName, authzid),
+                    new ScramAttributeValue(ScramAttributes.USERNAME, ScramStringFormatting.toSaslName(user)),
+                    new ScramAttributeValue(ScramAttributes.NONCE, nonce)
+            );
+        }
     }
 
     public Gs2CbindFlag getChannelBindingFlag() {
@@ -144,8 +155,14 @@ public class ClientFirstMessage implements StringWritable {
         return StringWritableCsv.writeTo(sb, gs2Header, user, nonce);
     }
 
-    public static ClientFirstMessage parseFrom(String clientFirstMessage) {
-        checkNotNull(clientFirstMessage, "clientFirstMessage");
+    /**
+     * Construct a {@link ClientFirstMessage} instance from a message (String)
+     * @param clientFirstMessage The String representing the client-first-message
+     * @return The instance
+     * @throws IllegalArgumentException If the message is null or empty
+     */
+    public static ClientFirstMessage parseFrom(String clientFirstMessage) throws IllegalArgumentException {
+        checkNotEmpty(clientFirstMessage, "clientFirstMessage");
 
         Gs2Header gs2Header = Gs2Header.parseFrom(clientFirstMessage);  // Takes first two fields
         String[] userNonceString = StringWritableCsv.parseFrom(clientFirstMessage, 2, 2);

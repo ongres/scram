@@ -33,52 +33,64 @@ import static org.junit.Assert.*;
 public class ClientFirstMessageTest  {
     private static final String NONCE = "fyko+d2lbbFgONRv9qkxdawL";
 
+    private void testBuilder(ClientFirstMessage.Builder builder) {
+        assertNotNull("Builder returns a null object", builder.get());
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void constructorTestInvalid1() {
-        new ClientFirstMessage(null, null, null, "a", NONCE);
+        testBuilder(new ClientFirstMessage.Builder(null, "a", NONCE));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void constructorTestInvalid2() {
-        new ClientFirstMessage(Gs2CbindFlag.CLIENT_NOT, "cbind", null, "a", NONCE);
+        testBuilder(
+                new ClientFirstMessage.Builder(Gs2CbindFlag.CLIENT_NOT, "a", NONCE).channelBindingData("cbind")
+        );
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void constructorTestInvalid3() {
-        new ClientFirstMessage(Gs2CbindFlag.CLIENT_YES_SERVER_NOT, "cbind", null, "a", NONCE);
+        testBuilder(
+            new ClientFirstMessage.Builder(Gs2CbindFlag.CLIENT_YES_SERVER_NOT, "a", NONCE)
+                    .channelBindingData("cbind")
+        );
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void constructorTestInvalid4() {
-        new ClientFirstMessage(Gs2CbindFlag.CHANNEL_BINDING_REQUIRED, null, null, "a", NONCE);
+        testBuilder(new ClientFirstMessage.Builder(Gs2CbindFlag.CHANNEL_BINDING_REQUIRED, "a", NONCE));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void constructorTestInvalid5() {
-        new ClientFirstMessage(Gs2CbindFlag.CLIENT_NOT, null, null, null, NONCE);
+        testBuilder(new ClientFirstMessage.Builder(Gs2CbindFlag.CLIENT_NOT, null, NONCE));
     }
 
-    private void assertClientFirstMessage(String expected, ClientFirstMessage clientFirstMessage) {
-        assertEquals(expected, clientFirstMessage.writeTo(new StringBuffer()).toString());
+    private void assertClientFirstMessage(String expected, ClientFirstMessage.Builder clientFirstMessageBuilder) {
+        assertEquals(expected, clientFirstMessageBuilder.get().writeTo(new StringBuffer()).toString());
     }
 
     @Test
     public void writeToValidValues() {
         assertClientFirstMessage(
                 "n,,n=user,r=" + NONCE,
-                new ClientFirstMessage(Gs2CbindFlag.CLIENT_NOT, null, null, "user",NONCE)
+                new ClientFirstMessage.Builder(Gs2CbindFlag.CLIENT_NOT, "user", NONCE)
         );
         assertClientFirstMessage(
                 "y,,n=user,r=" + NONCE,
-                new ClientFirstMessage(Gs2CbindFlag.CLIENT_YES_SERVER_NOT, null, null, "user",NONCE)
+                new ClientFirstMessage.Builder(Gs2CbindFlag.CLIENT_YES_SERVER_NOT, "user", NONCE)
         );
         assertClientFirstMessage(
                 "p=blah,,n=user,r=" + NONCE,
-                new ClientFirstMessage(Gs2CbindFlag.CHANNEL_BINDING_REQUIRED, "blah", null, "user",NONCE)
+                new ClientFirstMessage.Builder(Gs2CbindFlag.CHANNEL_BINDING_REQUIRED,  "user", NONCE)
+                .channelBindingData("blah")
         );
         assertClientFirstMessage(
                 "p=blah,a=authzid,n=user,r=" + NONCE,
-                new ClientFirstMessage(Gs2CbindFlag.CHANNEL_BINDING_REQUIRED, "blah", "authzid", "user",NONCE)
+                new ClientFirstMessage.Builder(Gs2CbindFlag.CHANNEL_BINDING_REQUIRED, "user", NONCE)
+                .channelBindingData("blah")
+                .authzid("authzid")
         );
     }
 
