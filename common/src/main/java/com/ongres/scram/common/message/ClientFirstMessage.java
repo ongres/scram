@@ -29,7 +29,6 @@ import com.ongres.scram.common.ScramAttributes;
 import com.ongres.scram.common.ScramStringFormatting;
 import com.ongres.scram.common.gssapi.Gs2CbindFlag;
 import com.ongres.scram.common.gssapi.Gs2Header;
-import com.ongres.scram.common.util.CharAttributeValue;
 import com.ongres.scram.common.util.StringWritable;
 import com.ongres.scram.common.util.StringWritableCsv;
 
@@ -54,10 +53,10 @@ import static com.ongres.scram.common.util.Preconditions.checkNotNull;
  */
 public class ClientFirstMessage implements StringWritable {
     private final Gs2Header gs2Header;
-    private final CharAttributeValue user;
-    private final CharAttributeValue nonce;
+    private final String user;
+    private final String nonce;
 
-    private ClientFirstMessage(Gs2Header gs2Header, CharAttributeValue user, CharAttributeValue nonce) {
+    private ClientFirstMessage(Gs2Header gs2Header, String user, String nonce) {
         this.gs2Header = gs2Header;
         this.user = user;
         this.nonce = nonce;
@@ -120,8 +119,8 @@ public class ClientFirstMessage implements StringWritable {
 
             return new ClientFirstMessage(
                     new Gs2Header(gs2CbindFlag, cbindName, authzid),
-                    new ScramAttributeValue(ScramAttributes.USERNAME, ScramStringFormatting.toSaslName(user)),
-                    new ScramAttributeValue(ScramAttributes.NONCE, nonce)
+                    user,
+                    nonce
             );
         }
     }
@@ -143,16 +142,21 @@ public class ClientFirstMessage implements StringWritable {
     }
 
     public String getUser() {
-        return user.getValue();
+        return user;
     }
 
     public String getNonce() {
-        return nonce.getValue();
+        return nonce;
     }
 
     @Override
     public StringBuffer writeTo(StringBuffer sb) {
-        return StringWritableCsv.writeTo(sb, gs2Header, user, nonce);
+        return StringWritableCsv.writeTo(
+                sb,
+                gs2Header,
+                new ScramAttributeValue(ScramAttributes.USERNAME, ScramStringFormatting.toSaslName(user)),
+                new ScramAttributeValue(ScramAttributes.NONCE, nonce)
+        );
     }
 
     /**
@@ -177,6 +181,11 @@ public class ClientFirstMessage implements StringWritable {
             throw new IllegalArgumentException("nonce must be the 4th element of the client-first-message");
         }
 
-        return new ClientFirstMessage(gs2Header, user, nonce);
+        return new ClientFirstMessage(gs2Header, user.getValue(), nonce.getValue());
+    }
+
+    @Override
+    public String toString() {
+        return writeTo(new StringBuffer()).toString();
     }
 }
