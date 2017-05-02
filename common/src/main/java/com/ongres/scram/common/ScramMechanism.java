@@ -25,6 +25,8 @@ package com.ongres.scram.common;
 
 
 import javax.crypto.Mac;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.SecretKeySpec;
 import java.security.MessageDigest;
 
 
@@ -56,6 +58,25 @@ public interface ScramMechanism {
      * @throws RuntimeException If the Mac instance of the algorithm is not provided by current JVM
      */
     Mac getMacInstance() throws RuntimeException;
+
+    /**
+     * Generates a key of the algorith used, based on the key given.
+     * @param key The bytes of the key to use
+     * @return The instance of SecretKeySpec
+     */
+    SecretKeySpec secretKeySpec(byte[] key);
+
+    /**
+     * Gets a SecretKeyFactory for the given algorithm.
+     * @return The SecretKeyFactory
+     */
+    SecretKeyFactory secretKeyFactory();
+
+    /**
+     * Returns the length of the key length  of the algorithm.
+     * @return The length (in bits)
+     */
+    int algorithmKeyLength();
 
     /**
      * Whether this mechanism supports channel binding

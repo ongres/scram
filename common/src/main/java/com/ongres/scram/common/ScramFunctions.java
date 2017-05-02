@@ -25,12 +25,19 @@ package com.ongres.scram.common;
 
 
 import com.ongres.scram.common.stringprep.StringPreparation;
+import com.ongres.scram.common.util.CryptoUtil;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 
 /**
  * Utility functions (e.g. crypto) for SCRAM.
  */
 public class ScramFunctions {
+    private static final byte[] CLIENT_KEY_HMAC_KEY = "Client Key".getBytes(StandardCharsets.UTF_8);
+    private static final byte[] SERVER_KEY_HMAC_KEY = "Server Key".getBytes(StandardCharsets.UTF_8);
+
     /**
      * Compute the salted password, based on the given SCRAM mechanism, the String preparation algorithm,
      * the provided salt and the number of iterations.
@@ -50,7 +57,10 @@ public class ScramFunctions {
             ScramMechanism scramMechanism, StringPreparation stringPreparation, String password, byte[] salt,
             int iteration
     ) {
-        return null;
+        return CryptoUtil.hi(
+                scramMechanism.secretKeyFactory(), scramMechanism.algorithmKeyLength(),
+                stringPreparation.normalize(password), salt, iteration
+        );
     }
 
     /**
@@ -61,7 +71,7 @@ public class ScramFunctions {
      * @return The computed HMAC
      */
     public static byte[] hmac(ScramMechanism scramMechanism, byte[] message, byte[] key) {
-        return null;
+        return CryptoUtil.hmac(scramMechanism.secretKeySpec(key), scramMechanism.getMacInstance(), message);
     }
 
     /**
@@ -76,7 +86,7 @@ public class ScramFunctions {
      * @return The client key
      */
     public static byte[] clientKey(ScramMechanism scramMechanism, byte[] saltedPassword) {
-        return null;
+        return hmac(scramMechanism, CLIENT_KEY_HMAC_KEY, saltedPassword);
     }
 
     /**
@@ -98,7 +108,7 @@ public class ScramFunctions {
             ScramMechanism scramMechanism, StringPreparation stringPreparation, String password, byte[] salt,
             int iteration
     ) {
-        return null;
+        return clientKey(scramMechanism, saltedPassword(scramMechanism, stringPreparation, password, salt, iteration));
     }
 
     /**
@@ -113,7 +123,7 @@ public class ScramFunctions {
      * @return The server key
      */
     public static byte[] serverKey(ScramMechanism scramMechanism, byte[] saltedPassword) {
-        return null;
+        return hmac(scramMechanism, SERVER_KEY_HMAC_KEY, saltedPassword);
     }
 
     /**
@@ -135,7 +145,7 @@ public class ScramFunctions {
             ScramMechanism scramMechanism, StringPreparation stringPreparation, String password, byte[] salt,
             int iteration
     ) {
-        return null;
+        return serverKey(scramMechanism, saltedPassword(scramMechanism, stringPreparation, password, salt, iteration));
     }
 
     /**
@@ -145,7 +155,7 @@ public class ScramFunctions {
      * @return The hashed value
      */
     public static byte[] hash(ScramMechanism scramMechanism, byte[] value) {
-        return null;
+        return scramMechanism.getMessageDigestInstance().digest(value);
     }
 
     /**
@@ -156,34 +166,11 @@ public class ScramFunctions {
      * }
      *
      * @param scramMechanism The SCRAM mechanism
-     * @param saltedPassword The salted password
+     * @param clientKey The client key
      * @return The stored key
      */
-    public static byte[] storedKey(ScramMechanism scramMechanism, byte[] saltedPassword) {
-        return null;
-    }
-
-    /**
-     * Generates a stored key from the password and salt.
-     *
-     * {@code
-     *      SaltedPassword  := Hi(Normalize(password), salt, i)
-     *      ClientKey       := HMAC(SaltedPassword, "Client Key")
-     *      StoredKey       := H(ClientKey)
-     * }
-     *
-     * @param scramMechanism The SCRAM mechanism
-     * @param stringPreparation The String preparation
-     * @param password The non-salted password
-     * @param salt The bytes representing the salt
-     * @param iteration The number of iterations
-     * @return The stored key
-     */
-    public static byte[] storedKey(
-            ScramMechanism scramMechanism, StringPreparation stringPreparation, String password, byte[] salt,
-            int iteration
-    ) {
-        return null;
+    public static byte[] storedKey(ScramMechanism scramMechanism, byte[] clientKey) {
+        return hash(scramMechanism, clientKey);
     }
 
     /**
@@ -199,7 +186,7 @@ public class ScramFunctions {
      * @return The client signature
      */
     public static byte[] clientSignature(ScramMechanism scramMechanism, byte[] storedKey, String authMessage) {
-        return null;
+        return hmac(scramMechanism, authMessage.getBytes(StandardCharsets.UTF_8), storedKey);
     }
 
     /**
@@ -214,7 +201,7 @@ public class ScramFunctions {
      * @return The client proof
      */
     public static byte[] clientProof(byte[] clientKey, byte[] clientSignature) {
-        return null;
+        return CryptoUtil.xor(clientKey, clientSignature);
     }
 
     /**
@@ -230,7 +217,7 @@ public class ScramFunctions {
      * @return The server signature
      */
     public static byte[] serverSignature(ScramMechanism scramMechanism, byte[] serverKey, String authMessage) {
-        return null;
+        return clientSignature(scramMechanism, serverKey, authMessage);
     }
 
     /**
@@ -244,7 +231,11 @@ public class ScramFunctions {
     public static boolean verifyClientProof(
             ScramMechanism scramMechanism, byte[] clientProof, byte[] storedKey, String authMessage
     ) {
-        return false;
+        byte[] clientSignature = clientSignature(scramMechanism, storedKey, authMessage);
+        byte[] clientKey = CryptoUtil.xor(clientSignature, clientProof);
+        byte[] computedStoredKey = hash(scramMechanism, clientKey);
+
+        return Arrays.equals(storedKey, computedStoredKey);
     }
 
     /**
@@ -258,6 +249,6 @@ public class ScramFunctions {
     public static boolean verifyServerSignature(
             ScramMechanism scramMechanism, byte[] serverKey, String authMessage, byte[] serverSignature
     ) {
-        return false;
+        return Arrays.equals(serverSignature(scramMechanism, serverKey, authMessage), serverSignature);
     }
 }

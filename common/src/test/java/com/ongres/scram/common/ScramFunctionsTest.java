@@ -82,7 +82,7 @@ public class ScramFunctionsTest {
     }
 
     private byte[] generateStoredKey() {
-        return ScramFunctions.storedKey(ScramMechanisms.SCRAM_SHA_1, generateSaltedPassword());
+        return ScramFunctions.storedKey(ScramMechanisms.SCRAM_SHA_1, generateClientKey());
     }
 
     @Test

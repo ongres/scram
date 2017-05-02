@@ -25,6 +25,8 @@ package com.ongres.scram.common;
 
 
 import javax.crypto.Mac;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.SecretKeySpec;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -52,31 +54,35 @@ import static com.ongres.scram.common.util.Preconditions.gt0;
  *      SASL SCRAM Family Mechanisms</a>
  */
 public enum ScramMechanisms implements ScramMechanism {
-    SCRAM_SHA_1         (   "SHA-1",    "SHA-1",    "HmacSHA1",     false,  1   ),
-    SCRAM_SHA_1_PLUS    (   "SHA-1",    "SHA-1",    "HmacSHA1",     true,   1   ),
-    SCRAM_SHA_256       (   "SHA-256",  "SHA-256",  "HmacSHA256",   false,  10  ),
-    SCRAM_SHA_256_PLUS  (   "SHA-256",  "SHA-256",  "HmacSHA256",   true,   10  )
+    SCRAM_SHA_1         (   "SHA-1",    "SHA-1",    160,    "HmacSHA1",     false,  1   ),
+    SCRAM_SHA_1_PLUS    (   "SHA-1",    "SHA-1",    160,    "HmacSHA1",     true,   1   ),
+    SCRAM_SHA_256       (   "SHA-256",  "SHA-256",  256,    "HmacSHA256",   false,  10  ),
+    SCRAM_SHA_256_PLUS  (   "SHA-256",  "SHA-256",  256,    "HmacSHA256",   true,   10  )
     ;
 
     private static final String SCRAM_MECHANISM_NAME_PREFIX = "SCRAM-";
     private static final String CHANNEL_BINDING_SUFFIX = "-PLUS";
+    private static final String PBKDF2_PREFIX_ALGORITHM_NAME = "PBKDF2With";
     private static final Map<String,ScramMechanisms> BY_NAME_MAPPING =
             Arrays.stream(values()).collect(Collectors.toMap(v -> v.getName(), v -> v));
 
     private final String mechanismName;
     private final String hashAlgorithmName;
+    private final int keyLength;
     private final String hmacAlgorithmName;
     private final boolean channelBinding;
     private final int priority;
 
     ScramMechanisms(
-            String name, String hashAlgorithmName, String hmacAlgorithmName, boolean channelBinding, int priority
+            String name, String hashAlgorithmName, int keyLength, String hmacAlgorithmName, boolean channelBinding,
+            int priority
     ) {
         this.mechanismName = SCRAM_MECHANISM_NAME_PREFIX
                 + checkNotNull(name, "name")
                 + (channelBinding ? CHANNEL_BINDING_SUFFIX : "")
         ;
         this.hashAlgorithmName = checkNotNull(hashAlgorithmName, "hashAlgorithmName");
+        this.keyLength = gt0(keyLength, "keyLength");
         this.hmacAlgorithmName = checkNotNull(hmacAlgorithmName, "hmacAlgorithmName");
         this.channelBinding = channelBinding;
         this.priority = gt0(priority, "priority");
@@ -116,30 +122,39 @@ public enum ScramMechanisms implements ScramMechanism {
 
     @Override
     public MessageDigest getMessageDigestInstance() {
-        MessageDigest messageDigest;
         try {
-            messageDigest = MessageDigest.getInstance(hashAlgorithmName);
+            return MessageDigest.getInstance(hashAlgorithmName);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("Algorithm " + hashAlgorithmName + " not present in current JVM");
         }
-
-        assert messageDigest != null;
-
-        return messageDigest;
     }
 
     @Override
     public Mac getMacInstance() {
-        Mac mac;
         try {
-            mac = Mac.getInstance(hmacAlgorithmName);
+            return Mac.getInstance(hmacAlgorithmName);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("MAC Algorithm " + hmacAlgorithmName + " not present in current JVM");
         }
+    }
 
-        assert mac != null;
+    @Override
+    public SecretKeySpec secretKeySpec(byte[] key) {
+        return new SecretKeySpec(key, hmacAlgorithmName);
+    }
 
-        return mac;
+    @Override
+    public SecretKeyFactory secretKeyFactory() {
+        try {
+            return SecretKeyFactory.getInstance(PBKDF2_PREFIX_ALGORITHM_NAME + hmacAlgorithmName);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Unsupported PBKDF2 for " + mechanismName);
+        }
+    }
+
+    @Override
+    public int algorithmKeyLength() {
+        return keyLength;
     }
 
     /**
