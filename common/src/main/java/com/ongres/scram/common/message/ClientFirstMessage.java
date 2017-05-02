@@ -56,73 +56,27 @@ public class ClientFirstMessage implements StringWritable {
     private final String user;
     private final String nonce;
 
-    private ClientFirstMessage(Gs2Header gs2Header, String user, String nonce) {
-        this.gs2Header = gs2Header;
-        this.user = user;
-        this.nonce = nonce;
+    public ClientFirstMessage(Gs2Header gs2Header, String user, String nonce) {
+        this.gs2Header = checkNotNull(gs2Header, "gs2Header");
+        this.user = checkNotEmpty(user, "user");
+        this.nonce = checkNotEmpty(nonce, "nonce");
     }
 
-    /**
-     * Constructs the {@link ClientFirstMessage} with the provided options.
-     */
-    public static class Builder {
-        private final Gs2CbindFlag gs2CbindFlag;
-        private final String user;
-        private final String nonce;
-
-        private String authzid;
-        private String cbindName;
-
-        /**
-         * Sets up the {@link ClientFirstMessage.Builder}
-         * @param gs2CbindFlag Channel binding flag
-         * @param user Username
-         * @param nonce Nonce to be used for the client-first-message
-         * @throws IllegalArgumentException If either argument is null or empty
-         */
-        public Builder(Gs2CbindFlag gs2CbindFlag, String user, String nonce) throws IllegalArgumentException {
-            this.gs2CbindFlag = checkNotNull(gs2CbindFlag, "gs2CbindFlag");
-            this.user = checkNotEmpty(user, "user");
-            this.nonce = checkNotEmpty(nonce, "nonce");
+    private static Gs2Header gs2Header(Gs2CbindFlag gs2CbindFlag, String authzid, String cbindName) {
+        checkNotNull(gs2CbindFlag, "gs2CbindFlag");
+        if(Gs2CbindFlag.CHANNEL_BINDING_REQUIRED == gs2CbindFlag && null == cbindName) {
+            throw new IllegalArgumentException("Channel binding name is required if channel binding is specified");
         }
 
-        /**
-         * Adds authzid (alternate role) information to the message
-         * @param authzid The authzid
-         * @throws IllegalArgumentException If authzid is null or empty
-         */
-        public Builder authzid(String authzid) throws IllegalArgumentException {
-            this.authzid = checkNotEmpty(authzid, "authzid");
+        return new Gs2Header(gs2CbindFlag, cbindName, authzid);
+    }
 
-            return this;
-        }
+    public ClientFirstMessage(Gs2CbindFlag gs2CbindFlag, String authzid, String cbindName, String user, String nonce) {
+        this(gs2Header(gs2CbindFlag, authzid, cbindName), user, nonce);
+    }
 
-        /**
-         * Adds channel binding data to the message
-         * @param cbindName The channel binding name
-         * @throws IllegalArgumentException If the channel binding name is null or empty
-         */
-        public Builder channelBindingData(String cbindName) throws IllegalArgumentException {
-            this.cbindName = checkNotEmpty(cbindName, "cbindName");
-
-            return this;
-        }
-
-        /**
-         * Returns the constructed instance
-         * @return The client-first-message
-         */
-        public ClientFirstMessage get() {
-            if(Gs2CbindFlag.CHANNEL_BINDING_REQUIRED == gs2CbindFlag && null == cbindName) {
-                throw new IllegalArgumentException("Channel binding name is required if channel binding is specified");
-            }
-
-            return new ClientFirstMessage(
-                    new Gs2Header(gs2CbindFlag, cbindName, authzid),
-                    user,
-                    nonce
-            );
-        }
+    public ClientFirstMessage(String user, String nonce) {
+        this(gs2Header(Gs2CbindFlag.CLIENT_NOT, null, null), user, nonce);
     }
 
     public Gs2CbindFlag getChannelBindingFlag() {
@@ -141,6 +95,10 @@ public class ClientFirstMessage implements StringWritable {
         return gs2Header.getAuthzid();
     }
 
+    public Gs2Header getGs2Header() {
+        return gs2Header;
+    }
+
     public String getUser() {
         return user;
     }
@@ -149,14 +107,23 @@ public class ClientFirstMessage implements StringWritable {
         return nonce;
     }
 
-    @Override
-    public StringBuffer writeTo(StringBuffer sb) {
+    public StringBuffer writeToWithoutGs2Header(StringBuffer sb) {
         return StringWritableCsv.writeTo(
                 sb,
-                gs2Header,
                 new ScramAttributeValue(ScramAttributes.USERNAME, ScramStringFormatting.toSaslName(user)),
                 new ScramAttributeValue(ScramAttributes.NONCE, nonce)
         );
+    }
+
+    @Override
+    public StringBuffer writeTo(StringBuffer sb) {
+        StringWritableCsv.writeTo(
+                sb,
+                gs2Header,
+                null    // This marks the position of the rest of the elements, required for the ","
+        );
+
+        return writeToWithoutGs2Header(sb);
     }
 
     /**

@@ -52,24 +52,24 @@ public class ServerFirstMessage implements StringWritable {
     public static final int ITERATION_MIN_VALUE = 4096;
 
     private final String clientNonce;
-    private final String nonce;
+    private final String serverNonce;
     private final String salt;
     private final int iteration;
 
     /**
      * Constructs a server-first-message from a client-first-message and the additional required data.
      * @param clientNonce String representing the client-first-message
-     * @param nonce Server nonce
+     * @param serverNonce Server serverNonce
      * @param salt The salt
      * @param iteration The iteration count (must be >= 4096)
      * @return The constructed ServerFirstMessage
-     * @throws IllegalArgumentException If clientFirstMessage, nonce or salt are null or empty, or iteration < 4096
+     * @throws IllegalArgumentException If clientFirstMessage, serverNonce or salt are null or empty, or iteration < 4096
      */
     public ServerFirstMessage(
-            String clientNonce, String nonce, String salt, int iteration
+            String clientNonce, String serverNonce, String salt, int iteration
     ) throws IllegalArgumentException {
         this.clientNonce = checkNotEmpty(clientNonce, "clientNonce");
-        this.nonce = checkNotEmpty(nonce, "nonce");
+        this.serverNonce = checkNotEmpty(serverNonce, "serverNonce");
         this.salt = checkNotEmpty(salt, "salt");
         checkArgument(iteration >= ITERATION_MIN_VALUE, "iteration must be >= " + ITERATION_MIN_VALUE);
         this.iteration = iteration;
@@ -79,8 +79,12 @@ public class ServerFirstMessage implements StringWritable {
         return clientNonce;
     }
 
+    public String getServerNonce() {
+        return serverNonce;
+    }
+
     public String getNonce() {
-        return nonce;
+        return clientNonce + serverNonce;
     }
 
     public String getSalt() {
@@ -95,7 +99,7 @@ public class ServerFirstMessage implements StringWritable {
     public StringBuffer writeTo(StringBuffer sb) {
         return StringWritableCsv.writeTo(
                 sb,
-                new ScramAttributeValue(ScramAttributes.NONCE, clientNonce + nonce),
+                new ScramAttributeValue(ScramAttributes.NONCE, getNonce()),
                 new ScramAttributeValue(ScramAttributes.SALT, salt),
                 new ScramAttributeValue(ScramAttributes.ITERATION, iteration + "")
         );
@@ -104,7 +108,7 @@ public class ServerFirstMessage implements StringWritable {
     /**
      * Parses a server-first-message from a String.
      * @param serverFirstMessage The string representing the server-first-message
-     * @param clientNonce The nonce that is present in the client-first-message
+     * @param clientNonce The serverNonce that is present in the client-first-message
      * @return The parsed instance
      * @throws IllegalArgumentException If either argument is empty or serverFirstMessage is not a valid message
      */
@@ -120,10 +124,10 @@ public class ServerFirstMessage implements StringWritable {
 
         ScramAttributeValue nonce = ScramAttributeValue.parse(attributeValues[0]);
         if(null == nonce || ScramAttributes.NONCE.getChar() != nonce.getChar()) {
-            throw new IllegalArgumentException("nonce must be the 1st element of the server-first-message");
+            throw new IllegalArgumentException("serverNonce must be the 1st element of the server-first-message");
         }
         if(! nonce.getValue().startsWith(clientNonce)) {
-            throw new IllegalArgumentException("parsed nonce does not start with client nonce");
+            throw new IllegalArgumentException("parsed serverNonce does not start with client serverNonce");
         }
 
         ScramAttributeValue salt = ScramAttributeValue.parse(attributeValues[1]);

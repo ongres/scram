@@ -24,11 +24,16 @@
 package com.ongres.scram.common;
 
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+
 /**
  * Class with static methods that provide support for converting to/from salNames.
  * @see <a href="https://tools.ietf.org/html/rfc5802#section-7">[RFC5802] Section 7: Formal Syntax</a>
  */
 public class ScramStringFormatting {
+    private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder();
+
     /**
      * Given a value-safe-char (normalized UTF-8 String),
      * return one where characters ',' and '=' are represented by '=2C' or '=3D', respectively.
@@ -125,5 +130,13 @@ public class ScramStringFormatting {
         }
 
         return new String(replaced);
+    }
+
+    public static String base64Encode(byte[] value) {
+        return BASE64_ENCODER.encodeToString(value);
+    }
+
+    public static String base64Encode(String value) {
+        return base64Encode(value.getBytes(StandardCharsets.UTF_8));
     }
 }
