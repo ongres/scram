@@ -52,21 +52,30 @@ import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 public class ClientLastMessage implements StringWritable {
     private final String cbind;
     private final String nonce;
-    private byte[] proof;
+    private final byte[] proof;
 
-    public ClientLastMessage(Gs2Header gs2Header, Optional<String> cbindData, String nonce) {
-        checkNotNull(gs2Header, "gs2Header");
-        checkNotEmpty(nonce, "nonce");
-
-        this.cbind = gs2Header.writeTo(new StringBuffer()).append(",").append(cbindData.orElse("")).toString();
-        this.nonce = nonce;
+    private static String generateCBind(Gs2Header gs2Header, Optional<byte[]> cbindData) {
+        return gs2Header.writeTo(new StringBuffer()).append(",").append(cbindData.orElse(null)).toString();
     }
 
-    public void setProof(byte[] proof) {
+    /**
+     * Constructus a client-last-message with the provided gs2Header (the same one used in the client-first-message),
+     * optionally the channel binding data, and the nonce.
+     * This method is intended to be used by SCRAM clients, and not to be constructed directly.
+     * @param gs2Header The GSS-API header
+     * @param cbindData If using channel binding, the channel binding data
+     * @param nonce
+     */
+    public ClientLastMessage(Gs2Header gs2Header, Optional<byte[]> cbindData, String nonce, byte[] proof) {
+        this.cbind = generateCBind(
+                checkNotNull(gs2Header, "gs2Header"),
+                checkNotNull(cbindData, "cbindData")
+        );
+        this.nonce = checkNotEmpty(nonce, "nonce");
         this.proof = checkNotNull(proof, "proof");
     }
 
-    public StringBuffer writeToWithoutProof(StringBuffer sb) {
+    private static StringBuffer writeToWithoutProof(StringBuffer sb, String cbind, String nonce) {
         return StringWritableCsv.writeTo(
                 sb,
                 new ScramAttributeValue(ScramAttributes.CHANNEL_BINDING, ScramStringFormatting.base64Encode(cbind)),
@@ -74,13 +83,34 @@ public class ClientLastMessage implements StringWritable {
         );
     }
 
+    private static StringBuffer writeToWithoutProof(
+            StringBuffer sb, Gs2Header gs2Header, Optional<byte[]> cbindData, String nonce
+    ) {
+        return writeToWithoutProof(
+                sb,
+                generateCBind(
+                        checkNotNull(gs2Header, "gs2Header"),
+                        checkNotNull(cbindData, "cbindData")
+                ),
+                nonce
+        );
+    }
+
+    /**
+     * Returns a StringBuffer filled in with the formatted output of a client-first-message without the proof value.
+     * This is useful for computing the auth-message, used in turn to compute the proof.
+     * @param gs2Header The GSS-API header
+     * @param cbindData The optional channel binding data
+     * @param nonce The nonce
+     * @return The String representation of the part of the message that excludes the proof
+     */
+    public static StringBuffer writeToWithoutProof(Gs2Header gs2Header, Optional<byte[]> cbindData, String nonce) {
+        return writeToWithoutProof(new StringBuffer(), gs2Header, cbindData, nonce);
+    }
+
     @Override
     public StringBuffer writeTo(StringBuffer sb) {
-        if(null == proof) {
-            throw new IllegalStateException("Set the proof before calling this method");
-        }
-
-        writeToWithoutProof(sb);
+        writeToWithoutProof(sb, cbind, nonce);
 
         return StringWritableCsv.writeTo(
                 sb,

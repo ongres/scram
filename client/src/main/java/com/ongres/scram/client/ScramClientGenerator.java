@@ -44,7 +44,7 @@ import static com.ongres.scram.common.util.Preconditions.*;
 
 /**
  * A class that can be parametrized to generate {@link ScramClient}s.
- * This class supports channel binding and the string preparation mechanisms provided by module scram-common.
+ * This class supports the channel binding and string preparation mechanisms that are provided by module scram-common.
  *
  * The class is fully configurable, including options to selected the desired channel binding,
  * automatically pick the best client SCRAM mechanism based on those supported (advertised) by the server,
@@ -132,6 +132,10 @@ public class ScramClientGenerator {
         return new PreBuilder1(checkNotNull(channelBinding, "channelBinding"));
     }
 
+    /**
+     * This class is not meant to be used directly.
+     * Use {@link ScramClientGenerator#channelBinding(ChannelBinding)} instead.
+     */
     public static class PreBuilder1 {
         protected final ChannelBinding channelBinding;
 
@@ -149,6 +153,10 @@ public class ScramClientGenerator {
         }
     }
 
+    /**
+     * This class is not meant to be used directly.
+     * Use {@link ScramClientGenerator#channelBinding(ChannelBinding)#stringPreparation(StringPreparation)} instead.
+     */
     public static class PreBuilder2 extends PreBuilder1 {
         protected final StringPreparation stringPreparation;
         protected Optional<ScramMechanisms> nonChannelBindingMechanism = Optional.empty();
@@ -205,6 +213,10 @@ public class ScramClientGenerator {
         }
     }
 
+    /**
+     * This class is not meant to be used directly.
+     * Use instead {@link ScramClientGenerator#channelBinding(ChannelBinding)} and chained methods.
+     */
     public static class Builder extends PreBuilder2 {
         private final Optional<ScramMechanisms> nonChannelBindingMechanism;
         private final Optional<ScramMechanisms> channelBindingMechanism;
@@ -300,6 +312,11 @@ public class ScramClientGenerator {
         return Arrays.stream(ScramMechanisms.values()).map(m -> m.getName()).collect(Collectors.toList());
     }
 
+    /**
+     * Instantiates a {@link ScramClient} for the specified user and this parametrized generator.
+     * @param user The username of the authentication exchange
+     * @return The ScramClient instance
+     */
     public ScramClient scramClient(String user) {
         return new ScramClient(scramMechanism, stringPreparation, checkNotEmpty(user, "user"), nonceSupplier.get());
     }

@@ -56,7 +56,16 @@ public class ClientFirstMessage implements StringWritable {
     private final String user;
     private final String nonce;
 
-    public ClientFirstMessage(Gs2Header gs2Header, String user, String nonce) {
+    /**
+     * Constructs a client-first-message for the given user, nonce and gs2Header.
+     * This constructor is intended to be instantiated by a scram client, and not directly.
+     * The client should be providing the header, and nonce (and probably the user too).
+     * @param gs2Header The GSS-API header
+     * @param user The SCRAM user
+     * @param nonce The nonce for this session
+     * @throws IllegalArgumentException If any of the arguments is null or empty
+     */
+    public ClientFirstMessage(Gs2Header gs2Header, String user, String nonce) throws IllegalArgumentException {
         this.gs2Header = checkNotNull(gs2Header, "gs2Header");
         this.user = checkNotEmpty(user, "user");
         this.nonce = checkNotEmpty(nonce, "nonce");
@@ -71,10 +80,31 @@ public class ClientFirstMessage implements StringWritable {
         return new Gs2Header(gs2CbindFlag, cbindName, authzid);
     }
 
+    /**
+     * Constructs a client-first-message for the given parameters.
+     * Under normal operation, this constructor is intended to be instantiated by a scram client, and not directly.
+     * However, this constructor is more user- or test-friendly, as the arguments are easier to provide without
+     * building other indirect object parameters.
+     * @param gs2CbindFlag The channel-binding flag
+     * @param authzid The optional authzid
+     * @param cbindName The optional channel binding name
+     * @param user The SCRAM user
+     * @param nonce The nonce for this session
+     * @throws IllegalArgumentException If the flag, user or nonce are null or empty
+     */
     public ClientFirstMessage(Gs2CbindFlag gs2CbindFlag, String authzid, String cbindName, String user, String nonce) {
         this(gs2Header(gs2CbindFlag, authzid, cbindName), user, nonce);
     }
 
+    /**
+     * Constructs a client-first-message for the given parameters, with no channel binding nor authzid.
+     * Under normal operation, this constructor is intended to be instantiated by a scram client, and not directly.
+     * However, this constructor is more user- or test-friendly, as the arguments are easier to provide without
+     * building other indirect object parameters.
+     * @param user The SCRAM user
+     * @param nonce The nonce for this session
+     * @throws IllegalArgumentException If the user or nonce are null or empty
+     */
     public ClientFirstMessage(String user, String nonce) {
         this(gs2Header(Gs2CbindFlag.CLIENT_NOT, null, null), user, nonce);
     }
@@ -107,6 +137,12 @@ public class ClientFirstMessage implements StringWritable {
         return nonce;
     }
 
+    /**
+     * Limited version of the {@link StringWritableCsv#toString()} method, that doesn't write the GS2 header.
+     * This method is useful to construct the auth message used as part of the SCRAM algorithm.
+     * @param sb A StringBuffer where to write the data to.
+     * @return The same StringBuffer
+     */
     public StringBuffer writeToWithoutGs2Header(StringBuffer sb) {
         return StringWritableCsv.writeTo(
                 sb,
