@@ -27,12 +27,16 @@ package com.ongres.scram.common;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
+import static com.ongres.scram.common.util.Preconditions.checkNotEmpty;
+import static com.ongres.scram.common.util.Preconditions.checkNotNull;
+
 /**
  * Class with static methods that provide support for converting to/from salNames.
  * @see <a href="https://tools.ietf.org/html/rfc5802#section-7">[RFC5802] Section 7: Formal Syntax</a>
  */
 public class ScramStringFormatting {
     private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder();
+    private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
 
     /**
      * Given a value-safe-char (normalized UTF-8 String),
@@ -132,11 +136,15 @@ public class ScramStringFormatting {
         return new String(replaced);
     }
 
-    public static String base64Encode(byte[] value) {
-        return BASE64_ENCODER.encodeToString(value);
+    public static String base64Encode(byte[] value) throws IllegalArgumentException {
+        return BASE64_ENCODER.encodeToString(checkNotNull(value, "value"));
     }
 
-    public static String base64Encode(String value) {
-        return base64Encode(value.getBytes(StandardCharsets.UTF_8));
+    public static String base64Encode(String value) throws IllegalArgumentException {
+        return base64Encode(checkNotEmpty(value, "value").getBytes(StandardCharsets.UTF_8));
+    }
+
+    public static byte[] base64Decode(String value) throws IllegalArgumentException {
+        return BASE64_DECODER.decode(checkNotEmpty(value, "value"));
     }
 }
