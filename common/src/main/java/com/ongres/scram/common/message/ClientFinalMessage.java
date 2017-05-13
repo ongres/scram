@@ -38,7 +38,7 @@ import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 
 
 /**
- * Constructs and parses client-last-messages. Formal syntax is:
+ * Constructs and parses client-final-messages. Formal syntax is:
  *
  * {@code
  * client-final-message-without-proof = channel-binding "," nonce ["," extensions]
@@ -49,7 +49,7 @@ import static com.ongres.scram.common.util.Preconditions.checkNotNull;
  *
  * @see <a href="https://tools.ietf.org/html/rfc5802#section-7">[RFC5802] Section 7</a>
  */
-public class ClientLastMessage implements StringWritable {
+public class ClientFinalMessage implements StringWritable {
     private final String cbind;
     private final String nonce;
     private final byte[] proof;
@@ -59,14 +59,14 @@ public class ClientLastMessage implements StringWritable {
     }
 
     /**
-     * Constructus a client-last-message with the provided gs2Header (the same one used in the client-first-message),
+     * Constructus a client-final-message with the provided gs2Header (the same one used in the client-first-message),
      * optionally the channel binding data, and the nonce.
      * This method is intended to be used by SCRAM clients, and not to be constructed directly.
      * @param gs2Header The GSS-API header
      * @param cbindData If using channel binding, the channel binding data
      * @param nonce
      */
-    public ClientLastMessage(Gs2Header gs2Header, Optional<byte[]> cbindData, String nonce, byte[] proof) {
+    public ClientFinalMessage(Gs2Header gs2Header, Optional<byte[]> cbindData, String nonce, byte[] proof) {
         this.cbind = generateCBind(
                 checkNotNull(gs2Header, "gs2Header"),
                 checkNotNull(cbindData, "cbindData")

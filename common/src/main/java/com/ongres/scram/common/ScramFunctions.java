@@ -190,7 +190,7 @@ public class ScramFunctions {
     }
 
     /**
-     * Computes the SCRAM client proof to be sent to the server on the client-last-message.
+     * Computes the SCRAM client proof to be sent to the server on the client-final-message.
      *
      * {@code
      *      ClientProof     := ClientKey XOR ClientSignature

@@ -28,7 +28,7 @@ import com.ongres.scram.common.ScramFunctions;
 import com.ongres.scram.common.ScramMechanism;
 import com.ongres.scram.common.gssapi.Gs2CbindFlag;
 import com.ongres.scram.common.message.ClientFirstMessage;
-import com.ongres.scram.common.message.ClientLastMessage;
+import com.ongres.scram.common.message.ClientFinalMessage;
 import com.ongres.scram.common.message.ServerFirstMessage;
 import com.ongres.scram.common.stringprep.StringPreparation;
 
@@ -114,7 +114,7 @@ public class ScramClient {
         }
 
         /**
-         * Generates a {@link FinalMessagesHandler}, that allows to generate the client-last-message and also
+         * Generates a {@link FinalMessagesHandler}, that allows to generate the client-final-message and also
          * receive and parse the server-first-message. It is based on the user's password.
          * @param password The user's password
          * @return The handler
@@ -130,7 +130,7 @@ public class ScramClient {
         }
 
         /**
-         * Generates a {@link FinalMessagesHandler}, that allows to generate the client-last-message and also
+         * Generates a {@link FinalMessagesHandler}, that allows to generate the client-final-message and also
          * receive and parse the server-first-message. It is based on the clientKey and storedKey,
          * which, if available, provide an optimized path versus providing the original user's password.
          * @param clientKey The client key, as per the SCRAM algorithm.
@@ -153,8 +153,8 @@ public class ScramClient {
     }
 
     /**
-     * Handler that allows to generate the client-last-message,
-     * as well as process the server-last-message and verify server's signature.
+     * Handler that allows to generate the client-final-message,
+     * as well as process the server-final-message and verify server's signature.
      * Generate the handler by calling either {@link ServerFirstHandler#finalMessagesHandler(String)}
      * or {@link ServerFirstHandler#finalMessagesHandler(byte[], byte[])}.
      */
@@ -182,15 +182,15 @@ public class ScramClient {
             );
         }
 
-        private String clientLastMessage(Optional<byte[]> cbindData) {
+        private String clientFinalMessage(Optional<byte[]> cbindData) {
             String authMessage = clientFirstMessage.writeToWithoutGs2Header(new StringBuffer())
                     .append(",")
                     .append(serverFirstMessageString)
                     .append(",")
-                    .append(ClientLastMessage.writeToWithoutProof(clientFirstMessage.getGs2Header(), cbindData, nonce))
+                    .append(ClientFinalMessage.writeToWithoutProof(clientFirstMessage.getGs2Header(), cbindData, nonce))
                     .toString();
 
-            ClientLastMessage clientLastMessage = new ClientLastMessage(
+            ClientFinalMessage clientFinalMessage = new ClientFinalMessage(
                     clientFirstMessage.getGs2Header(),
                     cbindData,
                     nonce,
@@ -200,37 +200,37 @@ public class ScramClient {
                     )
             );
 
-            return clientLastMessage.toString();
+            return clientFinalMessage.toString();
         }
 
         /**
-         * Generates the SCRAM representation of the client-last-message, including the given channel-binding data.
+         * Generates the SCRAM representation of the client-final-message, including the given channel-binding data.
          * @param cbindData The bytes of the channel-binding data
          * @return The message
          * @throws IllegalArgumentException If the channel binding data is null
          */
-        public String clientLastMessage(byte[] cbindData) throws IllegalArgumentException {
-            return clientLastMessage(Optional.of(checkNotNull(cbindData, "cbindData")));
+        public String clientFinalMessage(byte[] cbindData) throws IllegalArgumentException {
+            return clientFinalMessage(Optional.of(checkNotNull(cbindData, "cbindData")));
         }
 
         /**
-         * Generates the SCRAM representation of the client-last-message.
+         * Generates the SCRAM representation of the client-final-message.
          * @return The message
          */
-        public String clientLastMessage() {
-            return clientLastMessage(Optional.empty());
+        public String clientFinalMessage() {
+            return clientFinalMessage(Optional.empty());
         }
 
         /**
-         * Parses the server-last-message and verifies the signature.
-         * @param serverLastMessage The received message
+         * Parses the server-final-message and verifies the signature.
+         * @param serverFinalMessage The received message
          * @return True if the signature is correct, false otherwise
          * @throws IllegalArgumentException If the message is null or empty
          */
-        public boolean verifyServerSignature(String serverLastMessage) {
-            checkNotEmpty(serverLastMessage, "serverLastMessage");
+        public boolean verifyServerSignature(String serverFinalMessage) {
+            checkNotEmpty(serverFinalMessage, "serverFinalMessage");
 
-            // TODO: implement when the server-last-message object is implemented in scram-common
+            // TODO: implement when the server-final-message object is implemented in scram-common
 
             return false;
         }
@@ -240,7 +240,7 @@ public class ScramClient {
          * @return An optionally filled-in error message String.
          */
         public Optional<String> serverErrorMessage() {
-            // TODO: implement when the server-last-message object is implemented in scram-common
+            // TODO: implement when the server-final-message object is implemented in scram-common
 
             return Optional.empty();
         }

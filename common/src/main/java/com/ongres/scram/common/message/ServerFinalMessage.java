@@ -32,9 +32,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import static com.ongres.scram.common.util.Preconditions.checkArgument;
 import static com.ongres.scram.common.util.Preconditions.checkNotEmpty;
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 
@@ -79,7 +77,7 @@ import static com.ongres.scram.common.util.Preconditions.checkNotNull;
  *
  * @see <a href="https://tools.ietf.org/html/rfc5802#section-7">[RFC5802] Section 7</a>
  */
-public class ServerLastMessage implements StringWritable {
+public class ServerFinalMessage implements StringWritable {
 
     /**
      * Possible error messages sent on a server-final-message.
@@ -130,7 +128,7 @@ public class ServerLastMessage implements StringWritable {
      * @param verifier The bytes of the computed signature
      * @throws IllegalArgumentException If the verifier is null
      */
-    public ServerLastMessage(byte[] verifier) throws IllegalArgumentException {
+    public ServerFinalMessage(byte[] verifier) throws IllegalArgumentException {
         this.verifier = Optional.of(checkNotNull(verifier, "verifier"));
         this.error = Optional.empty();
     }
@@ -140,7 +138,7 @@ public class ServerLastMessage implements StringWritable {
      * @param error The error
      * @throws IllegalArgumentException If the error is null
      */
-    public ServerLastMessage(Error error) throws IllegalArgumentException {
+    public ServerFinalMessage(Error error) throws IllegalArgumentException {
         this.error = Optional.of(checkNotNull(error, "error"));
         this.verifier = Optional.empty();
     }
@@ -179,7 +177,7 @@ public class ServerLastMessage implements StringWritable {
      * @return A constructed server-final-message instance
      * @throws IllegalArgumentException If the message is null or empty
      */
-    public static ServerLastMessage parseFrom(String serverFinalMessage) throws IllegalArgumentException {
+    public static ServerFinalMessage parseFrom(String serverFinalMessage) throws IllegalArgumentException {
         checkNotEmpty(serverFinalMessage, "serverFinalMessage");
 
         String[] attributeValues = StringWritableCsv.parseFrom(serverFinalMessage, 1, 0);
@@ -190,9 +188,9 @@ public class ServerLastMessage implements StringWritable {
         ScramAttributeValue attributeValue = ScramAttributeValue.parse(attributeValues[0]);
         if(ScramAttributes.SERVER_SIGNATURE.getChar() == attributeValue.getChar()) {
             byte[] verifier = ScramStringFormatting.base64Decode(attributeValue.getValue());
-            return new ServerLastMessage(verifier);
+            return new ServerFinalMessage(verifier);
         } else if(ScramAttributes.ERROR.getChar() == attributeValue.getChar()) {
-            return new ServerLastMessage(Error.getByErrorMessage(attributeValue.getValue()));
+            return new ServerFinalMessage(Error.getByErrorMessage(attributeValue.getValue()));
         } else {
             throw new IllegalArgumentException(
                     "Invalid server-final-message: it must contain either a verifier or an error attribute"
