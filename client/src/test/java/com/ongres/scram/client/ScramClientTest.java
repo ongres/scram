@@ -25,49 +25,130 @@ package com.ongres.scram.client;
 
 
 import com.ongres.scram.common.stringprep.StringPreparations;
+import com.ongres.scram.common.util.CryptoUtil;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import java.util.Arrays;
+import java.util.stream.Stream;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 
 public class ScramClientTest {
-    private static final String USERNAME = "user";
-    private static final String PASSWORD = "pencil";
-    private static final String CLIENT_NONCE = "fyko+d2lbbFgONRv9qkxdawL";
-    private static final String CLIENT_FIRST_MESSAGE = "n,,n=" + USERNAME + ",r=" + CLIENT_NONCE;
-    private static final String SERVER_SALT = "QSXCR+Q6sek8bf92";
-    private static final int SERVER_ITERATIONS = 4096;
-    private static final String SERVER_NONCE = "3rfcNHYJY1ZVvWVs7j";
-    private static final String SERVER_FIRST_MESSAGE = "r=" + CLIENT_NONCE + SERVER_NONCE
-                                                            + ",s=" + SERVER_SALT + ",i=" + SERVER_ITERATIONS;
-    private static final String CLIENT_FINAL_MESSAGE = "c=biws,r=" + CLIENT_NONCE + SERVER_NONCE
-            + ",p=v0X8v3Bz2T0CJGbJQyF0X+HI4Ts=";
-    private static final String SERVER_FINAL_MESSAGE = "v=rmF9pqV8S7suAoZWja4dJRkFsKQ=";
+    @Test
+    public void getValid() {
+        ScramClient client1 = ScramClient
+                .channelBinding(ScramClient.ChannelBinding.NO)
+                .stringPreparation(StringPreparations.NO_PREPARATION)
+                .serverMechanisms("SCRAM-SHA-1")
+                .setup();
+        ScramClient client2 = ScramClient
+                .channelBinding(ScramClient.ChannelBinding.YES)
+                .stringPreparation(StringPreparations.NO_PREPARATION)
+                .serverMechanisms("SCRAM-SHA-1", "SCRAM-SHA-256-PLUS")
+                .nonceLength(64)
+                .setup();
+        ScramClient client3 = ScramClient
+                .channelBinding(ScramClient.ChannelBinding.IF_SERVER_SUPPORTS_IT)
+                .stringPreparation(StringPreparations.NO_PREPARATION)
+                .serverMechanisms("SCRAM-SHA-1", "SCRAM-SHA-1-PLUS")
+                .nonceSupplier(() -> CryptoUtil.nonce(36))
+                .setup();
+        ScramClient client4 = ScramClient
+                .channelBinding(ScramClient.ChannelBinding.IF_SERVER_SUPPORTS_IT)
+                .stringPreparation(StringPreparations.NO_PREPARATION)
+                .serverMechanismsCsv("SCRAM-SHA-1,SCRAM-SHA-256-PLUS")
+                .secureRandomAlgorithmProvider("SHA1PRNG", "SUN")
+                .nonceLength(64)
+                .setup();
+        ScramClient client5 = ScramClient
+                .channelBinding(ScramClient.ChannelBinding.IF_SERVER_SUPPORTS_IT)
+                .stringPreparation(StringPreparations.NO_PREPARATION)
+                .serverMechanismsCsv("SCRAM-SHA-1,SCRAM-SHA-256-PLUS")
+                .secureRandomAlgorithmProvider("SHA1PRNG", null)
+                .nonceLength(64)
+                .setup();
 
-    private final ScramClientGenerator scramClientGenerator = ScramClientGenerator
-            .channelBinding(ScramClientGenerator.ChannelBinding.NO)
-            .stringPreparation(StringPreparations.NO_PREPARATION)
-            .serverMechanisms("SCRAM-SHA-1")
-            .nonceSupplier(() -> CLIENT_NONCE)
-            .setup();
+        Stream.of(client1, client2, client3, client4, client5).forEach(c -> assertNotNull(c));
+    }
 
     @Test
-    public void completeTest() {
-        ScramClient scramClient = scramClientGenerator.scramClient(USERNAME);
-        assertEquals(CLIENT_FIRST_MESSAGE, scramClient.clientFirstMessage());
+    public void getInvalid() {
+        int n = 0;
 
-        ScramClient.ServerFirstProcessor serverFirstProcessor = scramClient.receiveServerFirstMessage(
-                SERVER_FIRST_MESSAGE
+        try {
+            assertNotNull(ScramClient
+                    .channelBinding(ScramClient.ChannelBinding.NO)
+                    .stringPreparation(StringPreparations.NO_PREPARATION)
+                    .serverMechanisms("SCRAM-SHA-1-PLUS")
+                    .setup()
+            );
+        } catch (IllegalArgumentException e) { n++; }
+        try {
+            assertNotNull(ScramClient
+                    .channelBinding(ScramClient.ChannelBinding.YES)
+                    .stringPreparation(StringPreparations.NO_PREPARATION)
+                    .serverMechanisms("SCRAM-SHA-1-PLUS,SCRAM-SAH-256-PLUS")
+                    .setup()
+            );
+        } catch (IllegalArgumentException e) { n++; }
+        try {
+            assertNotNull(ScramClient
+                    .channelBinding(ScramClient.ChannelBinding.IF_SERVER_SUPPORTS_IT)
+                    .stringPreparation(StringPreparations.NO_PREPARATION)
+                    .serverMechanisms("INVALID-SCRAM-MECHANISM")
+                    .setup()
+            );
+        } catch (IllegalArgumentException e) { n++; }
+        try {
+            assertNotNull(ScramClient
+                    .channelBinding(ScramClient.ChannelBinding.IF_SERVER_SUPPORTS_IT)
+                    .stringPreparation(StringPreparations.NO_PREPARATION)
+                    .serverMechanisms("SCRAM-SHA-1", "SCRAM-SHA-1-PLUS")
+                    .nonceSupplier(null)
+                    .setup()
+            );
+        } catch (IllegalArgumentException e) { n++; }
+        try {
+            assertNotNull(ScramClient
+                    .channelBinding(ScramClient.ChannelBinding.IF_SERVER_SUPPORTS_IT)
+                    .stringPreparation(StringPreparations.NO_PREPARATION)
+                    .serverMechanisms("SCRAM-SHA-1", "SCRAM-SHA-1-PLUS")
+                    .nonceLength(0)
+                    .setup()
+            );
+        } catch (IllegalArgumentException e) { n++; }
+        try {
+            assertNotNull(ScramClient
+                    .channelBinding(ScramClient.ChannelBinding.IF_SERVER_SUPPORTS_IT)
+                    .stringPreparation(StringPreparations.NO_PREPARATION)
+                    .serverMechanisms("SCRAM-SHA-1", "SCRAM-SHA-1-PLUS")
+                    .secureRandomAlgorithmProvider("Invalid algorithm", null)
+                    .setup()
+            );
+        } catch (IllegalArgumentException e) { n++; }
+        try {
+            assertNotNull(ScramClient
+                    .channelBinding(ScramClient.ChannelBinding.IF_SERVER_SUPPORTS_IT)
+                    .stringPreparation(StringPreparations.NO_PREPARATION)
+                    .serverMechanisms("SCRAM-SHA-1", "SCRAM-SHA-1-PLUS")
+                    .secureRandomAlgorithmProvider("SHA1PRNG", "Invalid provider")
+                    .setup()
+            );
+        } catch (IllegalArgumentException e) { n++; }
+
+        assertEquals(7, n);
+    }
+
+    @Test
+    public void supportedMechanismsTestAll() {
+        assertArrayEquals(
+                Arrays.stream(
+                        new String[] { "SCRAM-SHA-1", "SCRAM-SHA-1-PLUS", "SCRAM-SHA-256", "SCRAM-SHA-256-PLUS" }
+                ).sorted().toArray(),
+                ScramClient.supportedMechanisms().stream().sorted().toArray()
         );
-        assertEquals(SERVER_SALT, serverFirstProcessor.getSalt());
-        assertEquals(SERVER_ITERATIONS, serverFirstProcessor.getIteration());
-
-        ScramClient.ClientFinalProcessor clientFinalProcessor = serverFirstProcessor.finalMessagesHandler(PASSWORD);
-        assertEquals(CLIENT_FINAL_MESSAGE, clientFinalProcessor.clientFinalMessage());
-
-        ScramClient.ServerFinalProcessor serverFinalProcessor
-                = clientFinalProcessor.receiveServerFinalMessage(SERVER_FINAL_MESSAGE);
-        assertFalse(serverFinalProcessor.isError());
-        assertTrue(serverFinalProcessor.verifyServerSignature());
     }
 }
