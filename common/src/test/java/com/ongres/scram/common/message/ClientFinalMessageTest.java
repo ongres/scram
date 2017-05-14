@@ -24,6 +24,7 @@
 package com.ongres.scram.common.message;
 
 
+import com.ongres.scram.common.RfcExample;
 import com.ongres.scram.common.gssapi.Gs2CbindFlag;
 import com.ongres.scram.common.gssapi.Gs2Header;
 import org.junit.Test;
@@ -34,15 +35,12 @@ import static org.junit.Assert.assertEquals;
 
 
 public class ClientFinalMessageTest {
-    private static final String NONCE = "fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7j";
-    private static final String AUTH_MESSAGE = "c=biws,r=" + NONCE;
-
     @Test
     public void writeToWithoutProofValid() {
         StringBuffer sb = ClientFinalMessage.writeToWithoutProof(
-                new Gs2Header(Gs2CbindFlag.CLIENT_NOT), Optional.empty(), NONCE
+                new Gs2Header(Gs2CbindFlag.CLIENT_NOT), Optional.empty(), RfcExample.FULL_NONCE
         );
 
-        assertEquals(AUTH_MESSAGE, sb.toString());
+        assertEquals(RfcExample.CLIENT_FINAL_MESSAGE_WITHOUT_PROOF, sb.toString());
     }
 }

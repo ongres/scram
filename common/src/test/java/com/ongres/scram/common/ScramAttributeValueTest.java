@@ -24,8 +24,10 @@
 package com.ongres.scram.common;
 
 
+import com.ongres.scram.common.message.ServerFinalMessage;
 import org.junit.Test;
 
+import static com.ongres.scram.common.RfcExample.*;
 import static com.ongres.scram.common.ScramAttributes.CLIENT_PROOF;
 import static com.ongres.scram.common.ScramAttributes.USERNAME;
 import static org.junit.Assert.*;
@@ -86,15 +88,24 @@ public class ScramAttributeValueTest {
     @Test
     public void parseLegalValues() {
         String[] legalValues = new String[] {
-                CLIENT_PROOF.getChar() + "=" + "proof", USERNAME.getChar() + "=" + "username",
-                "n=user", "r=fyko+d2lbbFgONRv9qkxdawL",
-                "r=fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7j", "s=QSXCR+Q6sek8bf92",
-                "i=4096", "c=biws", "r=fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7j",
-                "p=v0X8v3Bz2T0CJGbJQyF0X+HI4Ts=", "v=rmF9pqV8S7suAoZWja4dJRkFsKQ="
+                CLIENT_PROOF.getChar() + "=" + "proof",
+                USERNAME.getChar() + "=" + "username",
+                "n=" + USER,
+                "r=" + CLIENT_NONCE,
+                "r=" + FULL_NONCE,
+                "s=" + SERVER_SALT,
+                "i=" + SERVER_ITERATIONS,
+                "c=" + GS2_HEADER_BASE64,
+                "p=" + CLIENT_FINAL_MESSAGE_PROOF,
+                SERVER_FINAL_MESSAGE,
         };
-
         for(String value : legalValues) {
             assertNotNull(ScramAttributeValue.parse(value));
+        }
+
+        // Test all possible error messages
+        for(ServerFinalMessage.Error e : ServerFinalMessage.Error.values()) {
+            assertNotNull(ScramAttributeValue.parse("e=" + e.getErrorMessage()));
         }
     }
 }

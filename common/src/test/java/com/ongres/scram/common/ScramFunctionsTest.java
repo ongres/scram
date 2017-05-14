@@ -31,14 +31,12 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
+import static com.ongres.scram.common.RfcExample.AUTH_MESSAGE;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
 
 
 public class ScramFunctionsTest {
-    private static final String AUTH_MESSAGE = "n=user,r=fyko+d2lbbFgONRv9qkxdawL" + ","
-            + "r=fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7j,s=QSXCR+Q6sek8bf92,i=4096" + ","
-            + "c=biws,r=fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7j";
     private static final Base64.Decoder BASE_64_DECODER = Base64.getDecoder();
 
     private void assertBytesEqualsBase64(String expected, byte[] actual) {

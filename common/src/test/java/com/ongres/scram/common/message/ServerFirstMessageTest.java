@@ -26,14 +26,12 @@ package com.ongres.scram.common.message;
 
 import org.junit.Test;
 
+import static com.ongres.scram.common.RfcExample.CLIENT_NONCE;
+import static com.ongres.scram.common.RfcExample.SERVER_FIRST_MESSAGE;
 import static org.junit.Assert.assertEquals;
 
 
 public class ServerFirstMessageTest {
-    private static final String CLIENT_NONCE = "fyko+d2lbbFgONRv9qkxdawL";
-    private static final String SERVER_FIRST_MESSAGE =
-            "r=fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7j,s=QSXCR+Q6sek8bf92,i=4096";
-
     @Test
     public void validConstructor() {
         ServerFirstMessage serverFirstMessage = new ServerFirstMessage(
