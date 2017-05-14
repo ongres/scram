@@ -29,6 +29,7 @@ import com.ongres.scram.common.ScramMechanism;
 import com.ongres.scram.common.gssapi.Gs2CbindFlag;
 import com.ongres.scram.common.message.ClientFirstMessage;
 import com.ongres.scram.common.message.ClientFinalMessage;
+import com.ongres.scram.common.message.ServerFinalMessage;
 import com.ongres.scram.common.message.ServerFirstMessage;
 import com.ongres.scram.common.stringprep.StringPreparation;
 
@@ -94,13 +95,13 @@ public class ScramClient {
     }
 
     /**
-     * Handles a received server-first-message.
+     * Process a received server-first-message.
      * Generate by calling {@link #receiveServerFirstMessage(String)}.
      */
-    public class ServerFirstHandler {
+    public class ServerFirstProcessor {
         private final ServerFirstMessage serverFirstMessage;
 
-        private ServerFirstHandler(String receivedServerFirstMessage) throws IllegalArgumentException {
+        private ServerFirstProcessor(String receivedServerFirstMessage) throws IllegalArgumentException {
             serverFirstMessageString = checkNotEmpty(receivedServerFirstMessage, "receivedServerFirstMessage");
             serverFirstMessage = ServerFirstMessage.parseFrom(receivedServerFirstMessage, nonce);
         }
@@ -114,14 +115,14 @@ public class ScramClient {
         }
 
         /**
-         * Generates a {@link FinalMessagesHandler}, that allows to generate the client-final-message and also
+         * Generates a {@link ClientFinalProcessor}, that allows to generate the client-final-message and also
          * receive and parse the server-first-message. It is based on the user's password.
          * @param password The user's password
          * @return The handler
          * @throws IllegalArgumentException If the message is null or empty
          */
-        public FinalMessagesHandler finalMessagesHandler(String password) throws IllegalArgumentException {
-            return new FinalMessagesHandler(
+        public ClientFinalProcessor finalMessagesHandler(String password) throws IllegalArgumentException {
+            return new ClientFinalProcessor(
                     serverFirstMessage.getNonce(),
                     checkNotEmpty(password, "password"),
                     getSalt(),
@@ -130,7 +131,7 @@ public class ScramClient {
         }
 
         /**
-         * Generates a {@link FinalMessagesHandler}, that allows to generate the client-final-message and also
+         * Generates a {@link ClientFinalProcessor}, that allows to generate the client-final-message and also
          * receive and parse the server-first-message. It is based on the clientKey and storedKey,
          * which, if available, provide an optimized path versus providing the original user's password.
          * @param clientKey The client key, as per the SCRAM algorithm.
@@ -142,9 +143,9 @@ public class ScramClient {
          * @return The handler
          * @throws IllegalArgumentException If the message is null or empty
          */
-        public FinalMessagesHandler finalMessagesHandler(byte[] clientKey, byte[] storedKey)
+        public ClientFinalProcessor finalMessagesHandler(byte[] clientKey, byte[] storedKey)
         throws IllegalArgumentException {
-            return new FinalMessagesHandler(
+            return new ClientFinalProcessor(
                     serverFirstMessage.getNonce(),
                     checkNotNull(clientKey, "clientKey"),
                     checkNotNull(storedKey, "storedKey")
@@ -153,42 +154,64 @@ public class ScramClient {
     }
 
     /**
-     * Handler that allows to generate the client-final-message,
+     * Processor that allows to generate the client-final-message,
      * as well as process the server-final-message and verify server's signature.
-     * Generate the handler by calling either {@link ServerFirstHandler#finalMessagesHandler(String)}
-     * or {@link ServerFirstHandler#finalMessagesHandler(byte[], byte[])}.
+     * Generate the processor by calling either {@link ServerFirstProcessor#finalMessagesHandler(String)}
+     * or {@link ServerFirstProcessor#finalMessagesHandler(byte[], byte[])}.
      */
-    public class FinalMessagesHandler {
+    public class ClientFinalProcessor {
         private final String nonce;
         private final byte[] clientKey;
         private final byte[] storedKey;
+        private final byte[] serverKey;
+        private String authMessage;
 
-        private FinalMessagesHandler(String nonce, byte[] clientKey, byte[] storedKey) throws IllegalArgumentException {
+        private ClientFinalProcessor(String nonce, byte[] clientKey, byte[] storedKey, byte[] serverKey)
+        throws IllegalArgumentException {
             this.nonce = nonce;
             this.clientKey = checkNotNull(clientKey, "clientKey");
             this.storedKey = checkNotNull(storedKey, "storedKey");
+            this.serverKey = checkNotNull(serverKey, "serverKey");
         }
 
-        private FinalMessagesHandler(String nonce, byte[] clientKey) {
-            this(nonce, clientKey, ScramFunctions.storedKey(scramMechanism, clientKey));
+        private ClientFinalProcessor(String nonce, byte[] clientKey, byte[] serverKey) {
+            this(nonce, clientKey, ScramFunctions.storedKey(scramMechanism, clientKey), serverKey);
         }
 
-        private FinalMessagesHandler(String nonce, String password, String salt, int iteration) {
+        private ClientFinalProcessor(String nonce, byte[] saltedPassword) {
             this(
                     nonce,
-                    ScramFunctions.clientKey(
-                        scramMechanism, stringPreparation, password, Base64.getDecoder().decode(salt), iteration
+                    ScramFunctions.clientKey(scramMechanism, saltedPassword),
+                    ScramFunctions.serverKey(scramMechanism, saltedPassword)
+            );
+        }
+
+        private ClientFinalProcessor(String nonce, String password, String salt, int iteration) {
+            this(
+                    nonce,
+                    ScramFunctions.saltedPassword(
+                            scramMechanism, stringPreparation, password, Base64.getDecoder().decode(salt), iteration
                     )
             );
         }
 
-        private String clientFinalMessage(Optional<byte[]> cbindData) {
-            String authMessage = clientFirstMessage.writeToWithoutGs2Header(new StringBuffer())
+        private synchronized void generateAndCacheAuthMessage(Optional<byte[]> cbindData) {
+            if(null != authMessage) {
+                return;
+            }
+
+            authMessage = clientFirstMessage.writeToWithoutGs2Header(new StringBuffer())
                     .append(",")
                     .append(serverFirstMessageString)
                     .append(",")
                     .append(ClientFinalMessage.writeToWithoutProof(clientFirstMessage.getGs2Header(), cbindData, nonce))
                     .toString();
+        }
+
+        private String clientFinalMessage(Optional<byte[]> cbindData) {
+            if(null == authMessage) {
+                generateAndCacheAuthMessage(cbindData);
+            }
 
             ClientFinalMessage clientFinalMessage = new ClientFinalMessage(
                     clientFirstMessage.getGs2Header(),
@@ -222,27 +245,60 @@ public class ScramClient {
         }
 
         /**
-         * Parses the server-final-message and verifies the signature.
-         * @param serverFinalMessage The received message
-         * @return True if the signature is correct, false otherwise
+         * Gets a {@link ServerFinalProcessor} to handle the server-last-message.
+         * @param serverFinalMessage The received server-final-message
+         * @return The processor
          * @throws IllegalArgumentException If the message is null or empty
          */
-        public boolean verifyServerSignature(String serverFinalMessage) {
+        public ServerFinalProcessor receiveServerFinalMessage(String serverFinalMessage)
+        throws IllegalArgumentException {
             checkNotEmpty(serverFinalMessage, "serverFinalMessage");
 
-            // TODO: implement when the server-final-message object is implemented in scram-common
+            return new ServerFinalProcessor(
+                    ServerFinalMessage.parseFrom(serverFinalMessage), authMessage, serverKey
+            );
+        }
+    }
 
-            return false;
+    /**
+     * Processor that allows to check the server-final-message, whether server sent an error or a signature,
+     * as well as validate the signature.
+     * Generate by calling {@link ClientFinalProcessor#receiveServerFinalMessage(String)}.
+     */
+    public class ServerFinalProcessor {
+        private final ServerFinalMessage serverFinalMessage;
+        private final String authMessage;
+        private final byte[] serverKey;
+
+        private ServerFinalProcessor(ServerFinalMessage serverFinalMessage, String authMessage, byte[] serverKey) {
+            this.serverFinalMessage = serverFinalMessage;
+            this.authMessage = authMessage;
+            this.serverKey = serverKey;
         }
 
-        /**
-         * Returns the server-generate error message if there was any error in the SCRAM process.
-         * @return An optionally filled-in error message String.
-         */
-        public Optional<String> serverErrorMessage() {
-            // TODO: implement when the server-final-message object is implemented in scram-common
+        public boolean isError() {
+            return serverFinalMessage.isError();
+        }
 
-            return Optional.empty();
+        public String getErrorMessage() throws IllegalStateException {
+            if(! isError()) {
+                throw new IllegalStateException("Server-final-message does not contain an error");
+            }
+
+            return serverFinalMessage.getError().get().getErrorMessage();
+        }
+
+        public boolean verifyServerSignature() throws IllegalStateException {
+            if(isError()) {
+                throw new IllegalStateException("Server-final-message had errors, cannot verify signature");
+            }
+
+            return ScramFunctions.verifyServerSignature(
+                    scramMechanism,
+                    serverKey,
+                    authMessage,
+                    serverFinalMessage.getVerifier().get()
+            );
         }
     }
 
@@ -252,7 +308,7 @@ public class ScramClient {
      * @return The handler
      * @throws IllegalArgumentException If the message is null or empty
      */
-    public ServerFirstHandler receiveServerFirstMessage(String serverFirstMessage) throws IllegalArgumentException {
-        return new ServerFirstHandler(checkNotEmpty(serverFirstMessage, "serverFirstMessage"));
+    public ServerFirstProcessor receiveServerFirstMessage(String serverFirstMessage) throws IllegalArgumentException {
+        return new ServerFirstProcessor(checkNotEmpty(serverFirstMessage, "serverFirstMessage"));
     }
 }

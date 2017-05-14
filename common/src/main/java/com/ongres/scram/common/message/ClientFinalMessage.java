@@ -55,7 +55,12 @@ public class ClientFinalMessage implements StringWritable {
     private final byte[] proof;
 
     private static String generateCBind(Gs2Header gs2Header, Optional<byte[]> cbindData) {
-        return gs2Header.writeTo(new StringBuffer()).append(",").append(cbindData.orElse(null)).toString();
+        StringBuffer sb = new StringBuffer();
+        gs2Header.writeTo(sb)
+                .append(',');
+        cbindData.ifPresent(v -> sb.append(v));
+
+        return sb.toString();
     }
 
     /**
