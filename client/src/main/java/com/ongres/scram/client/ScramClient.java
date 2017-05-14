@@ -111,15 +111,19 @@ public class ScramClient {
             Optional<ScramMechanisms> nonChannelBindingMechanism, Optional<ScramMechanisms> channelBindingMechanism,
             SecureRandom secureRandom, Supplier<String> nonceSupplier
     ) {
-        if(! nonChannelBindingMechanism.isPresent() && ! channelBindingMechanism.isPresent()) {
-            throw new IllegalArgumentException("Either a channel-binding or a non-binding mechanism must be present");
-        }
+        assert null != channelBinding : "channelBinding";
+        assert null != stringPreparation : "stringPreparation";
+        assert nonChannelBindingMechanism.isPresent() || channelBindingMechanism.isPresent()
+                : "Either a channel-binding or a non-binding mechanism must be present";
+        assert null != secureRandom : "secureRandom";
+        assert null != nonceSupplier : "nonceSupplier";
 
-        this.channelBinding = checkNotNull(channelBinding, "channelBinding");
-        this.stringPreparation = checkNotNull(stringPreparation, "stringPreparation");
+
+        this.channelBinding = channelBinding;
+        this.stringPreparation = stringPreparation;
         this.scramMechanism = nonChannelBindingMechanism.orElseGet(() -> channelBindingMechanism.get());
-        this.secureRandom = checkNotNull(secureRandom, "secureRandom");
-        this.nonceSupplier = checkNotNull(nonceSupplier, "nonceSupplier");
+        this.secureRandom = secureRandom;
+        this.nonceSupplier = nonceSupplier;
     }
 
     /**

@@ -166,12 +166,15 @@ public class ScramSession {
         private final byte[] serverKey;
         private String authMessage;
 
-        private ClientFinalProcessor(String nonce, byte[] clientKey, byte[] storedKey, byte[] serverKey)
-        throws IllegalArgumentException {
+        private ClientFinalProcessor(String nonce, byte[] clientKey, byte[] storedKey, byte[] serverKey) {
+            assert null != clientKey : "clientKey";
+            assert null != storedKey : "storedKey";
+            assert null != serverKey : "serverKey";
+
             this.nonce = nonce;
-            this.clientKey = checkNotNull(clientKey, "clientKey");
-            this.storedKey = checkNotNull(storedKey, "storedKey");
-            this.serverKey = checkNotNull(serverKey, "serverKey");
+            this.clientKey = clientKey;
+            this.storedKey = storedKey;
+            this.serverKey = serverKey;
         }
 
         private ClientFinalProcessor(String nonce, byte[] clientKey, byte[] serverKey) {
