@@ -58,7 +58,13 @@ public class ClientFinalMessage implements StringWritable {
         StringBuffer sb = new StringBuffer();
         gs2Header.writeTo(sb)
                 .append(',');
-        cbindData.ifPresent(v -> sb.append(v));
+
+        cbindData.ifPresent(
+                v -> new ScramAttributeValue(
+                        ScramAttributes.CHANNEL_BINDING,
+                        ScramStringFormatting.base64Encode(cbindData.get())
+                ).writeTo(sb)
+        );
 
         return sb.toString();
     }
