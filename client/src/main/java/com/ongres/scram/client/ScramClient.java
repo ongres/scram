@@ -108,7 +108,7 @@ public class ScramClient {
 
     private ScramClient(
             ChannelBinding channelBinding, StringPreparation stringPreparation,
-            Optional<ScramMechanisms> nonChannelBindingMechanism, Optional<ScramMechanisms> channelBindingMechanism,
+            Optional<ScramMechanism> nonChannelBindingMechanism, Optional<ScramMechanism> channelBindingMechanism,
             SecureRandom secureRandom, Supplier<String> nonceSupplier
     ) {
         assert null != channelBinding : "channelBinding";
@@ -163,8 +163,8 @@ public class ScramClient {
      */
     public static class PreBuilder2 extends PreBuilder1 {
         protected final StringPreparation stringPreparation;
-        protected Optional<ScramMechanisms> nonChannelBindingMechanism = Optional.empty();
-        protected Optional<ScramMechanisms> channelBindingMechanism = Optional.empty();
+        protected Optional<ScramMechanism> nonChannelBindingMechanism = Optional.empty();
+        protected Optional<ScramMechanism> channelBindingMechanism = Optional.empty();
 
         private PreBuilder2(ChannelBinding channelBinding, StringPreparation stringPreparation) {
             super(channelBinding);
@@ -222,8 +222,8 @@ public class ScramClient {
      * Use instead {@link ScramClient#channelBinding(ChannelBinding)} and chained methods.
      */
     public static class Builder extends PreBuilder2 {
-        private final Optional<ScramMechanisms> nonChannelBindingMechanism;
-        private final Optional<ScramMechanisms> channelBindingMechanism;
+        private final Optional<ScramMechanism> nonChannelBindingMechanism;
+        private final Optional<ScramMechanism> channelBindingMechanism;
 
         private SecureRandom secureRandom = new SecureRandom();
         private Supplier<String> nonceSupplier;
@@ -231,7 +231,7 @@ public class ScramClient {
 
         private Builder(
                 ChannelBinding channelBinding, StringPreparation stringPreparation,
-                Optional<ScramMechanisms> nonChannelBindingMechanism, Optional<ScramMechanisms> channelBindingMechanism
+                Optional<ScramMechanism> nonChannelBindingMechanism, Optional<ScramMechanism> channelBindingMechanism
         ) {
             super(channelBinding, stringPreparation);
             this.nonChannelBindingMechanism = nonChannelBindingMechanism;
