@@ -35,7 +35,7 @@ public class ScramSessionTest {
     private final ScramClient scramClient = ScramClient
             .channelBinding(ScramClient.ChannelBinding.NO)
             .stringPreparation(StringPreparations.NO_PREPARATION)
-            .serverMechanisms("SCRAM-SHA-1")
+            .selectMechanismBasedOnServerAdvertised("SCRAM-SHA-1")
             .nonceSupplier(() -> CLIENT_NONCE)
             .setup();
 

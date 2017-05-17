@@ -184,7 +184,7 @@ public class ScramClient {
          * @param serverMechanisms One or more IANA-registered SCRAM mechanism names, as advertised by the server
          * @throws IllegalArgumentException If no server mechanisms are provided
          */
-        public Builder serverMechanisms(String... serverMechanisms) {
+        public Builder selectMechanismBasedOnServerAdvertised(String... serverMechanisms) {
             checkArgument(null != serverMechanisms && serverMechanisms.length > 0, "serverMechanisms");
 
             nonChannelBindingMechanism = ScramMechanisms.selectMatchingMechanism(false, serverMechanisms);
@@ -206,14 +206,49 @@ public class ScramClient {
 
         /**
          * Inform the client of the SCRAM mechanisms supported by the server.
-         * Calls {@link Builder#serverMechanisms(String...)} with the results of splitting the received comma-separated
-         * values.
+         * Calls {@link Builder#selectMechanismBasedOnServerAdvertised(String...)}
+         * with the results of splitting the received comma-separated values.
          * @param serverMechanismsCsv A CSV (Comma-Separated Values) String, containining all the SCRAM mechanisms
          *                            supported by the server
-         * @throws IllegalArgumentException If serverMechanismsCsv is null
+         * @throws IllegalArgumentException If selectMechanismBasedOnServerAdvertisedCsv is null
          */
-        public Builder serverMechanismsCsv(String serverMechanismsCsv) throws IllegalArgumentException {
-            return serverMechanisms(checkNotNull(serverMechanismsCsv, "serverMechanismsCsv").split(","));
+        public Builder selectMechanismBasedOnServerAdvertisedCsv(String serverMechanismsCsv)
+        throws IllegalArgumentException {
+            return selectMechanismBasedOnServerAdvertised(
+                    checkNotNull(serverMechanismsCsv, "serverMechanismsCsv").split(",")
+            );
+        }
+
+        /**
+         * Select a fixed client mechanism. It must be compatible with the channel binding selection previously
+         * performed. If automatic selection based on server advertised mechanisms is preferred, please use methods
+         * {@link Builder#selectMechanismBasedOnServerAdvertised(String...)} or
+         * {@link Builder#selectMechanismBasedOnServerAdvertisedCsv(String)}.
+         * @param scramMechanism The selected scram mechanism
+         * @throws IllegalArgumentException If the selected mechanism is null or not compatible with the prior
+         *                                  channel binding selection,
+         *                                  or channel binding selection is dependent on the server advertised methods
+         */
+        public Builder selectClientMechanism(ScramMechanism scramMechanism) {
+            checkNotNull(scramMechanism, "scramMechanism");
+            if(channelBinding == ChannelBinding.IF_SERVER_SUPPORTS_IT) {
+                throw new IllegalArgumentException(
+                        "If server selection is considered, no direct client selection should be performed"
+                );
+            }
+            if(
+                    channelBinding == ChannelBinding.YES && ! scramMechanism.supportsChannelBinding()
+                ||
+                    channelBinding == ChannelBinding.NO && scramMechanism.supportsChannelBinding()
+            ) {
+                throw new IllegalArgumentException("Incompatible selection of mechanism and channel binding");
+            }
+
+            if(scramMechanism.supportsChannelBinding()) {
+                return new Builder(channelBinding, stringPreparation, Optional.empty(), Optional.of(scramMechanism));
+            } else {
+                return new Builder(channelBinding, stringPreparation, Optional.of(scramMechanism), Optional.empty());
+            }
         }
     }
 
