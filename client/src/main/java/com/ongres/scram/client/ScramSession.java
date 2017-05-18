@@ -121,7 +121,7 @@ public class ScramSession {
          * @return The handler
          * @throws IllegalArgumentException If the message is null or empty
          */
-        public ClientFinalProcessor finalMessagesHandler(String password) throws IllegalArgumentException {
+        public ClientFinalProcessor clientFinalProcessor(String password) throws IllegalArgumentException {
             return new ClientFinalProcessor(
                     serverFirstMessage.getNonce(),
                     checkNotEmpty(password, "password"),
@@ -143,7 +143,7 @@ public class ScramSession {
          * @return The handler
          * @throws IllegalArgumentException If the message is null or empty
          */
-        public ClientFinalProcessor finalMessagesHandler(byte[] clientKey, byte[] storedKey)
+        public ClientFinalProcessor clientFinalProcessor(byte[] clientKey, byte[] storedKey)
         throws IllegalArgumentException {
             return new ClientFinalProcessor(
                     serverFirstMessage.getNonce(),
@@ -156,8 +156,8 @@ public class ScramSession {
     /**
      * Processor that allows to generate the client-final-message,
      * as well as process the server-final-message and verify server's signature.
-     * Generate the processor by calling either {@link ServerFirstProcessor#finalMessagesHandler(String)}
-     * or {@link ServerFirstProcessor#finalMessagesHandler(byte[], byte[])}.
+     * Generate the processor by calling either {@link ServerFirstProcessor#clientFinalProcessor(String)}
+     * or {@link ServerFirstProcessor#clientFinalProcessor(byte[], byte[])}.
      */
     public class ClientFinalProcessor {
         private final String nonce;

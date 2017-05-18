@@ -50,7 +50,7 @@ public class ScramSessionTest {
         assertEquals(SERVER_SALT, serverFirstProcessor.getSalt());
         assertEquals(SERVER_ITERATIONS, serverFirstProcessor.getIteration());
 
-        ScramSession.ClientFinalProcessor clientFinalProcessor = serverFirstProcessor.finalMessagesHandler(PASSWORD);
+        ScramSession.ClientFinalProcessor clientFinalProcessor = serverFirstProcessor.clientFinalProcessor(PASSWORD);
         assertEquals(CLIENT_FINAL_MESSAGE, clientFinalProcessor.clientFinalMessage());
 
         ScramSession.ServerFinalProcessor serverFinalProcessor
