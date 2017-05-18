@@ -343,6 +343,14 @@ public class ScramClient {
         }
     }
 
+    public StringPreparation getStringPreparation() {
+        return stringPreparation;
+    }
+
+    public ScramMechanism getScramMechanism() {
+        return scramMechanism;
+    }
+
     /**
      * List all the supported SCRAM mechanisms by this client implementation
      * @return A list of the IANA-registered, SCRAM supported mechanisms
