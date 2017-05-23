@@ -61,9 +61,9 @@ public class ServerFirstMessage implements StringWritable {
      * @param clientNonce String representing the client-first-message
      * @param serverNonce Server serverNonce
      * @param salt The salt
-     * @param iteration The iteration count (must be >= 4096)
-     * @return The constructed ServerFirstMessage
-     * @throws IllegalArgumentException If clientFirstMessage, serverNonce or salt are null or empty, or iteration < 4096
+     * @param iteration The iteration count (must be &lt;= 4096)
+     * @throws IllegalArgumentException If clientFirstMessage, serverNonce or salt are null or empty,
+     *                                  or iteration &lt; 4096
      */
     public ServerFirstMessage(
             String clientNonce, String serverNonce, String salt, int iteration

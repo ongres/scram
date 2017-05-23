@@ -75,7 +75,8 @@ public class ClientFinalMessage implements StringWritable {
      * This method is intended to be used by SCRAM clients, and not to be constructed directly.
      * @param gs2Header The GSS-API header
      * @param cbindData If using channel binding, the channel binding data
-     * @param nonce
+     * @param nonce The nonce
+     * @param proof The bytes representing the computed client proof
      */
     public ClientFinalMessage(Gs2Header gs2Header, Optional<byte[]> cbindData, String nonce, byte[] proof) {
         this.cbind = generateCBind(

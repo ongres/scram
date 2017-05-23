@@ -130,6 +130,7 @@ public class ScramClient {
      * Selects for the client whether to use channel binding.
      * Refer to {@link ChannelBinding} documentation for the description of the possible values.
      * @param channelBinding The channel binding setting
+     * @return The next step in the chain (PreBuilder1).
      * @throws IllegalArgumentException If channelBinding is null
      */
     public static PreBuilder1 channelBinding(ChannelBinding channelBinding) throws IllegalArgumentException {
@@ -159,7 +160,7 @@ public class ScramClient {
 
     /**
      * This class is not meant to be used directly.
-     * Use {@link ScramClient#channelBinding(ChannelBinding)#stringPreparation(StringPreparation)} instead.
+     * Use {@link ScramClient#channelBinding(ChannelBinding)}.{#stringPreparation(StringPreparation)} instead.
      */
     public static class PreBuilder2 extends PreBuilder1 {
         protected final StringPreparation stringPreparation;
@@ -278,10 +279,11 @@ public class ScramClient {
          * based on the given algorithm and optionally provider.
          * This SecureRandom instance will be used to generate secure random values,
          * like the ones required to generate the nonce
-         * (unless an external nonce provider is given via {@link Builder#nonceSupplier(Supplier<String)}).
-         * Algorithm and provider names are those supported by the {@link SecureRandom} class.         *
+         * (unless an external nonce provider is given via {@link Builder#nonceSupplier(Supplier)}).
+         * Algorithm and provider names are those supported by the {@link SecureRandom} class.
          * @param algorithm The name of the algorithm to use.
          * @param provider The name of the provider of SecureRandom. Might be null.
+         * @return The same class
          * @throws IllegalArgumentException If algorithm is null, or either the algorithm or provider are not supported
          */
         public Builder secureRandomAlgorithmProvider(String algorithm, String provider)
@@ -306,6 +308,7 @@ public class ScramClient {
          *                      <a href="https://tools.ietf.org/html/rfc5802#section-7">SCRAM RFC</a>
          *                      only ASCII printable characters (except the comma, ',') are permitted on a nonce.
          *                      Length is not limited.
+         * @return The same class
          * @throws IllegalArgumentException If nonceSupplier is null
          */
         public Builder nonceSupplier(Supplier<String> nonceSupplier) throws IllegalArgumentException {
@@ -316,8 +319,9 @@ public class ScramClient {
 
         /**
          * Sets a non-default ({@link ScramClient#DEFAULT_NONCE_LENGTH}) length for the nonce generation,
-         * if no alternate nonceSupplier is provided via {@link Builder#nonceSupplier(Supplier<String>)}.
+         * if no alternate nonceSupplier is provided via {@link Builder#nonceSupplier(Supplier)}.
          * @param length The length of the nonce. Must be positive and greater than 0
+         * @return The same class
          * @throws IllegalArgumentException If length is less than 1
          */
         public Builder nonceLength(int length) throws IllegalArgumentException {
