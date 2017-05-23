@@ -66,3 +66,36 @@ serverFinal.isError()
 serverFinal.getErrorMessage()
 serverFinal.verifyServerSignature()
 ```
+
+## Example
+
+The following example runs a full SCRAM session, using the RFC's data as an example.
+
+```java
+ScramClient scramClient = ScramClient
+        .channelBinding(ScramClient.ChannelBinding.NO)
+        .stringPreparation(StringPreparations.NO_PREPARATION)
+        .selectMechanismBasedOnServerAdvertised("SCRAM-SHA-1")
+        .nonceSupplier(() -> "fyko+d2lbbFgONRv9qkxdawL")
+        .setup();
+
+ScramSession scramSession = scramClient.scramSession("user");
+System.out.println(scramSession.clientFirstMessage());
+
+ScramSession.ServerFirstProcessor serverFirstProcessor = scramSession.receiveServerFirstMessage(
+        "r=fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7j,s=QSXCR+Q6sek8bf92,i=4096"
+);
+System.out.println("Salt: " + serverFirstProcessor.getSalt() + ", i: " + serverFirstProcessor.getIteration());
+
+ScramSession.ClientFinalProcessor clientFinalProcessor
+        = serverFirstProcessor.clientFinalProcessor("pencil");
+System.out.println(clientFinalProcessor.clientFinalMessage());
+
+ScramSession.ServerFinalProcessor serverFinalProcessor
+        = clientFinalProcessor.receiveServerFinalMessage("v=rmF9pqV8S7suAoZWja4dJRkFsKQ=");
+if(serverFinalProcessor.isError()) {
+        // throw authentication exception
+}
+
+System.out.println(serverFinalProcessor.verifyServerSignature());
+```
