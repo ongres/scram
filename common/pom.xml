@@ -9,7 +9,7 @@
     <parent>
         <artifactId>scram</artifactId>
         <groupId>com.ongres</groupId>
-        <version>0.10-SNAPSHOT</version>
+        <version>1.0.0-beta.1</version>
     </parent>
     <artifactId>scram-common</artifactId>
 

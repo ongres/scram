@@ -8,12 +8,14 @@
 
     <groupId>com.ongres</groupId>
     <artifactId>scram</artifactId>
-    <version>0.10-SNAPSHOT</version>
+    <version>1.0.0-beta.1</version>
+    <packaging>pom</packaging>
+
     <modules>
         <module>common</module>
         <module>client</module>
     </modules>
-    <packaging>pom</packaging>
+
 
     <name>SCRAM</name>
     <description>Java Implementation of the Salted Challenge Response Authentication Mechanism (SCRAM)</description>
