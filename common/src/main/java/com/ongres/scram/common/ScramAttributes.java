@@ -24,7 +24,7 @@
 package com.ongres.scram.common;
 
 
-import com.ongres.scram.common.exception.ScramException;
+import com.ongres.scram.common.exception.ScramParseException;
 import com.ongres.scram.common.util.CharAttribute;
 
 import java.util.HashMap;
@@ -146,11 +146,11 @@ public enum ScramAttributes implements CharAttribute {
      * Find a SCRAMAttribute by its character.
      * @param c The character.
      * @return The SCRAMAttribute that has that character.
-     * @throws ScramException If no SCRAMAttribute has this character.
+     * @throws ScramParseException If no SCRAMAttribute has this character.
      */
-    public static ScramAttributes byChar(char c) throws ScramException {
+    public static ScramAttributes byChar(char c) throws ScramParseException {
         if(! REVERSE_MAPPING.containsKey(c)) {
-            throw new ScramException("Attribute with char '" + c + "' does not exist");
+            throw new ScramParseException("Attribute with char '" + c + "' does not exist");
         }
 
         return REVERSE_MAPPING.get(c);

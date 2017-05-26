@@ -24,7 +24,7 @@
 package com.ongres.scram.common.message;
 
 
-import com.ongres.scram.common.exception.ScramException;
+import com.ongres.scram.common.exception.ScramParseException;
 import org.junit.Test;
 
 import static com.ongres.scram.common.RfcExample.CLIENT_NONCE;
@@ -46,7 +46,7 @@ public class ServerFirstMessageTest {
     }
 
     @Test
-    public void validParseFrom() throws ScramException {
+    public void validParseFrom() throws ScramParseException {
         ServerFirstMessage serverFirstMessage = ServerFirstMessage.parseFrom(SERVER_FIRST_MESSAGE, CLIENT_NONCE);
 
         assertEquals(SERVER_FIRST_MESSAGE, serverFirstMessage.toString());

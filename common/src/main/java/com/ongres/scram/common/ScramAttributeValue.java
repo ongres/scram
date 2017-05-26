@@ -24,10 +24,9 @@
 package com.ongres.scram.common;
 
 
-import com.ongres.scram.common.exception.ScramException;
+import com.ongres.scram.common.exception.ScramParseException;
 import com.ongres.scram.common.util.AbstractCharAttributeValue;
 
-import static com.ongres.scram.common.util.Preconditions.checkNotEmpty;
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 
 
@@ -47,12 +46,12 @@ public class ScramAttributeValue extends AbstractCharAttributeValue {
      * Parses a potential ScramAttributeValue String.
      * @param value The string that contains the Attribute-Value pair.
      * @return The parsed class
-     * @throws ScramException If the argument is empty or an invalid Attribute-Value
+     * @throws ScramParseException If the argument is empty or an invalid Attribute-Value
      */
     public static ScramAttributeValue parse(String value)
-    throws ScramException {
+    throws ScramParseException {
         if(null == value || value.length() < 3 || value.charAt(1) != '=') {
-            throw new ScramException("Invalid ScramAttributeValue '" + value + "'");
+            throw new ScramParseException("Invalid ScramAttributeValue '" + value + "'");
         }
 
         return new ScramAttributeValue(ScramAttributes.byChar(value.charAt(0)), value.substring(2));

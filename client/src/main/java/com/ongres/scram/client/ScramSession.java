@@ -26,7 +26,9 @@ package com.ongres.scram.client;
 
 import com.ongres.scram.common.ScramFunctions;
 import com.ongres.scram.common.ScramMechanism;
-import com.ongres.scram.common.exception.ScramException;
+import com.ongres.scram.common.exception.ScramInvalidServerSignatureException;
+import com.ongres.scram.common.exception.ScramParseException;
+import com.ongres.scram.common.exception.ScramServerErrorException;
 import com.ongres.scram.common.gssapi.Gs2CbindFlag;
 import com.ongres.scram.common.message.ClientFirstMessage;
 import com.ongres.scram.common.message.ClientFinalMessage;
@@ -102,7 +104,7 @@ public class ScramSession {
     public class ServerFirstProcessor {
         private final ServerFirstMessage serverFirstMessage;
 
-        private ServerFirstProcessor(String receivedServerFirstMessage) throws ScramException {
+        private ServerFirstProcessor(String receivedServerFirstMessage) throws ScramParseException {
             serverFirstMessageString = receivedServerFirstMessage;
             serverFirstMessage = ServerFirstMessage.parseFrom(receivedServerFirstMessage, nonce);
         }
@@ -249,61 +251,27 @@ public class ScramSession {
         }
 
         /**
-         * Gets a {@link ServerFinalProcessor} to handle the server-final-message.
+         * Receive and process the server-final-message.
+         * Server SCRAM signatures is verified.
          * @param serverFinalMessage The received server-final-message
-         * @return The processor
-         * @throws ScramException If the message is not a valid server-final-message
+         * @throws ScramParseException If the message is not a valid server-final-message
+         * @throws ScramServerErrorException If the server-final-message contained an error
          * @throws IllegalArgumentException If the message is null or empty
          */
-        public ServerFinalProcessor receiveServerFinalMessage(String serverFinalMessage)
-        throws ScramException, IllegalArgumentException {
+        public void receiveServerFinalMessage(String serverFinalMessage)
+        throws ScramParseException, ScramServerErrorException, ScramInvalidServerSignatureException,
+        IllegalArgumentException {
             checkNotEmpty(serverFinalMessage, "serverFinalMessage");
 
-            return new ServerFinalProcessor(
-                    ServerFinalMessage.parseFrom(serverFinalMessage), authMessage, serverKey
-            );
-        }
-    }
-
-    /**
-     * Processor that allows to check the server-final-message, whether server sent an error or a signature,
-     * as well as validate the signature.
-     * Generate by calling {@link ClientFinalProcessor#receiveServerFinalMessage(String)}.
-     */
-    public class ServerFinalProcessor {
-        private final ServerFinalMessage serverFinalMessage;
-        private final String authMessage;
-        private final byte[] serverKey;
-
-        private ServerFinalProcessor(ServerFinalMessage serverFinalMessage, String authMessage, byte[] serverKey) {
-            this.serverFinalMessage = serverFinalMessage;
-            this.authMessage = authMessage;
-            this.serverKey = serverKey;
-        }
-
-        public boolean isError() {
-            return serverFinalMessage.isError();
-        }
-
-        public String getErrorMessage() throws IllegalStateException {
-            if(! isError()) {
-                throw new IllegalStateException("Server-final-message does not contain an error");
+            ServerFinalMessage message = ServerFinalMessage.parseFrom(serverFinalMessage);
+            if(message.isError()) {
+                throw new ScramServerErrorException(message.getError().get());
             }
-
-            return serverFinalMessage.getError().get().getErrorMessage();
-        }
-
-        public boolean verifyServerSignature() throws IllegalStateException {
-            if(isError()) {
-                throw new IllegalStateException("Server-final-message had errors, cannot verify signature");
+            if(! ScramFunctions.verifyServerSignature(
+                    scramMechanism, serverKey, authMessage, message.getVerifier().get()
+            )) {
+                throw new ScramInvalidServerSignatureException("Invalid server SCRAM signature");
             }
-
-            return ScramFunctions.verifyServerSignature(
-                    scramMechanism,
-                    serverKey,
-                    authMessage,
-                    serverFinalMessage.getVerifier().get()
-            );
         }
     }
 
@@ -311,11 +279,11 @@ public class ScramSession {
      * Constructs a handler for the server-first-message, from its String representation.
      * @param serverFirstMessage The message
      * @return The handler
-     * @throws ScramException If the message is not a valid server-first-message
+     * @throws ScramParseException If the message is not a valid server-first-message
      * @throws IllegalArgumentException If the message is null or empty
      */
     public ServerFirstProcessor receiveServerFirstMessage(String serverFirstMessage)
-    throws ScramException, IllegalArgumentException {
+    throws ScramParseException, IllegalArgumentException {
         return new ServerFirstProcessor(checkNotEmpty(serverFirstMessage, "serverFirstMessage"));
     }
 }

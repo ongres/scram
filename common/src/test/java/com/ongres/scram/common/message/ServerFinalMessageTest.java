@@ -27,7 +27,7 @@ package com.ongres.scram.common.message;
 import com.ongres.scram.common.ScramAttributes;
 import com.ongres.scram.common.ScramFunctions;
 import com.ongres.scram.common.ScramMechanisms;
-import com.ongres.scram.common.exception.ScramException;
+import com.ongres.scram.common.exception.ScramParseException;
 import com.ongres.scram.common.stringprep.StringPreparations;
 import org.junit.Test;
 
@@ -61,7 +61,7 @@ public class ServerFinalMessageTest {
     }
 
     @Test
-    public void validParseFrom() throws ScramException {
+    public void validParseFrom() throws ScramParseException {
         ServerFinalMessage serverFinalMessage1 = ServerFinalMessage.parseFrom(SERVER_FINAL_MESSAGE);
         assertEquals(SERVER_FINAL_MESSAGE, serverFinalMessage1.toString());
         assertFalse(serverFinalMessage1.isError());

@@ -24,29 +24,39 @@
 package com.ongres.scram.common.exception;
 
 
-import javax.security.sasl.SaslException;
+import com.ongres.scram.common.message.ServerFinalMessage;
 
 
 /**
- * This class represents an error when using SCRAM, which is a SASL method.
- *
- * {@link SaslException}
+ * This class represents an error when parsing SCRAM messages
  */
-public class ScramException extends SaslException {
-    /**
-     * Constructs a new instance of ScramException with a detailed message.
-     * @param detail A String containing details about the exception
-     */
-    public ScramException(String detail) {
-        super(detail);
+public class ScramServerErrorException extends ScramException {
+    private final ServerFinalMessage.Error error;
+
+    private static String toString(ServerFinalMessage.Error error) {
+        return "Server-final-message is an error message. Error: " + error.getErrorMessage();
     }
 
     /**
-     * Constructs a new instance of ScramException with a detailed message and a root cause.
-     * @param detail A String containing details about the exception
+     * Constructs a new instance of ScramServerErrorException with a detailed message.
+     * @param error The SCRAM error in the message
+     */
+    public ScramServerErrorException(ServerFinalMessage.Error error) {
+        super(toString(error));
+        this.error = error;
+    }
+
+    /**
+     * Constructs a new instance of ScramServerErrorException with a detailed message and a root cause.
+     * @param error The SCRAM error in the message
      * @param ex The root exception
      */
-    public ScramException(String detail, Throwable ex) {
-        super(detail, ex);
+    public ScramServerErrorException(ServerFinalMessage.Error error, Throwable ex) {
+        super(toString(error), ex);
+        this.error = error;
+    }
+
+    public ServerFinalMessage.Error getError() {
+        return error;
     }
 }

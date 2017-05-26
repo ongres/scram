@@ -24,7 +24,9 @@
 package com.ongres.scram.client;
 
 
-import com.ongres.scram.common.exception.ScramException;
+import com.ongres.scram.common.exception.ScramInvalidServerSignatureException;
+import com.ongres.scram.common.exception.ScramParseException;
+import com.ongres.scram.common.exception.ScramServerErrorException;
 import com.ongres.scram.common.stringprep.StringPreparations;
 import org.junit.Test;
 
@@ -41,7 +43,8 @@ public class ScramSessionTest {
             .setup();
 
     @Test
-    public void completeTest() throws ScramException {
+    public void completeTest()
+    throws ScramParseException, ScramInvalidServerSignatureException, ScramServerErrorException {
         ScramSession scramSession = scramClient.scramSession(USER);
         assertEquals(CLIENT_FIRST_MESSAGE, scramSession.clientFirstMessage());
 
@@ -54,9 +57,6 @@ public class ScramSessionTest {
         ScramSession.ClientFinalProcessor clientFinalProcessor = serverFirstProcessor.clientFinalProcessor(PASSWORD);
         assertEquals(CLIENT_FINAL_MESSAGE, clientFinalProcessor.clientFinalMessage());
 
-        ScramSession.ServerFinalProcessor serverFinalProcessor
-                = clientFinalProcessor.receiveServerFinalMessage(SERVER_FINAL_MESSAGE);
-        assertFalse(serverFinalProcessor.isError());
-        assertTrue(serverFinalProcessor.verifyServerSignature());
+        clientFinalProcessor.receiveServerFinalMessage(SERVER_FINAL_MESSAGE);
     }
 }
