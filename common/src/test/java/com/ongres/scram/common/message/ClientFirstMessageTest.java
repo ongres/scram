@@ -24,6 +24,7 @@
 package com.ongres.scram.common.message;
 
 
+import com.ongres.scram.common.exception.ScramException;
 import com.ongres.scram.common.gssapi.Gs2CbindFlag;
 import org.junit.Test;
 
@@ -87,7 +88,7 @@ public class ClientFirstMessageTest  {
     }
 
     @Test
-    public void parseFromValidValues() {
+    public void parseFromValidValues() throws ScramException {
         ClientFirstMessage m1 = ClientFirstMessage.parseFrom("n,,n=user,r=" + CLIENT_NONCE);
         assertTrue(
                 ! m1.isChannelBinding() && m1.getChannelBindingFlag() == Gs2CbindFlag.CLIENT_NOT
@@ -124,10 +125,9 @@ public class ClientFirstMessageTest  {
 
         int n = 0;
         for(String s : invalidValues) {
-
             try {
                 assertNotNull(ClientFirstMessage.parseFrom(s));
-            } catch (IllegalArgumentException e) {
+            } catch (ScramException e) {
                 n++;
             }
         }

@@ -25,6 +25,7 @@ package com.ongres.scram.common.message;
 
 
 import com.ongres.scram.common.*;
+import com.ongres.scram.common.exception.ScramException;
 import com.ongres.scram.common.util.StringWritable;
 import com.ongres.scram.common.util.StringWritableCsv;
 
@@ -175,14 +176,16 @@ public class ServerFinalMessage implements StringWritable {
      * Parses a server-final-message from a String.
      * @param serverFinalMessage The message
      * @return A constructed server-final-message instance
+     * @throws ScramException If the argument is not a valid server-final-message
      * @throws IllegalArgumentException If the message is null or empty
      */
-    public static ServerFinalMessage parseFrom(String serverFinalMessage) throws IllegalArgumentException {
+    public static ServerFinalMessage parseFrom(String serverFinalMessage)
+    throws ScramException, IllegalArgumentException {
         checkNotEmpty(serverFinalMessage, "serverFinalMessage");
 
         String[] attributeValues = StringWritableCsv.parseFrom(serverFinalMessage, 1, 0);
         if(attributeValues == null || attributeValues.length != 1) {
-            throw new IllegalArgumentException("Invalid server-final-message");
+            throw new ScramException("Invalid server-final-message");
         }
 
         ScramAttributeValue attributeValue = ScramAttributeValue.parse(attributeValues[0]);
@@ -192,7 +195,7 @@ public class ServerFinalMessage implements StringWritable {
         } else if(ScramAttributes.ERROR.getChar() == attributeValue.getChar()) {
             return new ServerFinalMessage(Error.getByErrorMessage(attributeValue.getValue()));
         } else {
-            throw new IllegalArgumentException(
+            throw new ScramException(
                     "Invalid server-final-message: it must contain either a verifier or an error attribute"
             );
         }

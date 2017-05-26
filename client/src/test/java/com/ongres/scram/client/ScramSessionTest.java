@@ -24,6 +24,7 @@
 package com.ongres.scram.client;
 
 
+import com.ongres.scram.common.exception.ScramException;
 import com.ongres.scram.common.stringprep.StringPreparations;
 import org.junit.Test;
 
@@ -40,7 +41,7 @@ public class ScramSessionTest {
             .setup();
 
     @Test
-    public void completeTest() {
+    public void completeTest() throws ScramException {
         ScramSession scramSession = scramClient.scramSession(USER);
         assertEquals(CLIENT_FIRST_MESSAGE, scramSession.clientFirstMessage());
 

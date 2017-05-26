@@ -24,6 +24,7 @@
 package com.ongres.scram.common;
 
 
+import com.ongres.scram.common.exception.ScramException;
 import com.ongres.scram.common.message.ServerFinalMessage;
 import org.junit.Test;
 
@@ -46,25 +47,20 @@ public class ScramAttributeValueTest {
     }
 
     @Test
-    public void parseNullValue() {
-        assertNull(ScramAttributeValue.parse(null));
-    }
-
-    @Test
     public void parseIllegalValuesStructure() {
         String[] values = new String[] {
-                "", "asdf", "asdf=a", CLIENT_PROOF.getChar() + "=", CLIENT_PROOF.getChar() + ",a"
+                null, "", "asdf", "asdf=a", CLIENT_PROOF.getChar() + "=", CLIENT_PROOF.getChar() + ",a"
         };
         int n = 0;
         for(String value : values) {
             try {
                 assertNotNull(ScramAttributeValue.parse(value));
-            } catch(IllegalArgumentException e) {
+            } catch(ScramException e) {
                 n++;
             }
         }
 
-        assertEquals("Not every illegal value thrown IllegalArgumentException", values.length, n);
+        assertEquals("Not every illegal value thrown ScramException", values.length, n);
     }
 
     @Test
@@ -77,16 +73,16 @@ public class ScramAttributeValueTest {
         for(String value : values) {
             try {
                 assertNotNull(ScramAttributeValue.parse(value));
-            } catch(IllegalArgumentException e) {
+            } catch(ScramException e) {
                 n++;
             }
         }
 
-        assertEquals("Not every illegal value thrown IllegalArgumentException", values.length, n);
+        assertEquals("Not every illegal value thrown ScramException", values.length, n);
     }
 
     @Test
-    public void parseLegalValues() {
+    public void parseLegalValues() throws ScramException {
         String[] legalValues = new String[] {
                 CLIENT_PROOF.getChar() + "=" + "proof",
                 USERNAME.getChar() + "=" + "username",

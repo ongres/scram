@@ -21,34 +21,32 @@
  */
 
 
-package com.ongres.scram.common.message;
+package com.ongres.scram.common.exception;
 
 
-import com.ongres.scram.common.exception.ScramException;
-import org.junit.Test;
-
-import static com.ongres.scram.common.RfcExample.CLIENT_NONCE;
-import static com.ongres.scram.common.RfcExample.SERVER_FIRST_MESSAGE;
-import static org.junit.Assert.assertEquals;
+import javax.security.sasl.SaslException;
 
 
-public class ServerFirstMessageTest {
-    @Test
-    public void validConstructor() {
-        ServerFirstMessage serverFirstMessage = new ServerFirstMessage(
-                CLIENT_NONCE,
-                "3rfcNHYJY1ZVvWVs7j",
-                "QSXCR+Q6sek8bf92",
-                4096
-        );
-
-        assertEquals(SERVER_FIRST_MESSAGE, serverFirstMessage.toString());
+/**
+ * This class represents an error when using SCRAM, which is a SASL method.
+ *
+ * {@link javax.security.sasl.SaslException}
+ */
+public class ScramException extends SaslException {
+    /**
+     * Constructs a new instance of ScramException with a detailed message.
+     * @param detail A String containing details about the exception
+     */
+    public ScramException(String detail) {
+        super(detail);
     }
 
-    @Test
-    public void validParseFrom() throws ScramException {
-        ServerFirstMessage serverFirstMessage = ServerFirstMessage.parseFrom(SERVER_FIRST_MESSAGE, CLIENT_NONCE);
-
-        assertEquals(SERVER_FIRST_MESSAGE, serverFirstMessage.toString());
+    /**
+     * Constructs a new instance of ScramException with a detailed message and a root cause.
+     * @param detail A String containing details about the exception
+     * @param ex The root exception
+     */
+    public ScramException(String detail, Throwable ex) {
+        super(detail, ex);
     }
 }

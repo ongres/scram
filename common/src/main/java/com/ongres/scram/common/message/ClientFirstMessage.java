@@ -27,6 +27,7 @@ package com.ongres.scram.common.message;
 import com.ongres.scram.common.ScramAttributeValue;
 import com.ongres.scram.common.ScramAttributes;
 import com.ongres.scram.common.ScramStringFormatting;
+import com.ongres.scram.common.exception.ScramException;
 import com.ongres.scram.common.gssapi.Gs2CbindFlag;
 import com.ongres.scram.common.gssapi.Gs2Header;
 import com.ongres.scram.common.util.StringWritable;
@@ -166,22 +167,29 @@ public class ClientFirstMessage implements StringWritable {
      * Construct a {@link ClientFirstMessage} instance from a message (String)
      * @param clientFirstMessage The String representing the client-first-message
      * @return The instance
+     * @throws ScramException If the message is not a valid client-first-message
      * @throws IllegalArgumentException If the message is null or empty
      */
-    public static ClientFirstMessage parseFrom(String clientFirstMessage) throws IllegalArgumentException {
+    public static ClientFirstMessage parseFrom(String clientFirstMessage)
+    throws ScramException, IllegalArgumentException {
         checkNotEmpty(clientFirstMessage, "clientFirstMessage");
 
         Gs2Header gs2Header = Gs2Header.parseFrom(clientFirstMessage);  // Takes first two fields
-        String[] userNonceString = StringWritableCsv.parseFrom(clientFirstMessage, 2, 2);
+        String[] userNonceString;
+        try {
+            userNonceString = StringWritableCsv.parseFrom(clientFirstMessage, 2, 2);
+        } catch (IllegalArgumentException e) {
+            throw new ScramException("Illegal series of attributes in client-first-message", e);
+        }
 
         ScramAttributeValue user = ScramAttributeValue.parse(userNonceString[0]);
-        if(null == user || ScramAttributes.USERNAME.getChar() != user.getChar()) {
-            throw new IllegalArgumentException("user must be the 3rd element of the client-first-message");
+        if(ScramAttributes.USERNAME.getChar() != user.getChar()) {
+            throw new ScramException("user must be the 3rd element of the client-first-message");
         }
 
         ScramAttributeValue nonce = ScramAttributeValue.parse(userNonceString[1]);
-        if(null == nonce || ScramAttributes.NONCE.getChar() != nonce.getChar()) {
-            throw new IllegalArgumentException("nonce must be the 4th element of the client-first-message");
+        if(ScramAttributes.NONCE.getChar() != nonce.getChar()) {
+            throw new ScramException("nonce must be the 4th element of the client-first-message");
         }
 
         return new ClientFirstMessage(gs2Header, user.getValue(), nonce.getValue());

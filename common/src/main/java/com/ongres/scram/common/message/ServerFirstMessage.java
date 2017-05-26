@@ -26,6 +26,7 @@ package com.ongres.scram.common.message;
 
 import com.ongres.scram.common.ScramAttributeValue;
 import com.ongres.scram.common.ScramAttributes;
+import com.ongres.scram.common.exception.ScramException;
 import com.ongres.scram.common.util.StringWritable;
 import com.ongres.scram.common.util.StringWritableCsv;
 
@@ -110,41 +111,42 @@ public class ServerFirstMessage implements StringWritable {
      * @param serverFirstMessage The string representing the server-first-message
      * @param clientNonce The serverNonce that is present in the client-first-message
      * @return The parsed instance
+     * @throws ScramException If the argument is not a valid server-first-message
      * @throws IllegalArgumentException If either argument is empty or serverFirstMessage is not a valid message
      */
     public static ServerFirstMessage parseFrom(String serverFirstMessage, String clientNonce)
-    throws IllegalArgumentException {
+    throws ScramException, IllegalArgumentException {
         checkNotEmpty(serverFirstMessage, "serverFirstMessage");
         checkNotEmpty(clientNonce, "clientNonce");
 
         String[] attributeValues = StringWritableCsv.parseFrom(serverFirstMessage, 3, 0);
-        if(attributeValues == null || attributeValues.length != 3) {
-            throw new IllegalArgumentException("Invalid server-first-message");
+        if(attributeValues.length != 3) {
+            throw new ScramException("Invalid server-first-message");
         }
 
         ScramAttributeValue nonce = ScramAttributeValue.parse(attributeValues[0]);
-        if(null == nonce || ScramAttributes.NONCE.getChar() != nonce.getChar()) {
-            throw new IllegalArgumentException("serverNonce must be the 1st element of the server-first-message");
+        if(ScramAttributes.NONCE.getChar() != nonce.getChar()) {
+            throw new ScramException("serverNonce must be the 1st element of the server-first-message");
         }
         if(! nonce.getValue().startsWith(clientNonce)) {
-            throw new IllegalArgumentException("parsed serverNonce does not start with client serverNonce");
+            throw new ScramException("parsed serverNonce does not start with client serverNonce");
         }
 
         ScramAttributeValue salt = ScramAttributeValue.parse(attributeValues[1]);
-        if(null == salt || ScramAttributes.SALT.getChar() != salt.getChar()) {
-            throw new IllegalArgumentException("salt must be the 2nd element of the server-first-message");
+        if(ScramAttributes.SALT.getChar() != salt.getChar()) {
+            throw new ScramException("salt must be the 2nd element of the server-first-message");
         }
 
         ScramAttributeValue iteration = ScramAttributeValue.parse(attributeValues[2]);
-        if(null == iteration || ScramAttributes.ITERATION.getChar() != iteration.getChar()) {
-            throw new IllegalArgumentException("iteration must be the 3rd element of the server-first-message");
+        if(ScramAttributes.ITERATION.getChar() != iteration.getChar()) {
+            throw new ScramException("iteration must be the 3rd element of the server-first-message");
         }
 
         int iterationInt;
         try {
             iterationInt = Integer.parseInt(iteration.getValue());
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("invalid iteration");
+            throw new ScramException("invalid iteration");
         }
 
         return new ServerFirstMessage(

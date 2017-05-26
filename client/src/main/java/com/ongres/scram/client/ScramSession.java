@@ -26,6 +26,7 @@ package com.ongres.scram.client;
 
 import com.ongres.scram.common.ScramFunctions;
 import com.ongres.scram.common.ScramMechanism;
+import com.ongres.scram.common.exception.ScramException;
 import com.ongres.scram.common.gssapi.Gs2CbindFlag;
 import com.ongres.scram.common.message.ClientFirstMessage;
 import com.ongres.scram.common.message.ClientFinalMessage;
@@ -101,8 +102,8 @@ public class ScramSession {
     public class ServerFirstProcessor {
         private final ServerFirstMessage serverFirstMessage;
 
-        private ServerFirstProcessor(String receivedServerFirstMessage) throws IllegalArgumentException {
-            serverFirstMessageString = checkNotEmpty(receivedServerFirstMessage, "receivedServerFirstMessage");
+        private ServerFirstProcessor(String receivedServerFirstMessage) throws ScramException {
+            serverFirstMessageString = receivedServerFirstMessage;
             serverFirstMessage = ServerFirstMessage.parseFrom(receivedServerFirstMessage, nonce);
         }
 
@@ -248,13 +249,14 @@ public class ScramSession {
         }
 
         /**
-         * Gets a {@link ServerFinalProcessor} to handle the server-last-message.
+         * Gets a {@link ServerFinalProcessor} to handle the server-final-message.
          * @param serverFinalMessage The received server-final-message
          * @return The processor
+         * @throws ScramException If the message is not a valid server-final-message
          * @throws IllegalArgumentException If the message is null or empty
          */
         public ServerFinalProcessor receiveServerFinalMessage(String serverFinalMessage)
-        throws IllegalArgumentException {
+        throws ScramException, IllegalArgumentException {
             checkNotEmpty(serverFinalMessage, "serverFinalMessage");
 
             return new ServerFinalProcessor(
@@ -309,9 +311,11 @@ public class ScramSession {
      * Constructs a handler for the server-first-message, from its String representation.
      * @param serverFirstMessage The message
      * @return The handler
+     * @throws ScramException If the message is not a valid server-first-message
      * @throws IllegalArgumentException If the message is null or empty
      */
-    public ServerFirstProcessor receiveServerFirstMessage(String serverFirstMessage) throws IllegalArgumentException {
+    public ServerFirstProcessor receiveServerFirstMessage(String serverFirstMessage)
+    throws ScramException, IllegalArgumentException {
         return new ServerFirstProcessor(checkNotEmpty(serverFirstMessage, "serverFirstMessage"));
     }
 }
