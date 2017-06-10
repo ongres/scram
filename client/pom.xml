@@ -7,16 +7,18 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>scram</artifactId>
-        <groupId>com.ongres</groupId>
+        <artifactId>parent</artifactId>
+        <groupId>com.ongres.scram</groupId>
         <version>1.0.0-beta.1</version>
     </parent>
 
-    <artifactId>scram-client</artifactId>
+    <artifactId>client</artifactId>
+
+    <name>SCRAM - client</name>
 
     <dependencies>
         <dependency>
-            <groupId>com.ongres</groupId>
+            <groupId>com.ongres.scram</groupId>
             <artifactId>scram-common</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -27,7 +29,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.ongres</groupId>
+            <groupId>com.ongres.scram</groupId>
             <artifactId>scram-common</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
