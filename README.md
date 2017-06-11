@@ -1,5 +1,7 @@
 # SCRAM Java Implementation
 
+[![Build Status](https://travis-ci.org/ongres/scram.svg?branch=master)](https://travis-ci.org/ongres/scram)
+
 
 ## Overview
 
@@ -43,6 +45,23 @@ Current limitations:
 ## How to use the client API
 
 Please read [Client's README.md](client).
+
+Javadoc: [![Javadocs](http://javadoc.io/badge/com.ongres.scram/client.svg?label=client)](http://javadoc.io/doc/com.ongres.scram/client)
+
+
+
+## Common API
+
+'common' is the module that contains code common to both client and server SCRAM projects.
+If you with to develop either a client or server API, you may very well build on top of this
+API. Import maven dependency:
+
+    <dependency>
+        <groupId>com.ongres.scram</groupId>
+        <artifactId>common</artifactId>
+    </dependency>
+    
+and check the Javadoc: [![Javadocs](http://javadoc.io/badge/com.ongres.scram/common.svg)](http://javadoc.io/doc/com.ongres.scram/common)
 
 
 ## Contributing

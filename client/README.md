@@ -1,5 +1,7 @@
 # SCRAM Client API
 
+[![Javadocs](http://javadoc.io/badge/com.ongres.scram/client.svg?label=client)](http://javadoc.io/doc/com.ongres.scram/client)
+
 For general description, please refer to [the main README.md](https://github.com/ongres/scram).
 
 
@@ -8,8 +10,8 @@ For general description, please refer to [the main README.md](https://github.com
 1. Add Maven (or equivalent) dependencies :
 ```xml
 <dependency>
-    <groupId>com.ongres</groupId>
-    <artifactId>scram-client</artifactId>
+    <groupId>com.ongres.scram</groupId>
+    <artifactId>client</artifactId>
     <version>VERSION</version>
 </dependency>
 ```
