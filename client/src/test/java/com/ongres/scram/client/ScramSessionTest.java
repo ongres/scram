@@ -30,7 +30,7 @@ import com.ongres.scram.common.exception.ScramServerErrorException;
 import com.ongres.scram.common.stringprep.StringPreparations;
 import org.junit.Test;
 
-import static com.ongres.scram.client.RfcExample.*;
+import static com.ongres.scram.common.RfcExample.*;
 import static org.junit.Assert.*;
 
 
