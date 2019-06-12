@@ -20,25 +20,8 @@
  *
  */
 
+package com.ongres.scram.client;
 
-package com.ongres.scram.common.message;
-
-
-import com.ongres.scram.common.RfcExample;
-import com.ongres.scram.common.gssapi.Gs2CbindFlag;
-import com.ongres.scram.common.gssapi.Gs2Header;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-
-
-public class ClientFinalMessageTest {
-    @Test
-    public void writeToWithoutProofValid() {
-        StringBuffer sb = ClientFinalMessage.writeToWithoutProof(
-                new Gs2Header(Gs2CbindFlag.CLIENT_NOT), null, RfcExample.FULL_NONCE
-        );
-
-        assertEquals(RfcExample.CLIENT_FINAL_MESSAGE_WITHOUT_PROOF, sb.toString());
-    }
+public interface NonceSupplier {
+	String get();
 }

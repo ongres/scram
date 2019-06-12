@@ -33,8 +33,6 @@ import com.ongres.scram.common.gssapi.Gs2Header;
 import com.ongres.scram.common.util.StringWritable;
 import com.ongres.scram.common.util.StringWritableCsv;
 
-import java.util.Optional;
-
 import static com.ongres.scram.common.util.Preconditions.checkNotEmpty;
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 
@@ -118,11 +116,11 @@ public class ClientFirstMessage implements StringWritable {
         return gs2Header.getChannelBindingFlag() == Gs2CbindFlag.CHANNEL_BINDING_REQUIRED;
     }
 
-    public Optional<String> getChannelBindingName() {
+    public String getChannelBindingName() {
         return gs2Header.getChannelBindingName();
     }
 
-    public Optional<String> getAuthzid() {
+    public String getAuthzid() {
         return gs2Header.getAuthzid();
     }
 

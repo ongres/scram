@@ -29,11 +29,8 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 import static com.ongres.scram.common.util.Preconditions.gt0;
@@ -63,8 +60,7 @@ public enum ScramMechanisms implements ScramMechanism {
     private static final String SCRAM_MECHANISM_NAME_PREFIX = "SCRAM-";
     private static final String CHANNEL_BINDING_SUFFIX = "-PLUS";
     private static final String PBKDF2_PREFIX_ALGORITHM_NAME = "PBKDF2With";
-    private static final Map<String,ScramMechanisms> BY_NAME_MAPPING =
-            Arrays.stream(values()).collect(Collectors.toMap(v -> v.getName(), v -> v));
+    private static final Map<String,ScramMechanisms> BY_NAME_MAPPING = valuesAsMap();
 
     private final String mechanismName;
     private final String hashAlgorithmName;
@@ -162,10 +158,10 @@ public enum ScramMechanisms implements ScramMechanism {
      * @param name The standard IANA full name of the mechanism.
      * @return An Optional instance that contains the ScramMechanism if it was found, or empty otherwise.
      */
-    public static Optional<ScramMechanisms> byName(String name) {
+    public static ScramMechanisms byName(String name) {
         checkNotNull(name, "name");
 
-        return Optional.ofNullable(BY_NAME_MAPPING.get(name));
+        return BY_NAME_MAPPING.get(name);
     }
 
     /**
@@ -179,17 +175,30 @@ public enum ScramMechanisms implements ScramMechanism {
      * @param peerMechanisms The mechanisms supported by the other peer
      * @return The selected mechanism, or null if no mechanism matched
      */
-    public static Optional<ScramMechanism> selectMatchingMechanism(boolean channelBinding, String... peerMechanisms) {
-        return Arrays.stream(peerMechanisms)
-                .map(s -> BY_NAME_MAPPING.get(s))
-                .filter(m -> m != null)             // Filter out invalid names
-                .flatMap(m -> Arrays.stream(values())
-                        .filter(
-                                v -> channelBinding == v.channelBinding && v.mechanismName.equals(m.mechanismName)
-                        )
-                )
-                .max(Comparator.comparing(c -> c.priority))
-                .map(m -> (ScramMechanism) m)
-        ;
+    public static ScramMechanism selectMatchingMechanism(boolean channelBinding, String... peerMechanisms) {
+        ScramMechanisms selectedScramMechanisms = null;
+        for (String peerMechanism : peerMechanisms) {
+            ScramMechanisms matchedScramMechanisms = BY_NAME_MAPPING.get(peerMechanism);
+            if (matchedScramMechanisms != null) {
+                for (ScramMechanisms candidateScramMechanisms : ScramMechanisms.values()) {
+                    if (channelBinding == candidateScramMechanisms.channelBinding
+                        && candidateScramMechanisms.mechanismName.equals(matchedScramMechanisms.mechanismName)
+                        && (selectedScramMechanisms == null 
+                            || selectedScramMechanisms.priority < candidateScramMechanisms.priority)) {
+                        selectedScramMechanisms = candidateScramMechanisms;
+                    }
+                }
+            }
+        }
+        return selectedScramMechanisms;
     }
+    
+    private static Map<String, ScramMechanisms> valuesAsMap() {
+        Map<String, ScramMechanisms> mapScramMechanisms = new HashMap<>(values().length);
+        for (ScramMechanisms scramMechanisms : values()) {
+        	mapScramMechanisms.put(scramMechanisms.getName(), scramMechanisms);
+        }
+        return mapScramMechanisms;
+    }
+
 }

@@ -69,6 +69,6 @@ public class ServerFinalMessageTest {
         ServerFinalMessage serverFinalMessage2 = ServerFinalMessage.parseFrom("e=channel-binding-not-supported");
         assertEquals("e=channel-binding-not-supported", serverFinalMessage2.toString());
         assertTrue(serverFinalMessage2.isError());
-        assertTrue(serverFinalMessage2.getError().get() == ServerFinalMessage.Error.CHANNEL_BINDING_NOT_SUPPORTED);
+        assertTrue(serverFinalMessage2.getError() == ServerFinalMessage.Error.CHANNEL_BINDING_NOT_SUPPORTED);
     }
 }
