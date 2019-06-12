@@ -24,22 +24,21 @@
 package com.ongres.scram.client;
 
 
+import static com.ongres.scram.common.util.Preconditions.checkNotEmpty;
+import static com.ongres.scram.common.util.Preconditions.checkNotNull;
+
 import com.ongres.scram.common.ScramFunctions;
 import com.ongres.scram.common.ScramMechanism;
 import com.ongres.scram.common.exception.ScramInvalidServerSignatureException;
 import com.ongres.scram.common.exception.ScramParseException;
 import com.ongres.scram.common.exception.ScramServerErrorException;
 import com.ongres.scram.common.gssapi.Gs2CbindFlag;
-import com.ongres.scram.common.message.ClientFirstMessage;
 import com.ongres.scram.common.message.ClientFinalMessage;
+import com.ongres.scram.common.message.ClientFirstMessage;
 import com.ongres.scram.common.message.ServerFinalMessage;
 import com.ongres.scram.common.message.ServerFirstMessage;
 import com.ongres.scram.common.stringprep.StringPreparation;
-
-import java.util.Base64;
-
-import static com.ongres.scram.common.util.Preconditions.checkNotEmpty;
-import static com.ongres.scram.common.util.Preconditions.checkNotNull;
+import com.ongres.scram.common.util.Base64;
 
 
 /**

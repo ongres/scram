@@ -24,11 +24,12 @@
 package com.ongres.scram.common;
 
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-
 import static com.ongres.scram.common.util.Preconditions.checkNotEmpty;
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
+
+import java.nio.charset.StandardCharsets;
+
+import com.ongres.scram.common.util.Base64;
 
 /**
  * Class with static methods that provide support for converting to/from salNames.

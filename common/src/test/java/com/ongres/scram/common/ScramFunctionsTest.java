@@ -25,11 +25,11 @@ package com.ongres.scram.common;
 
 
 import com.ongres.scram.common.stringprep.StringPreparations;
+import com.ongres.scram.common.util.Base64;
 import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 
 import static com.ongres.scram.common.RfcExample.AUTH_MESSAGE;
 import static org.junit.Assert.assertArrayEquals;

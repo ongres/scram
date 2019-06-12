@@ -29,9 +29,8 @@ import com.ongres.scram.common.ScramFunctions;
 import com.ongres.scram.common.ScramMechanisms;
 import com.ongres.scram.common.exception.ScramParseException;
 import com.ongres.scram.common.stringprep.StringPreparations;
+import com.ongres.scram.common.util.Base64;
 import org.junit.Test;
-
-import java.util.Base64;
 
 import static com.ongres.scram.common.RfcExample.*;
 import static junit.framework.TestCase.assertFalse;
