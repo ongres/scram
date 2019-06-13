@@ -30,7 +30,6 @@ import com.ongres.scram.common.util.CryptoUtil;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-
 /**
  * Utility functions (e.g. crypto) for SCRAM.
  */
@@ -57,10 +56,7 @@ public class ScramFunctions {
             ScramMechanism scramMechanism, StringPreparation stringPreparation, String password, byte[] salt,
             int iteration
     ) {
-        return CryptoUtil.hi(
-                scramMechanism.secretKeyFactory(), scramMechanism.algorithmKeyLength(),
-                stringPreparation.normalize(password), salt, iteration
-        );
+    	return scramMechanism.saltedPassword(scramMechanism, stringPreparation, password, salt, iteration);
     }
 
     /**

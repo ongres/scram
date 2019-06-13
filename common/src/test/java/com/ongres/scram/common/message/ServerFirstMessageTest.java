@@ -27,8 +27,8 @@ package com.ongres.scram.common.message;
 import com.ongres.scram.common.exception.ScramParseException;
 import org.junit.Test;
 
-import static com.ongres.scram.common.RfcExample.CLIENT_NONCE;
-import static com.ongres.scram.common.RfcExample.SERVER_FIRST_MESSAGE;
+import static com.ongres.scram.common.RfcExampleSha1.CLIENT_NONCE;
+import static com.ongres.scram.common.RfcExampleSha1.SERVER_FIRST_MESSAGE;
 import static org.junit.Assert.assertEquals;
 
 

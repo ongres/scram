@@ -28,7 +28,7 @@ import com.ongres.scram.common.exception.ScramParseException;
 import com.ongres.scram.common.message.ServerFinalMessage;
 import org.junit.Test;
 
-import static com.ongres.scram.common.RfcExample.*;
+import static com.ongres.scram.common.RfcExampleSha1.*;
 import static com.ongres.scram.common.ScramAttributes.CLIENT_PROOF;
 import static com.ongres.scram.common.ScramAttributes.USERNAME;
 import static org.junit.Assert.*;

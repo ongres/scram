@@ -32,7 +32,7 @@ import com.ongres.scram.common.stringprep.StringPreparations;
 import com.ongres.scram.common.util.Base64;
 import org.junit.Test;
 
-import static com.ongres.scram.common.RfcExample.*;
+import static com.ongres.scram.common.RfcExampleSha1.*;
 import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

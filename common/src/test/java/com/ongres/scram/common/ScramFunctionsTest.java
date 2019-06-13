@@ -31,7 +31,6 @@ import org.junit.Test;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
-import static com.ongres.scram.common.RfcExample.AUTH_MESSAGE;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -64,71 +63,143 @@ public class ScramFunctionsTest {
                 BASE_64_DECODER.decode("QSXCR+Q6sek8bf92"), 4096
         );
     }
+    private byte[] generateSaltedPasswordSha256() {
+        return ScramFunctions.saltedPassword(
+                ScramMechanisms.SCRAM_SHA_256, StringPreparations.NO_PREPARATION, "pencil",
+                BASE_64_DECODER.decode("W22ZaJ0SNY7soEsUEjb6gQ=="), 4096
+        );
+    }
 
     @Test
     public void saltedPassword() {
         assertBytesEqualsBase64("HZbuOlKbWl+eR8AfIposuKbhX30=", generateSaltedPassword());
     }
+    @Test
+    public void saltedPasswordSha256() {
+        assertBytesEqualsBase64("xKSVEDI6tPlSysH6mUQZOeeOp01r6B3fcJbodRPcYV0=", generateSaltedPasswordSha256());
+    }
 
     private byte[] generateClientKey() {
         return ScramFunctions.clientKey(ScramMechanisms.SCRAM_SHA_1, generateSaltedPassword());
+    }
+    
+    private byte[] generateClientKeySha256() {
+        return ScramFunctions.clientKey(ScramMechanisms.SCRAM_SHA_256, generateSaltedPasswordSha256());
     }
 
     @Test
     public void clientKey() {
         assertBytesEqualsBase64("4jTEe/bDZpbdbYUrmaqiuiZVVyg=", generateClientKey());
     }
+    @Test
+    public void clientKeySha256() {
+        assertBytesEqualsBase64("pg/JI9Z+hkSpLRa5btpe9GVrDHJcSEN0viVTVXaZbos=", generateClientKeySha256());
+    }
 
     private byte[] generateStoredKey() {
         return ScramFunctions.storedKey(ScramMechanisms.SCRAM_SHA_1, generateClientKey());
+    }
+    
+    private byte[] generateStoredKeySha256() {
+        return ScramFunctions.storedKey(ScramMechanisms.SCRAM_SHA_256, generateClientKeySha256());
     }
 
     @Test
     public void storedKey() {
         assertBytesEqualsBase64("6dlGYMOdZcOPutkcNY8U2g7vK9Y=", generateStoredKey());
     }
+    
+    @Test
+    public void storedKeySha256() {
+        assertBytesEqualsBase64("WG5d8oPm3OtcPnkdi4Uo7BkeZkBFzpcXkuLmtbsT4qY=", generateStoredKeySha256());
+    }
 
     private byte[] generateServerKey() {
         return ScramFunctions.serverKey(ScramMechanisms.SCRAM_SHA_1, generateSaltedPassword());
+    }
+    
+    private byte[] generateServerKeySha256() {
+        return ScramFunctions.serverKey(ScramMechanisms.SCRAM_SHA_256, generateSaltedPasswordSha256());
     }
 
     @Test
     public void serverKey() {
         assertBytesEqualsBase64("D+CSWLOshSulAsxiupA+qs2/fTE=", generateServerKey());
     }
+    
+    @Test
+    public void serverKeySha256() {
+        assertBytesEqualsBase64("wfPLwcE6nTWhTAmQ7tl2KeoiWGPlZqQxSrmfPwDl2dU=", generateServerKeySha256());
+    }
 
     private byte[] generateClientSignature() {
-        return ScramFunctions.clientSignature(ScramMechanisms.SCRAM_SHA_1, generateStoredKey(), AUTH_MESSAGE);
+        return ScramFunctions.clientSignature(ScramMechanisms.SCRAM_SHA_1, generateStoredKey(), com.ongres.scram.common.RfcExampleSha1.AUTH_MESSAGE);
+    }
+    
+    private byte[] generateClientSignatureSha256() {
+        return ScramFunctions.clientSignature(ScramMechanisms.SCRAM_SHA_256, generateStoredKeySha256(), com.ongres.scram.common.RfcExampleSha256.AUTH_MESSAGE);
     }
 
     @Test
     public void clientSignature() {
         assertBytesEqualsBase64("XXE4xIawv6vfSePi2ovW5cedthM=", generateClientSignature());
     }
+    
+    @Test
+    public void clientSignatureSha256() {
+        assertBytesEqualsBase64("0nMSRnwopAqKfwXHPA3jPrPL+0qDeDtYFEzxmsa+G98=", generateClientSignatureSha256());
+    }
 
     private byte[] generateClientProof() {
         return ScramFunctions.clientProof(generateClientKey(), generateClientSignature());
+    }
+    
+    private byte[] generateClientProofSha256() {
+        return ScramFunctions.clientProof(generateClientKeySha256(), generateClientSignatureSha256());
     }
 
     @Test
     public void clientProof() {
         assertBytesEqualsBase64("v0X8v3Bz2T0CJGbJQyF0X+HI4Ts=", generateClientProof());
     }
+    
+    @Test
+    public void clientProofSha256() {
+        assertBytesEqualsBase64("dHzbZapWIk4jUhN+Ute9ytag9zjfMHgsqmmiz7AndVQ=", generateClientProofSha256());
+    }
 
     private byte[] generateServerSignature() {
-        return ScramFunctions.serverSignature(ScramMechanisms.SCRAM_SHA_1, generateServerKey(), AUTH_MESSAGE);
+        return ScramFunctions.serverSignature(ScramMechanisms.SCRAM_SHA_1, generateServerKey(), com.ongres.scram.common.RfcExampleSha1.AUTH_MESSAGE);
+    }
+    
+    private byte[] generateServerSignatureSha256() {
+        return ScramFunctions.serverSignature(ScramMechanisms.SCRAM_SHA_256, generateServerKeySha256(), com.ongres.scram.common.RfcExampleSha256.AUTH_MESSAGE);
     }
 
     @Test
     public void serverSignature() {
         assertBytesEqualsBase64("rmF9pqV8S7suAoZWja4dJRkFsKQ=", generateServerSignature());
     }
+    
+    @Test
+    public void serverSignatureSha256() {
+        assertBytesEqualsBase64("6rriTRBi23WpRR/wtup+mMhUZUn/dB5nLTJRsjl95G4=", generateServerSignatureSha256());
+    }
 
     @Test
     public void verifyClientProof() {
         assertTrue(
                 ScramFunctions.verifyClientProof(
-                        ScramMechanisms.SCRAM_SHA_1, generateClientProof(), generateStoredKey(), AUTH_MESSAGE
+                        ScramMechanisms.SCRAM_SHA_1, generateClientProof(), generateStoredKey(), com.ongres.scram.common.RfcExampleSha1.AUTH_MESSAGE
+                )
+        );
+    }
+    
+    @Test
+    public void verifyClientProofSha256() {
+        assertTrue(
+                ScramFunctions.verifyClientProof(
+                        ScramMechanisms.SCRAM_SHA_256, generateClientProofSha256(), generateStoredKeySha256(), com.ongres.scram.common.RfcExampleSha256.AUTH_MESSAGE
                 )
         );
     }
@@ -137,7 +208,16 @@ public class ScramFunctionsTest {
     public void verifyServerSignature() {
         assertTrue(
                 ScramFunctions.verifyServerSignature(
-                        ScramMechanisms.SCRAM_SHA_1, generateServerKey(), AUTH_MESSAGE, generateServerSignature()
+                        ScramMechanisms.SCRAM_SHA_1, generateServerKey(), com.ongres.scram.common.RfcExampleSha1.AUTH_MESSAGE, generateServerSignature()
+                )
+        );
+    }
+    
+    @Test
+    public void verifyServerSignatureSha256() {
+        assertTrue(
+                ScramFunctions.verifyServerSignature(
+                        ScramMechanisms.SCRAM_SHA_256, generateServerKeySha256(), com.ongres.scram.common.RfcExampleSha256.AUTH_MESSAGE, generateServerSignatureSha256()
                 )
         );
     }

@@ -27,6 +27,9 @@ package com.ongres.scram.common;
 import javax.crypto.Mac;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.SecretKeySpec;
+
+import com.ongres.scram.common.stringprep.StringPreparation;
+
 import java.security.MessageDigest;
 
 
@@ -71,7 +74,7 @@ public interface ScramMechanism {
      * @return The SecretKeyFactory
      */
     SecretKeyFactory secretKeyFactory();
-
+    
     /**
      * Returns the length of the key length  of the algorithm.
      * @return The length (in bits)
@@ -83,4 +86,11 @@ public interface ScramMechanism {
      * @return True if it supports channel binding, false otherwise
      */
     boolean supportsChannelBinding();
+
+    /**
+     * Compute the salted password
+     * @return The salted password
+     */
+	byte[] saltedPassword(ScramMechanism scramMechanism, StringPreparation stringPreparation, String password,
+			byte[] salt, int iteration);
 }

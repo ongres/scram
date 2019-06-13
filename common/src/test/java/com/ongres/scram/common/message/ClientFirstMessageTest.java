@@ -28,7 +28,7 @@ import com.ongres.scram.common.exception.ScramParseException;
 import com.ongres.scram.common.gssapi.Gs2CbindFlag;
 import org.junit.Test;
 
-import static com.ongres.scram.common.RfcExample.CLIENT_NONCE;
+import static com.ongres.scram.common.RfcExampleSha1.CLIENT_NONCE;
 import static org.junit.Assert.*;
 
 
