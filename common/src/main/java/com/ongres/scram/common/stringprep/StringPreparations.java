@@ -42,6 +42,18 @@ public enum StringPreparations implements StringPreparation {
         protected String doNormalize(String value) throws IllegalArgumentException {
             return UsAsciiUtils.toPrintable(value);
         }
+    },
+    /**
+     * Implementation of StringPreparation that performs preparation.
+     * Non US-ASCII characters will produce an exception.
+     * Even though the <a href="https://tools.ietf.org/html/rfc5802">[RFC5802]</a> is not very clear about it,
+     * this implementation will normalize as SaslPrep does.
+     */
+    SASL_PREPARATION {
+        @Override
+        protected String doNormalize(String value) throws IllegalArgumentException {
+            return SaslPrep.saslPrep(value);
+        }
     }
     ;
 
