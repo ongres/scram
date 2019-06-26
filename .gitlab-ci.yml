@@ -1,0 +1,16 @@
+image: openjdk:8-stretch
+
+stages:
+  - build
+
+variables:
+  M2_HOME: ".m2/maven"
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2"
+
+build:
+  stage: build
+  cache:
+    paths:
+      - .m2/
+  script:
+    - bash mvnw clean verify -P safer
