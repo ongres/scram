@@ -23,5 +23,5 @@
 package com.ongres.scram.client;
 
 public interface NonceSupplier {
-	String get();
+    String get();
 }

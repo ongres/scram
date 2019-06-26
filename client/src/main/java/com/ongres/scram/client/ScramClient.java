@@ -111,7 +111,7 @@ public class ScramClient {
         assert null != channelBinding : "channelBinding";
         assert null != stringPreparation : "stringPreparation";
         assert null != nonChannelBindingMechanism || null != channelBindingMechanism 
-        		: "Either a channel-binding or a non-binding mechanism must be present";
+                : "Either a channel-binding or a non-binding mechanism must be present";
         assert null != secureRandom : "secureRandom";
         assert null != nonceSupplier : "nonceSupplier";
 
@@ -363,9 +363,9 @@ public class ScramClient {
      * @return A list of the IANA-registered, SCRAM supported mechanisms
      */
     public static List<String> supportedMechanisms() {
-    	List<String> supportedMechanisms = new ArrayList<>();
+        List<String> supportedMechanisms = new ArrayList<>();
         for (ScramMechanisms scramMechanisms : ScramMechanisms.values()) {
-        	supportedMechanisms.add(scramMechanisms.getName());
+            supportedMechanisms.add(scramMechanisms.getName());
           }
         return supportedMechanisms;
     }

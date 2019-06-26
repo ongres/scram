@@ -58,10 +58,10 @@ public class ClientFinalMessage implements StringWritable {
                 .append(',');
 
         if(null != cbindData) {
-        	new ScramAttributeValue(
-        			ScramAttributes.CHANNEL_BINDING,
-        			ScramStringFormatting.base64Encode(cbindData)
-        			).writeTo(sb);
+            new ScramAttributeValue(
+                    ScramAttributes.CHANNEL_BINDING,
+                    ScramStringFormatting.base64Encode(cbindData)
+                    ).writeTo(sb);
         }
 
         return sb.toString();

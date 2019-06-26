@@ -46,10 +46,10 @@ public class SHA256Digest
    private void copyIn(SHA256Digest t)
    {
 
-	        System.arraycopy(t.xBuf, 0, xBuf, 0, t.xBuf.length);
+            System.arraycopy(t.xBuf, 0, xBuf, 0, t.xBuf.length);
 
-	        xBufOff = t.xBufOff;
-	        byteCount = t.byteCount;
+            xBufOff = t.xBufOff;
+            byteCount = t.byteCount;
 
        H1 = t.H1;
        H2 = t.H2;
@@ -423,63 +423,63 @@ public class SHA256Digest
    }
 
    public void update(
-	        byte in)
-	    {
-	        xBuf[xBufOff++] = in;
+            byte in)
+        {
+            xBuf[xBufOff++] = in;
 
-	        if (xBufOff == xBuf.length)
-	        {
-	            processWord(xBuf, 0);
-	            xBufOff = 0;
-	        }
+            if (xBufOff == xBuf.length)
+            {
+                processWord(xBuf, 0);
+                xBufOff = 0;
+            }
 
-	        byteCount++;
-	    }
+            byteCount++;
+        }
    
    public void update(
-	        byte[]  in,
-	        int     inOff,
-	        int     len)
-	    {
-	        len = Math.max(0,  len);
+            byte[]  in,
+            int     inOff,
+            int     len)
+        {
+            len = Math.max(0,  len);
 
-	        //
-	        // fill the current word
-	        //
-	        int i = 0;
-	        if (xBufOff != 0)
-	        {
-	            while (i < len)
-	            {
-	                xBuf[xBufOff++] = in[inOff + i++];
-	                if (xBufOff == 4)
-	                {
-	                    processWord(xBuf, 0);
-	                    xBufOff = 0;
-	                    break;
-	                }
-	            }
-	        }
+            //
+            // fill the current word
+            //
+            int i = 0;
+            if (xBufOff != 0)
+            {
+                while (i < len)
+                {
+                    xBuf[xBufOff++] = in[inOff + i++];
+                    if (xBufOff == 4)
+                    {
+                        processWord(xBuf, 0);
+                        xBufOff = 0;
+                        break;
+                    }
+                }
+            }
 
-	        //
-	        // process whole words.
-	        //
-	        int limit = ((len - i) & ~3) + i;
-	        for (; i < limit; i += 4)
-	        {
-	            processWord(in, inOff + i);
-	        }
+            //
+            // process whole words.
+            //
+            int limit = ((len - i) & ~3) + i;
+            for (; i < limit; i += 4)
+            {
+                processWord(in, inOff + i);
+            }
 
-	        //
-	        // load in the remainder.
-	        //
-	        while (i < len)
-	        {
-	            xBuf[xBufOff++] = in[inOff + i++];
-	        }
+            //
+            // load in the remainder.
+            //
+            while (i < len)
+            {
+                xBuf[xBufOff++] = in[inOff + i++];
+            }
 
-	        byteCount += len;
-	    }
+            byteCount += len;
+        }
    
    public int getByteLength()
    {

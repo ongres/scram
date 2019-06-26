@@ -91,6 +91,6 @@ public interface ScramMechanism {
      * Compute the salted password
      * @return The salted password
      */
-	byte[] saltedPassword(ScramMechanism scramMechanism, StringPreparation stringPreparation, String password,
-			byte[] salt, int iteration);
+    byte[] saltedPassword(ScramMechanism scramMechanism, StringPreparation stringPreparation, String password,
+            byte[] salt, int iteration);
 }

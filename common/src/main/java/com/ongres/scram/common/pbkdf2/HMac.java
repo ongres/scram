@@ -47,7 +47,7 @@ public class HMac
     }
     
     private static int getByteLength(
-    	SHA256Digest digest)
+        SHA256Digest digest)
     {
       //TODO      return digest.getByteLength();
         
@@ -74,7 +74,7 @@ public class HMac
     }
 
     private HMac(
-    		SHA256Digest digest,
+            SHA256Digest digest,
         int    byteLength)
     {
         this.digest = digest;
@@ -95,7 +95,7 @@ public class HMac
     }
 
     public void init(
-    	byte[] key)
+        byte[] key)
     {
         digest.reset();
 

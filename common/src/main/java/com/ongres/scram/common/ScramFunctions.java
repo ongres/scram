@@ -56,7 +56,7 @@ public class ScramFunctions {
             ScramMechanism scramMechanism, StringPreparation stringPreparation, String password, byte[] salt,
             int iteration
     ) {
-    	return scramMechanism.saltedPassword(scramMechanism, stringPreparation, password, salt, iteration);
+        return scramMechanism.saltedPassword(scramMechanism, stringPreparation, password, salt, iteration);
     }
 
     /**

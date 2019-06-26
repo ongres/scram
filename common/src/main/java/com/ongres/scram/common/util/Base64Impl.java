@@ -197,7 +197,7 @@ class Base64Impl
     
     /** Do break lines when encoding. Value is 8. */
     public static final int DO_BREAK_LINES = 8;
-	
+    
     /** 
      * Encode using Base64-like encoding that is URL- and Filename-safe as described
      * in Section 4 of RFC3548: 
@@ -234,12 +234,12 @@ class Base64Impl
     /** Preferred encoding. */
     private static final String PREFERRED_ENCODING = "US-ASCII";
     
-	
+    
     private static final byte WHITE_SPACE_ENC = -5; // Indicates white space in encoding
     private static final byte EQUALS_SIGN_ENC = -1; // Indicates equals sign in encoding
-	
-	
-/* ********  S T A N D A R D   B A S E 6 4   A L P H A B E T  ******** */	
+    
+    
+/* ********  S T A N D A R D   B A S E 6 4   A L P H A B E T  ******** */    
     
     /** The 64 valid Base64 values. */
     /* Host platform me be something funny like EBCDIC, so we hardcode these values. */
@@ -255,7 +255,7 @@ class Base64Impl
         (byte)'0', (byte)'1', (byte)'2', (byte)'3', (byte)'4', (byte)'5', 
         (byte)'6', (byte)'7', (byte)'8', (byte)'9', (byte)'+', (byte)'/'
     };
-	
+    
     
     /** 
      * Translates a Base64 value to either its 6-bit reconstruction value
@@ -294,10 +294,10 @@ class Base64Impl
         -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,     // Decimal 231 - 243
         -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9         // Decimal 244 - 255 
     };
-	
-	
+    
+    
 /* ********  U R L   S A F E   B A S E 6 4   A L P H A B E T  ******** */
-	
+    
     /**
      * Used in the URL- and Filename-safe dialect described in Section 4 of RFC3548: 
      * <a href="http://www.faqs.org/rfcs/rfc3548.html">http://www.faqs.org/rfcs/rfc3548.html</a>.
@@ -315,7 +315,7 @@ class Base64Impl
       (byte)'0', (byte)'1', (byte)'2', (byte)'3', (byte)'4', (byte)'5', 
       (byte)'6', (byte)'7', (byte)'8', (byte)'9', (byte)'-', (byte)'_'
     };
-	
+    
     /**
      * Used in decoding URL- and Filename-safe dialects of Base64.
      */
@@ -380,7 +380,7 @@ class Base64Impl
       (byte)'o', (byte)'p', (byte)'q', (byte)'r', (byte)'s', (byte)'t', (byte)'u',
       (byte)'v', (byte)'w', (byte)'x', (byte)'y', (byte)'z'
     };
-	
+    
     /**
      * Used in decoding the "ordered" dialect of Base64.
      */
@@ -422,7 +422,7 @@ class Base64Impl
         -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9         // Decimal 244 - 255 
     };
 
-	
+    
 /* ********  D E T E R M I N E   W H I C H   A L H A B E T  ******** */
 
 
@@ -441,7 +441,7 @@ class Base64Impl
         } else {
             return _STANDARD_ALPHABET;
         }
-    }	// end getAlphabet
+    }    // end getAlphabet
 
 
     /**
@@ -459,7 +459,7 @@ class Base64Impl
         } else {
             return _STANDARD_DECODABET;
         }
-    }	// end getAlphabet
+    }    // end getAlphabet
 
 
     
@@ -505,8 +505,8 @@ class Base64Impl
      * the <var>destination</var> array.
      * The actual number of significant bytes in your array is
      * given by <var>numSigBytes</var>.</p>
-	 * <p>This is the lowest level of the encoding methods with
-	 * all possible parameters.</p>
+     * <p>This is the lowest level of the encoding methods with
+     * all possible parameters.</p>
      *
      * @param source the array to convert
      * @param srcOffset the index where conversion begins
@@ -520,8 +520,8 @@ class Base64Impl
     byte[] source, int srcOffset, int numSigBytes,
     byte[] destination, int destOffset, int options ) {
         
-	byte[] ALPHABET = getAlphabet( options ); 
-	
+    byte[] ALPHABET = getAlphabet( options ); 
+    
         //           1         2         3  
         // 01234567890123456789012345678901 Bit position
         // --------000000001111111122222222 Array position from threeBytes
@@ -990,15 +990,15 @@ class Base64Impl
      * the <var>destination</var> array.
      * This method returns the actual number of bytes that 
      * were converted from the Base64 encoding.
-	 * <p>This is the lowest level of the decoding methods with
-	 * all possible parameters.</p>
+     * <p>This is the lowest level of the decoding methods with
+     * all possible parameters.</p>
      * 
      *
      * @param source the array to convert
      * @param srcOffset the index where conversion begins
      * @param destination the array to hold the conversion
      * @param destOffset the index where output will be put
-	 * @param options alphabet type is pulled from this (standard, url-safe, ordered)
+     * @param options alphabet type is pulled from this (standard, url-safe, ordered)
      * @return the number of decoded bytes converted
      * @throws NullPointerException if source or destination arrays are null
      * @throws IllegalArgumentException if srcOffset or destOffset are invalid
@@ -1027,7 +1027,7 @@ class Base64Impl
         
         
         byte[] DECODABET = getDecodabet( options ); 
-	
+    
         // Example: Dk==
         if( source[ srcOffset + 2] == EQUALS_SIGN ) {
             // Two ways to do the same thing. Don't know which way I like best.
@@ -1136,7 +1136,7 @@ class Base64Impl
         }   // end if
         
         byte[] DECODABET = getDecodabet( options );
-	
+    
         int    len34   = len * 3 / 4;       // Estimate on array size
         byte[] outBuff = new byte[ len34 ]; // Upper limit on size of output
         int    outBuffPosn = 0;             // Keep track of where we're writing
@@ -1180,8 +1180,8 @@ class Base64Impl
     }   // end decode
     
     
-	
-	
+    
+    
     /**
      * Decodes data from Base64 notation, automatically
      * detecting gzip-compressed data and decompressing it.

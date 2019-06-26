@@ -32,6 +32,7 @@ import com.ongres.scram.common.pbkdf2.PBKDF2Generator;
 import com.ongres.scram.common.stringprep.StringPreparation;
 import com.ongres.scram.common.util.CryptoUtil;
 
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
@@ -159,27 +160,28 @@ public enum ScramMechanisms implements ScramMechanism {
     }
 
     @Override
-	public byte[] saltedPassword(ScramMechanism scramMechanism, StringPreparation stringPreparation, String password, byte[] salt,
-	        int iteration) {
-	    try {
-	     	return CryptoUtil.hi(
-	     			SecretKeyFactory.getInstance(PBKDF2_PREFIX_ALGORITHM_NAME + hmacAlgorithmName), scramMechanism.algorithmKeyLength(),
-	    			stringPreparation.normalize(password), salt, iteration
-	    			);
-	    } catch (NoSuchAlgorithmException e) {
-	    	if(ScramMechanisms.SCRAM_SHA_256.getHmacAlgorithmName().equals(scramMechanism.getMacInstance().getAlgorithm())) {
-				try {
-					return new PBKDF2Generator().generatePBKDF(stringPreparation.normalize(password).getBytes(), salt, iteration);
-				} catch (IllegalArgumentException e2) {
-					throw new RuntimeException("Unsupported PBKDF2 for " + mechanismName);
-				}
-	    	} else {
-	    		throw new RuntimeException("Unsupported PBKDF2 for " + mechanismName);
-	    	}
-	    }
-	}
+    public byte[] saltedPassword(ScramMechanism scramMechanism, StringPreparation stringPreparation, String password, byte[] salt,
+            int iteration) {
+        try {
+             return CryptoUtil.hi(
+                     SecretKeyFactory.getInstance(PBKDF2_PREFIX_ALGORITHM_NAME + hmacAlgorithmName), scramMechanism.algorithmKeyLength(),
+                    stringPreparation.normalize(password), salt, iteration
+                    );
+        } catch (NoSuchAlgorithmException e) {
+            if(ScramMechanisms.SCRAM_SHA_256.getHmacAlgorithmName().equals(scramMechanism.getMacInstance().getAlgorithm())) {
+                try {
+                    return new PBKDF2Generator().generatePBKDF(stringPreparation.normalize(password)
+                        .getBytes(StandardCharsets.UTF_8), salt, iteration);
+                } catch (IllegalArgumentException e2) {
+                    throw new RuntimeException("Unsupported PBKDF2 for " + mechanismName);
+                }
+            } else {
+                throw new RuntimeException("Unsupported PBKDF2 for " + mechanismName);
+            }
+        }
+    }
 
-	/**
+    /**
      * Gets a SCRAM mechanism, given its standard IANA name.
      * @param name The standard IANA full name of the mechanism.
      * @return An Optional instance that contains the ScramMechanism if it was found, or empty otherwise.
@@ -222,7 +224,7 @@ public enum ScramMechanisms implements ScramMechanism {
     private static Map<String, ScramMechanisms> valuesAsMap() {
         Map<String, ScramMechanisms> mapScramMechanisms = new HashMap<>(values().length);
         for (ScramMechanisms scramMechanisms : values()) {
-        	mapScramMechanisms.put(scramMechanisms.getName(), scramMechanisms);
+            mapScramMechanisms.put(scramMechanisms.getName(), scramMechanisms);
         }
         return mapScramMechanisms;
     }

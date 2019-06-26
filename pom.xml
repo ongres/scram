@@ -224,6 +224,9 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>oracle-java-7</id>
+        </profile>
     </profiles>
 
 </project>

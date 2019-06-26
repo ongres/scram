@@ -99,7 +99,7 @@ public class Gs2Header extends AbstractStringWritable {
     }
 
     public String getAuthzid() {
-    	return authzid != null ? authzid.getValue() : null;
+        return authzid != null ? authzid.getValue() : null;
     }
 
     @Override

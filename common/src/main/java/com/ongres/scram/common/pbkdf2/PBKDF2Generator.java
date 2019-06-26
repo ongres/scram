@@ -8,14 +8,14 @@ public class PBKDF2Generator {
     private HMac hMac;
     private byte[] state;
     private int dkLen = 32;
-	
+    
     public PBKDF2Generator() {
         hMac = new HMac(new SHA256Digest());
         state = new byte[hMac.getMacSize()];
     }
     
-	public byte[] generatePBKDF(byte[] password, byte[] salt, int iterationCount) {
-		
+    public byte[] generatePBKDF(byte[] password, byte[] salt, int iterationCount) {
+        
         int     hLen = hMac.getMacSize();
         int     l = (dkLen + hLen - 1) / hLen;
         byte[]  iBuf = new byte[4];
@@ -38,8 +38,8 @@ public class PBKDF2Generator {
         }
 
         return copyOfRange(outBytes, 0, 32);
-	}
-	
+    }
+    
     private void F(
             byte[]  S,
             int     c,
