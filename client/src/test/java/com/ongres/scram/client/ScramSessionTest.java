@@ -24,14 +24,23 @@
 package com.ongres.scram.client;
 
 
+import static com.ongres.scram.common.RfcExample.CLIENT_FINAL_MESSAGE;
+import static com.ongres.scram.common.RfcExample.CLIENT_FIRST_MESSAGE;
+import static com.ongres.scram.common.RfcExample.CLIENT_NONCE;
+import static com.ongres.scram.common.RfcExample.PASSWORD;
+import static com.ongres.scram.common.RfcExample.SERVER_FINAL_MESSAGE;
+import static com.ongres.scram.common.RfcExample.SERVER_FIRST_MESSAGE;
+import static com.ongres.scram.common.RfcExample.SERVER_ITERATIONS;
+import static com.ongres.scram.common.RfcExample.SERVER_SALT;
+import static com.ongres.scram.common.RfcExample.USER;
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
+
 import com.ongres.scram.common.exception.ScramInvalidServerSignatureException;
 import com.ongres.scram.common.exception.ScramParseException;
 import com.ongres.scram.common.exception.ScramServerErrorException;
 import com.ongres.scram.common.stringprep.StringPreparations;
-import org.junit.Test;
-
-import static com.ongres.scram.common.RfcExample.*;
-import static org.junit.Assert.*;
 
 
 public class ScramSessionTest {
@@ -39,7 +48,13 @@ public class ScramSessionTest {
             .channelBinding(ScramClient.ChannelBinding.NO)
             .stringPreparation(StringPreparations.NO_PREPARATION)
             .selectMechanismBasedOnServerAdvertised("SCRAM-SHA-1")
-            .nonceSupplier(() -> CLIENT_NONCE)
+            .nonceSupplier
+            (new NonceSupplier() {
+                @Override
+                public String get() {
+                    return CLIENT_NONCE;
+                }
+            })
             .setup();
 
     @Test
