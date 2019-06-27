@@ -20,30 +20,29 @@
  *
  */
 
-package com.ongres.scram.common.pbkdf2;
+package com.ongres.scram.common.bouncycastle.pbkdf2;
 
 /**
- * Interface for Memoable objects. Memoable objects allow the taking of a snapshot of their internal state
- * via the copy() method and then reseting the object back to that state later using the reset() method.
+ * the foundation class for the exceptions thrown by the crypto packages.
  */
-public interface Memoable
+public class RuntimeCryptoException 
+    extends RuntimeException
 {
     /**
-     * Produce a copy of this object with its configuration and in its current state.
-     * <p>
-     * The returned object may be used simply to store the state, or may be used as a similar object
-     * starting from the copied state.
+     * base constructor.
      */
-    Memoable copy();
+    public RuntimeCryptoException()
+    {
+    }
 
     /**
-     * Restore a copied object state into this object.
-     * <p>
-     * Implementations of this method <em>should</em> try to avoid or minimise memory allocation to perform the reset.
+     * create a RuntimeCryptoException with the given message.
      *
-     * @param other an object originally {@link #copy() copied} from an object of the same type as this instance.
-     * @throws ClassCastException if the provided object is not of the correct type.
-     * @throws MemoableResetException if the <b>other</b> parameter is in some other way invalid.
+     * @param message the message to be carried with the exception.
      */
-    void reset(Memoable other);
+    public RuntimeCryptoException(
+        String  message)
+    {
+        super(message);
+    }
 }

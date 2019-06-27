@@ -20,7 +20,7 @@
  *
  */
 
-package com.ongres.scram.common.pbkdf2;
+package com.ongres.scram.common.bouncycastle.pbkdf2;
 
 /**
  * Utility methods for converting byte arrays into ints and longs, and back again.

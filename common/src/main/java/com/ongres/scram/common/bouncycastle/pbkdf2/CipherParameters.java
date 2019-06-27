@@ -20,52 +20,11 @@
  *
  */
 
-package com.ongres.scram.common.util;
+package com.ongres.scram.common.bouncycastle.pbkdf2;
 
-import java.io.IOException;
-
-public class Base64 {
-
-    private Base64() {}
-
-    public static Encoder getEncoder() {
-         return Encoder.RFC4648;
-    }
-
-    public static Decoder getDecoder() {
-         return Decoder.RFC4648;
-    }
-
-    public static class Encoder {
-
-        private static final Encoder RFC4648 = new Encoder();
-
-        private Encoder() {
-        }
-
-        public String encodeToString(byte[] b) {
-            try {
-                return Base64Impl.encodeBytes(b);
-            } catch(IOException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-    }
-
-    public static class Decoder {
-
-        private static final Decoder RFC4648 = new Decoder();
-
-        private Decoder() {
-        }
-
-        public byte[] decode(String s) {
-            try {
-                return Base64Impl.decode(s);
-            } catch(IOException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-    }
+/**
+ * all parameter classes implement this.
+ */
+public interface CipherParameters
+{
 }
-

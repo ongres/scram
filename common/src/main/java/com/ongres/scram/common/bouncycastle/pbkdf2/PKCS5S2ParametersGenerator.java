@@ -20,7 +20,7 @@
  *
  */
 
-package com.ongres.scram.common.pbkdf2;
+package com.ongres.scram.common.bouncycastle.pbkdf2;
 
 /**
  * Generator for PBE derived keys and ivs as defined by PKCS 5 V2.0 Scheme 2.

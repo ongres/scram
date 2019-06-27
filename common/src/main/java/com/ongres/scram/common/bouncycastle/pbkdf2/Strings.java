@@ -20,7 +20,7 @@
  *
  */
 
-package com.ongres.scram.common.pbkdf2;
+package com.ongres.scram.common.bouncycastle.pbkdf2;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -100,5 +100,34 @@ public final class Strings
 
             i++;
         }
+    }
+    
+    /**
+     * Convert an array of 8 bit characters into a string.
+     *
+     * @param bytes 8 bit characters.
+     * @return resulting String.
+     */
+    public static String fromByteArray(byte[] bytes)
+    {
+        return new String(asCharArray(bytes));
+    }
+
+    /**
+     * Do a simple conversion of an array of 8 bit characters into a string.
+     *
+     * @param bytes 8 bit characters.
+     * @return resulting String.
+     */
+    public static char[] asCharArray(byte[] bytes)
+    {
+        char[] chars = new char[bytes.length];
+
+        for (int i = 0; i != chars.length; i++)
+        {
+            chars[i] = (char)(bytes[i] & 0xff);
+        }
+
+        return chars;
     }
 }

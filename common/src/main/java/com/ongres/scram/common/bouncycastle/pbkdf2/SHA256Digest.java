@@ -20,7 +20,7 @@
  *
  */
 
-package com.ongres.scram.common.pbkdf2;
+package com.ongres.scram.common.bouncycastle.pbkdf2;
 
 /**
  * FIPS 180-2 implementation of SHA-256.

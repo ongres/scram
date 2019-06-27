@@ -20,31 +20,15 @@
  *
  */
 
-package com.ongres.scram.common.pbkdf2;
+package com.ongres.scram.common.bouncycastle.pbkdf2;
 
-public class KeyParameter
-    implements CipherParameters
+/**
+ * Utility methods for ints.
+ */
+public class Integers
 {
-    private byte[]  key;
-
-    public KeyParameter(
-        byte[]  key)
+    public static Integer valueOf(int value)
     {
-        this(key, 0, key.length);
-    }
-
-    public KeyParameter(
-        byte[]  key,
-        int     keyOff,
-        int     keyLen)
-    {
-        this.key = new byte[keyLen];
-
-        System.arraycopy(key, keyOff, this.key, 0, keyLen);
-    }
-
-    public byte[] getKey()
-    {
-        return key;
+        return Integer.valueOf(value);
     }
 }

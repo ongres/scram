@@ -27,9 +27,9 @@ package com.ongres.scram.common.message;
 import com.ongres.scram.common.ScramAttributes;
 import com.ongres.scram.common.ScramFunctions;
 import com.ongres.scram.common.ScramMechanisms;
+import com.ongres.scram.common.bouncycastle.base64.Base64;
 import com.ongres.scram.common.exception.ScramParseException;
 import com.ongres.scram.common.stringprep.StringPreparations;
-import com.ongres.scram.common.util.Base64;
 import org.junit.Test;
 
 import static com.ongres.scram.common.RfcExampleSha1.*;
@@ -45,7 +45,7 @@ public class ServerFinalMessageTest {
                 ScramMechanisms.SCRAM_SHA_1,
                 StringPreparations.NO_PREPARATION,
                 PASSWORD,
-                Base64.getDecoder().decode(SERVER_SALT),
+                Base64.decode(SERVER_SALT),
                 SERVER_ITERATIONS
         );
         ServerFinalMessage serverFinalMessage1 = new ServerFinalMessage(

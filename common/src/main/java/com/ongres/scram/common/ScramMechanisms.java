@@ -27,10 +27,10 @@ package com.ongres.scram.common;
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 import static com.ongres.scram.common.util.Preconditions.gt0;
 
-import com.ongres.scram.common.pbkdf2.DigestFactory;
-import com.ongres.scram.common.pbkdf2.KeyParameter;
-import com.ongres.scram.common.pbkdf2.PBEParametersGenerator;
-import com.ongres.scram.common.pbkdf2.PKCS5S2ParametersGenerator;
+import com.ongres.scram.common.bouncycastle.pbkdf2.DigestFactory;
+import com.ongres.scram.common.bouncycastle.pbkdf2.KeyParameter;
+import com.ongres.scram.common.bouncycastle.pbkdf2.PBEParametersGenerator;
+import com.ongres.scram.common.bouncycastle.pbkdf2.PKCS5S2ParametersGenerator;
 import com.ongres.scram.common.stringprep.StringPreparation;
 import com.ongres.scram.common.util.CryptoUtil;
 

@@ -20,32 +20,31 @@
  *
  */
 
-package com.ongres.scram.common.pbkdf2;
+package com.ongres.scram.common.bouncycastle.pbkdf2;
 
-/**
- * this exception is thrown if a buffer that is meant to have output
- * copied into it turns out to be too short, or if we've been given 
- * insufficient input. In general this exception will get thrown rather
- * than an ArrayOutOfBounds exception.
- */
-public class DataLengthException 
-    extends RuntimeCryptoException
+public class KeyParameter
+    implements CipherParameters
 {
-    /**
-     * base constructor.
-     */
-    public DataLengthException()
+    private byte[]  key;
+
+    public KeyParameter(
+        byte[]  key)
     {
+        this(key, 0, key.length);
     }
 
-    /**
-     * create a DataLengthException with the given message.
-     *
-     * @param message the message to be carried with the exception.
-     */
-    public DataLengthException(
-        String  message)
+    public KeyParameter(
+        byte[]  key,
+        int     keyOff,
+        int     keyLen)
     {
-        super(message);
+        this.key = new byte[keyLen];
+
+        System.arraycopy(key, keyOff, this.key, 0, keyLen);
+    }
+
+    public byte[] getKey()
+    {
+        return key;
     }
 }

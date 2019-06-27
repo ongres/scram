@@ -20,7 +20,7 @@
  *
  */
 
-package com.ongres.scram.common.pbkdf2;
+package com.ongres.scram.common.bouncycastle.pbkdf2;
 
 /**
  * base implementation of MD4 family style digest as outlined in

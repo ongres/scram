@@ -29,6 +29,7 @@ import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 
 import com.ongres.scram.common.ScramFunctions;
 import com.ongres.scram.common.ScramMechanism;
+import com.ongres.scram.common.bouncycastle.base64.Base64;
 import com.ongres.scram.common.exception.ScramInvalidServerSignatureException;
 import com.ongres.scram.common.exception.ScramParseException;
 import com.ongres.scram.common.exception.ScramServerErrorException;
@@ -38,7 +39,6 @@ import com.ongres.scram.common.message.ClientFirstMessage;
 import com.ongres.scram.common.message.ServerFinalMessage;
 import com.ongres.scram.common.message.ServerFirstMessage;
 import com.ongres.scram.common.stringprep.StringPreparation;
-import com.ongres.scram.common.util.Base64;
 
 
 /**
@@ -194,7 +194,7 @@ public class ScramSession {
             this(
                     nonce,
                     ScramFunctions.saltedPassword(
-                            scramMechanism, stringPreparation, password, Base64.getDecoder().decode(salt), iteration
+                            scramMechanism, stringPreparation, password, Base64.decode(salt), iteration
                     )
             );
         }

@@ -24,8 +24,8 @@
 package com.ongres.scram.common;
 
 
+import com.ongres.scram.common.bouncycastle.base64.Base64;
 import com.ongres.scram.common.stringprep.StringPreparations;
-import com.ongres.scram.common.util.Base64;
 import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
@@ -36,10 +36,8 @@ import static org.junit.Assert.assertTrue;
 
 
 public class ScramFunctionsTest {
-    private static final Base64.Decoder BASE_64_DECODER = Base64.getDecoder();
-
     private void assertBytesEqualsBase64(String expected, byte[] actual) {
-        assertArrayEquals(BASE_64_DECODER.decode(expected), actual);
+        assertArrayEquals(Base64.decode(expected), actual);
     }
 
     @Test
@@ -60,13 +58,13 @@ public class ScramFunctionsTest {
     private byte[] generateSaltedPassword() {
         return ScramFunctions.saltedPassword(
                 ScramMechanisms.SCRAM_SHA_1, StringPreparations.NO_PREPARATION, "pencil",
-                BASE_64_DECODER.decode("QSXCR+Q6sek8bf92"), 4096
+                Base64.decode("QSXCR+Q6sek8bf92"), 4096
         );
     }
     private byte[] generateSaltedPasswordSha256() {
         return ScramFunctions.saltedPassword(
                 ScramMechanisms.SCRAM_SHA_256, StringPreparations.NO_PREPARATION, "pencil",
-                BASE_64_DECODER.decode("W22ZaJ0SNY7soEsUEjb6gQ=="), 4096
+                Base64.decode("W22ZaJ0SNY7soEsUEjb6gQ=="), 4096
         );
     }
 
