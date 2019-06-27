@@ -21,12 +21,6 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.62</version>
-            <scope>optional</scope>
-        </dependency>
     </dependencies>
 
     <build>
