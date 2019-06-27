@@ -56,7 +56,7 @@ public class ScramFunctions {
             ScramMechanism scramMechanism, StringPreparation stringPreparation, String password, byte[] salt,
             int iteration
     ) {
-        return scramMechanism.saltedPassword(scramMechanism, stringPreparation, password, salt, iteration);
+        return scramMechanism.saltedPassword(stringPreparation, password, salt, iteration);
     }
 
     /**
@@ -67,7 +67,7 @@ public class ScramFunctions {
      * @return The computed HMAC
      */
     public static byte[] hmac(ScramMechanism scramMechanism, byte[] message, byte[] key) {
-        return CryptoUtil.hmac(scramMechanism.secretKeySpec(key), scramMechanism.getMacInstance(), message);
+        return scramMechanism.hmac(key, message);
     }
 
     /**
@@ -151,7 +151,7 @@ public class ScramFunctions {
      * @return The hashed value
      */
     public static byte[] hash(ScramMechanism scramMechanism, byte[] value) {
-        return scramMechanism.getMessageDigestInstance().digest(value);
+        return scramMechanism.digest(value);
     }
 
     /**

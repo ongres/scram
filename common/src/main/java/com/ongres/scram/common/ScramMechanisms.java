@@ -27,7 +27,9 @@ package com.ongres.scram.common;
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 import static com.ongres.scram.common.util.Preconditions.gt0;
 
+import com.ongres.scram.common.bouncycastle.pbkdf2.Digest;
 import com.ongres.scram.common.bouncycastle.pbkdf2.DigestFactory;
+import com.ongres.scram.common.bouncycastle.pbkdf2.HMac;
 import com.ongres.scram.common.bouncycastle.pbkdf2.KeyParameter;
 import com.ongres.scram.common.bouncycastle.pbkdf2.PBEParametersGenerator;
 import com.ongres.scram.common.bouncycastle.pbkdf2.PKCS5S2ParametersGenerator;
@@ -124,58 +126,64 @@ public enum ScramMechanisms implements ScramMechanism {
     }
 
     @Override
-    public MessageDigest getMessageDigestInstance() {
-        try {
-            return MessageDigest.getInstance(hashAlgorithmName);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Algorithm " + hashAlgorithmName + " not present in current JVM");
-        }
-    }
-
-    @Override
-    public Mac getMacInstance() {
-        try {
-            return Mac.getInstance(hmacAlgorithmName);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("MAC Algorithm " + hmacAlgorithmName + " not present in current JVM");
-        }
-    }
-
-    @Override
-    public SecretKeySpec secretKeySpec(byte[] key) {
-        return new SecretKeySpec(key, hmacAlgorithmName);
-    }
-
-    @Override
-    public SecretKeyFactory secretKeyFactory() {
-        try {
-            return SecretKeyFactory.getInstance(PBKDF2_PREFIX_ALGORITHM_NAME + hmacAlgorithmName);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Unsupported PBKDF2 for " + mechanismName);
-        }
-    }
-
-    @Override
     public int algorithmKeyLength() {
         return keyLength;
     }
 
     @Override
-    public byte[] saltedPassword(ScramMechanism scramMechanism, StringPreparation stringPreparation, String password, byte[] salt,
-            int iteration) {
+    public byte[] digest(byte[] message) {
         try {
-             return CryptoUtil.hi(
-                     SecretKeyFactory.getInstance(PBKDF2_PREFIX_ALGORITHM_NAME + hmacAlgorithmName), scramMechanism.algorithmKeyLength(),
-                    stringPreparation.normalize(password), salt, iteration
-                    );
+            return MessageDigest.getInstance(hashAlgorithmName).digest(message);
         } catch (NoSuchAlgorithmException e) {
-            if(!ScramMechanisms.SCRAM_SHA_256.getHmacAlgorithmName().equals(scramMechanism.getMacInstance().getAlgorithm())) {
+            if(!ScramMechanisms.SCRAM_SHA_256.getHmacAlgorithmName().equals(getHmacAlgorithmName())) {
+              throw new RuntimeException("Algorithm " + hashAlgorithmName + " not present in current JVM");
+            }
+
+            Digest digest = DigestFactory.createSHA256();
+            digest.update(message, 0, message.length);
+            byte[] out = new byte[digest.getDigestSize()];
+            digest.doFinal(out, 0);
+            return out;
+        }
+    }
+
+    @Override
+    public byte[] hmac(byte[] key, byte[] message) {
+        try {
+            return CryptoUtil.hmac(new SecretKeySpec(key, hmacAlgorithmName), Mac.getInstance(hmacAlgorithmName), message);
+        } catch (NoSuchAlgorithmException e) {
+            if(!ScramMechanisms.SCRAM_SHA_256.getHmacAlgorithmName().equals(getHmacAlgorithmName())) {
+              throw new RuntimeException("MAC Algorithm " + hmacAlgorithmName + " not present in current JVM");
+            }
+
+            HMac mac = new HMac(DigestFactory.createSHA256());
+            mac.init(new KeyParameter(key));
+            mac.update(message, 0, message.length);
+            byte[] out = new byte[mac.getMacSize()];
+            mac.doFinal(out, 0);
+            return out;
+        }
+    }
+
+    @Override
+    public byte[] saltedPassword(StringPreparation stringPreparation, String password, byte[] salt,
+            int iterations) {
+        char[] normalizedString = stringPreparation.normalize(password).toCharArray();
+        try {
+            return CryptoUtil.hi(
+                SecretKeyFactory.getInstance(PBKDF2_PREFIX_ALGORITHM_NAME + hmacAlgorithmName),
+                algorithmKeyLength(),
+                normalizedString,
+                salt,
+                iterations);
+        } catch (NoSuchAlgorithmException e) {
+            if(!ScramMechanisms.SCRAM_SHA_256.getHmacAlgorithmName().equals(getHmacAlgorithmName())) {
               throw new RuntimeException("Unsupported PBKDF2 for " + mechanismName);
             }
 
             PBEParametersGenerator generator = new PKCS5S2ParametersGenerator(DigestFactory.createSHA256());
-            generator.init(PBEParametersGenerator.PKCS5PasswordToUTF8Bytes((stringPreparation.normalize(password)).toCharArray()), salt, iteration);
-            KeyParameter params = (KeyParameter)generator.generateDerivedParameters(scramMechanism.algorithmKeyLength());
+            generator.init(PBEParametersGenerator.PKCS5PasswordToUTF8Bytes(normalizedString), salt, iterations);
+            KeyParameter params = (KeyParameter)generator.generateDerivedParameters(algorithmKeyLength());
             return params.getKey();
         }
     }

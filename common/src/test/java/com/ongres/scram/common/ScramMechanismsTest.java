@@ -24,50 +24,28 @@
 package com.ongres.scram.common;
 
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import org.junit.Test;
-
-import javax.crypto.Mac;
-import java.security.MessageDigest;
-
-import static org.junit.Assert.*;
 
 
 public class ScramMechanismsTest {
     @Test
     public void TestHashSupportedByJVM() {
-        MessageDigest messageDigest;
+        byte[] digest;
         for(ScramMechanisms scramMechanism : ScramMechanisms.values()) {
-            try {
-                messageDigest = scramMechanism.getMessageDigestInstance();
-            } catch(RuntimeException ex) {
-                fail(ex.getMessage());
-                return;
-            }
-            assertNotNull("got a null MessageDigest", messageDigest);
-            assertEquals(
-                    "algorithm name and obtained algorithm name differ",
-                    scramMechanism.getHashAlgorithmName(),
-                    messageDigest.getAlgorithm()
-            );
+            digest = scramMechanism.digest(new byte[0]);
+            assertNotNull("got a null digest", digest);
         }
     }
 
     @Test
     public void TestHMACSupportedByJVM() {
-        Mac hmac;
+        byte[] hmac;
         for(ScramMechanisms scramMechanism : ScramMechanisms.values()) {
-            try {
-                hmac = scramMechanism.getMacInstance();
-            } catch(RuntimeException ex) {
-                fail(ex.getMessage());
-                return;
-            }
+            hmac = scramMechanism.hmac(new byte[] { 0 }, new byte[0]);
             assertNotNull("got a null HMAC", hmac);
-            assertEquals(
-                    "algorithm name and obtained algorithm name differ",
-                    scramMechanism.getHmacAlgorithmName(),
-                    hmac.getAlgorithm()
-            );
         }
     }
     

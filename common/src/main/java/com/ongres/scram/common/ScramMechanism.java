@@ -24,20 +24,14 @@
 package com.ongres.scram.common;
 
 
-import javax.crypto.Mac;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.SecretKeySpec;
-
 import com.ongres.scram.common.stringprep.StringPreparation;
-
-import java.security.MessageDigest;
 
 
 /**
  * Definition of the functionality to be provided by every ScramMechanism.
  *
- * Every ScramMechanism implemented must provide implementations of their respective {@link MessageDigest}
- * and {@link Mac} that will not throw a RuntimeException on any JVM, to guarantee true portability of this library.
+ * Every ScramMechanism implemented must provide implementations of their respective digest and hmac
+ * function that will not throw a RuntimeException on any JVM, to guarantee true portability of this library.
  */
 public interface ScramMechanism {
     /**
@@ -49,32 +43,22 @@ public interface ScramMechanism {
     String getName();
 
     /**
-     * Gets a constructed {@link MessageDigest} instance, according to the algorithm of the SCRAM mechanism.
-     * @return The MessageDigest instance
-     * @throws RuntimeException If the MessageDigest instance of the algorithm is not provided by current JVM
+     * Calculate a message digest, according to the algorithm of the SCRAM mechanism.
+     * @param message the message
+     * @return The calculated message digest
+     * @throws RuntimeException If the algorithm is not provided by current JVM or any included implementations
      */
-    MessageDigest getMessageDigestInstance() throws RuntimeException;
+    byte[] digest(byte[] message) throws RuntimeException;
 
     /**
-     * Gets a constructed {@link Mac} instance, according to the algorithm of the SCRAM mechanism.
-     * @return The Mac instance
-     * @throws RuntimeException If the Mac instance of the algorithm is not provided by current JVM
+     * Calculate the hmac of a key and a message, according to the algorithm of the SCRAM mechanism.
+     * @param key the key
+     * @param message the message
+     * @return The calculated message hmac instance
+     * @throws RuntimeException If the algorithm is not provided by current JVM or any included implementations
      */
-    Mac getMacInstance() throws RuntimeException;
+    byte[] hmac(byte[] key, byte[] message) throws RuntimeException;
 
-    /**
-     * Generates a key of the algorith used, based on the key given.
-     * @param key The bytes of the key to use
-     * @return The instance of SecretKeySpec
-     */
-    SecretKeySpec secretKeySpec(byte[] key);
-
-    /**
-     * Gets a SecretKeyFactory for the given algorithm.
-     * @return The SecretKeyFactory
-     */
-    SecretKeyFactory secretKeyFactory();
-    
     /**
      * Returns the length of the key length  of the algorithm.
      * @return The length (in bits)
@@ -91,6 +75,6 @@ public interface ScramMechanism {
      * Compute the salted password
      * @return The salted password
      */
-    byte[] saltedPassword(ScramMechanism scramMechanism, StringPreparation stringPreparation, String password,
+    byte[] saltedPassword(StringPreparation stringPreparation, String password,
             byte[] salt, int iteration);
 }
