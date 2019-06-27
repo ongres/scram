@@ -8,15 +8,16 @@ import java.util.Hashtable;
  * H(K XOR opad, H(K XOR ipad, text))
  */
 public class HMac
+    implements Mac
 {
     private final static byte IPAD = (byte)0x36;
     private final static byte OPAD = (byte)0x5C;
 
-    private SHA256Digest digest;
+    private Digest digest;
     private int digestSize;
     private int blockLength;
-    private SHA256Digest ipadState;
-    private SHA256Digest opadState;
+    private Memoable ipadState;
+    private Memoable opadState;
 
     private byte[] inputPad;
     private byte[] outputBuf;
@@ -27,29 +28,32 @@ public class HMac
     {
         blockLengths = new Hashtable<>();
         
-        blockLengths.put("GOST3411", Integer.valueOf(32));
+        blockLengths.put("GOST3411", Integers.valueOf(32));
         
-        blockLengths.put("MD2", Integer.valueOf(16));
-        blockLengths.put("MD4", Integer.valueOf(64));
-        blockLengths.put("MD5", Integer.valueOf(64));
+        blockLengths.put("MD2", Integers.valueOf(16));
+        blockLengths.put("MD4", Integers.valueOf(64));
+        blockLengths.put("MD5", Integers.valueOf(64));
         
-        blockLengths.put("RIPEMD128", Integer.valueOf(64));
-        blockLengths.put("RIPEMD160", Integer.valueOf(64));
+        blockLengths.put("RIPEMD128", Integers.valueOf(64));
+        blockLengths.put("RIPEMD160", Integers.valueOf(64));
         
-        blockLengths.put("SHA-1", Integer.valueOf(64));
-        blockLengths.put("SHA-224", Integer.valueOf(64));
-        blockLengths.put("SHA-256", Integer.valueOf(64));
-        blockLengths.put("SHA-384", Integer.valueOf(128));
-        blockLengths.put("SHA-512", Integer.valueOf(128));
+        blockLengths.put("SHA-1", Integers.valueOf(64));
+        blockLengths.put("SHA-224", Integers.valueOf(64));
+        blockLengths.put("SHA-256", Integers.valueOf(64));
+        blockLengths.put("SHA-384", Integers.valueOf(128));
+        blockLengths.put("SHA-512", Integers.valueOf(128));
         
-        blockLengths.put("Tiger", Integer.valueOf(64));
-        blockLengths.put("Whirlpool", Integer.valueOf(64));
+        blockLengths.put("Tiger", Integers.valueOf(64));
+        blockLengths.put("Whirlpool", Integers.valueOf(64));
     }
     
     private static int getByteLength(
-        SHA256Digest digest)
+        Digest digest)
     {
-      //TODO      return digest.getByteLength();
+        if (digest instanceof ExtendedDigest)
+        {
+            return ((ExtendedDigest)digest).getByteLength();
+        }
         
         Integer  b = (Integer)blockLengths.get(digest.getAlgorithmName());
         
@@ -68,13 +72,13 @@ public class HMac
      * @param digest the digest.
      */
     public HMac(
-        SHA256Digest digest)
+        Digest digest)
     {
         this(digest, getByteLength(digest));
     }
 
     private HMac(
-            SHA256Digest digest,
+        Digest digest,
         int    byteLength)
     {
         this.digest = digest;
@@ -89,16 +93,17 @@ public class HMac
         return digest.getAlgorithmName() + "/HMAC";
     }
 
-    public SHA256Digest getUnderlyingDigest()
+    public Digest getUnderlyingDigest()
     {
         return digest;
     }
 
     public void init(
-        byte[] key)
+        CipherParameters params)
     {
         digest.reset();
 
+        byte[] key = ((KeyParameter)params).getKey();
         int keyLength = key.length;
 
         if (keyLength > blockLength)
@@ -123,13 +128,19 @@ public class HMac
         xorPad(inputPad, blockLength, IPAD);
         xorPad(outputBuf, blockLength, OPAD);
 
-        opadState = digest.copy();
+        if (digest instanceof Memoable)
+        {
+            opadState = ((Memoable)digest).copy();
 
-        opadState.update(outputBuf, 0, blockLength);
+            ((Digest)opadState).update(outputBuf, 0, blockLength);
+        }
 
         digest.update(inputPad, 0, inputPad.length);
 
-        ipadState = digest.copy();
+        if (digest instanceof Memoable)
+        {
+            ipadState = ((Memoable)digest).copy();
+        }
     }
 
     public int getMacSize()
@@ -159,7 +170,7 @@ public class HMac
 
         if (opadState != null)
         {
-            digest.reset(opadState);
+            ((Memoable)digest).reset(opadState);
             digest.update(outputBuf, blockLength, digest.getDigestSize());
         }
         else
@@ -176,7 +187,7 @@ public class HMac
 
         if (ipadState != null)
         {
-            digest.reset(ipadState);
+            ((Memoable)digest).reset(ipadState);
         }
         else
         {

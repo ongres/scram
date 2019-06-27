@@ -27,27 +27,21 @@ package com.ongres.scram.common;
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 import static com.ongres.scram.common.util.Preconditions.gt0;
 
-import java.nio.charset.StandardCharsets;
+import com.ongres.scram.common.pbkdf2.DigestFactory;
+import com.ongres.scram.common.pbkdf2.KeyParameter;
+import com.ongres.scram.common.pbkdf2.PBEParametersGenerator;
+import com.ongres.scram.common.pbkdf2.PKCS5S2ParametersGenerator;
+import com.ongres.scram.common.stringprep.StringPreparation;
+import com.ongres.scram.common.util.CryptoUtil;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.Security;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.crypto.Mac;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.SecretKeySpec;
-
-import org.bouncycastle.crypto.PBEParametersGenerator;
-import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator;
-import org.bouncycastle.crypto.params.KeyParameter;
-import org.bouncycastle.crypto.util.DigestFactory;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-
-import com.ongres.scram.common.pbkdf2.PBKDF2Generator;
-import com.ongres.scram.common.stringprep.StringPreparation;
-import com.ongres.scram.common.util.CryptoUtil;
-
 
 /**
  * SCRAM Mechanisms supported by this library.
@@ -69,13 +63,6 @@ public enum ScramMechanisms implements ScramMechanism {
     SCRAM_SHA_256       (   "SHA-256",  "SHA-256",  256,    "HmacSHA256",   false,  10  ),
     SCRAM_SHA_256_PLUS  (   "SHA-256",  "SHA-256",  256,    "HmacSHA256",   true,   10  )
     ;
-
-    {
-        try {
-            Security.addProvider(new BouncyCastleProvider());
-        } catch (NoClassDefFoundError ex) {
-        }
-    }
 
     private static final String SCRAM_MECHANISM_NAME_PREFIX = "SCRAM-";
     private static final String CHANNEL_BINDING_SUFFIX = "-PLUS";
@@ -182,23 +169,14 @@ public enum ScramMechanisms implements ScramMechanism {
                     stringPreparation.normalize(password), salt, iteration
                     );
         } catch (NoSuchAlgorithmException e) {
-            try {
-                PBEParametersGenerator generator = new PKCS5S2ParametersGenerator(DigestFactory.createSHA256());
-                generator.init(PBEParametersGenerator.PKCS5PasswordToUTF8Bytes((stringPreparation.normalize(password)).toCharArray()), salt, iteration);
-                KeyParameter params = (KeyParameter)generator.generateDerivedParameters(scramMechanism.algorithmKeyLength());
-                return params.getKey();
-            } catch (IllegalArgumentException e2) {
-                if(ScramMechanisms.SCRAM_SHA_256.getHmacAlgorithmName().equals(scramMechanism.getMacInstance().getAlgorithm())) {
-                    try {
-                        return new PBKDF2Generator().generatePBKDF(stringPreparation.normalize(password)
-                            .getBytes(StandardCharsets.UTF_8), salt, iteration);
-                    } catch (IllegalArgumentException e3) {
-                        throw new RuntimeException("Unsupported PBKDF2 for " + mechanismName);
-                    }
-                } else {
-                    throw new RuntimeException("Unsupported PBKDF2 for " + mechanismName);
-                }
+            if(!ScramMechanisms.SCRAM_SHA_256.getHmacAlgorithmName().equals(scramMechanism.getMacInstance().getAlgorithm())) {
+              throw new RuntimeException("Unsupported PBKDF2 for " + mechanismName);
             }
+
+            PBEParametersGenerator generator = new PKCS5S2ParametersGenerator(DigestFactory.createSHA256());
+            generator.init(PBEParametersGenerator.PKCS5PasswordToUTF8Bytes((stringPreparation.normalize(password)).toCharArray()), salt, iteration);
+            KeyParameter params = (KeyParameter)generator.generateDerivedParameters(scramMechanism.algorithmKeyLength());
+            return params.getKey();
         }
     }
 
