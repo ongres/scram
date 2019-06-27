@@ -64,6 +64,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.7</java.version>
+        <spotbugs.excluded.location>common/spotbugs-exclude.xml</spotbugs.excluded.location>
     </properties>
 
     <dependencyManagement>
@@ -159,6 +160,7 @@
                             <effort>Max</effort>
                             <threshold>Low</threshold>
                             <xmlOutput>true</xmlOutput>
+                            <excludeFilterFile>${spotbugs.excluded.location}</excludeFilterFile>
                             <findbugsXmlOutputDirectory>${project.build.directory}/findbugs</findbugsXmlOutputDirectory>
                         </configuration>
                         <executions>

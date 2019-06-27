@@ -1,0 +1,7 @@
+<FindBugsFilter>
+<Match>
+  <Not>
+    <Package name="com\.ongres\.scram\.common\.bouncycastle\.pbkdf2" />
+  </Not>
+</Match>
+</FindBugsFilter>
