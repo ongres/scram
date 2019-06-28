@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, OnGres.
+ * Copyright 2019, OnGres.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -107,16 +107,16 @@ public class CryptoUtil {
      *
      * @param secretKeyFactory The SecretKeyFactory to generate the SecretKey
      * @param keyLength The length of the key (in bits)
-     * @param value The String to compute the Hi function
+     * @param value The char array to compute the Hi function
      * @param salt The salt
      * @param iterations The number of iterations
      * @return The bytes of the computed Hi value
      */
     public static byte[] hi(
-            SecretKeyFactory secretKeyFactory, int keyLength, String value, byte[] salt, int iterations
+            SecretKeyFactory secretKeyFactory, int keyLength, char[] value, byte[] salt, int iterations
     ) {
         try {
-            PBEKeySpec spec = new PBEKeySpec(value.toCharArray(), salt, iterations, keyLength);
+            PBEKeySpec spec = new PBEKeySpec(value, salt, iterations, keyLength);
             SecretKey key = secretKeyFactory.generateSecret(spec);
             return key.getEncoded();
         } catch(InvalidKeySpecException e) {

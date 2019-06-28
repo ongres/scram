@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, OnGres.
+ * Copyright 2019, OnGres.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -24,23 +24,21 @@
 package com.ongres.scram.client;
 
 
+import static com.ongres.scram.common.util.Preconditions.checkNotEmpty;
+import static com.ongres.scram.common.util.Preconditions.checkNotNull;
+
 import com.ongres.scram.common.ScramFunctions;
 import com.ongres.scram.common.ScramMechanism;
+import com.ongres.scram.common.bouncycastle.base64.Base64;
 import com.ongres.scram.common.exception.ScramInvalidServerSignatureException;
 import com.ongres.scram.common.exception.ScramParseException;
 import com.ongres.scram.common.exception.ScramServerErrorException;
 import com.ongres.scram.common.gssapi.Gs2CbindFlag;
-import com.ongres.scram.common.message.ClientFirstMessage;
 import com.ongres.scram.common.message.ClientFinalMessage;
+import com.ongres.scram.common.message.ClientFirstMessage;
 import com.ongres.scram.common.message.ServerFinalMessage;
 import com.ongres.scram.common.message.ServerFirstMessage;
 import com.ongres.scram.common.stringprep.StringPreparation;
-
-import java.util.Base64;
-import java.util.Optional;
-
-import static com.ongres.scram.common.util.Preconditions.checkNotEmpty;
-import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 
 
 /**
@@ -196,12 +194,12 @@ public class ScramSession {
             this(
                     nonce,
                     ScramFunctions.saltedPassword(
-                            scramMechanism, stringPreparation, password, Base64.getDecoder().decode(salt), iteration
+                            scramMechanism, stringPreparation, password, Base64.decode(salt), iteration
                     )
             );
         }
 
-        private synchronized void generateAndCacheAuthMessage(Optional<byte[]> cbindData) {
+        private synchronized void generateAndCacheAuthMessage(byte[] cbindData) {
             if(null != authMessage) {
                 return;
             }
@@ -214,11 +212,17 @@ public class ScramSession {
                     .toString();
         }
 
-        private String clientFinalMessage(Optional<byte[]> cbindData) {
+        /**
+         * Generates the SCRAM representation of the client-final-message, including the given channel-binding data.
+         * @param cbindData The bytes of the channel-binding data
+         * @return The message
+         * @throws IllegalArgumentException If the channel binding data is null
+         */
+        private String clientFinalMessage(byte[] cbindData) throws IllegalArgumentException {
             if(null == authMessage) {
                 generateAndCacheAuthMessage(cbindData);
             }
-
+            
             ClientFinalMessage clientFinalMessage = new ClientFinalMessage(
                     clientFirstMessage.getGs2Header(),
                     cbindData,
@@ -233,21 +237,11 @@ public class ScramSession {
         }
 
         /**
-         * Generates the SCRAM representation of the client-final-message, including the given channel-binding data.
-         * @param cbindData The bytes of the channel-binding data
-         * @return The message
-         * @throws IllegalArgumentException If the channel binding data is null
-         */
-        public String clientFinalMessage(byte[] cbindData) throws IllegalArgumentException {
-            return clientFinalMessage(Optional.of(checkNotNull(cbindData, "cbindData")));
-        }
-
-        /**
          * Generates the SCRAM representation of the client-final-message.
          * @return The message
          */
         public String clientFinalMessage() {
-            return clientFinalMessage(Optional.empty());
+            return clientFinalMessage(null);
         }
 
         /**
@@ -265,10 +259,10 @@ public class ScramSession {
 
             ServerFinalMessage message = ServerFinalMessage.parseFrom(serverFinalMessage);
             if(message.isError()) {
-                throw new ScramServerErrorException(message.getError().get());
+                throw new ScramServerErrorException(message.getError());
             }
             if(! ScramFunctions.verifyServerSignature(
-                    scramMechanism, serverKey, authMessage, message.getVerifier().get()
+                    scramMechanism, serverKey, authMessage, message.getVerifier()
             )) {
                 throw new ScramInvalidServerSignatureException("Invalid server SCRAM signature");
             }

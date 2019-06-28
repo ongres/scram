@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, OnGres.
+ * Copyright 2019, OnGres.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -24,60 +24,46 @@
 package com.ongres.scram.common;
 
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import org.junit.Test;
-
-import javax.crypto.Mac;
-import java.security.MessageDigest;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.function.Predicate;
-
-import static org.junit.Assert.*;
 
 
 public class ScramMechanismsTest {
     @Test
     public void TestHashSupportedByJVM() {
-        MessageDigest messageDigest;
+        byte[] digest;
         for(ScramMechanisms scramMechanism : ScramMechanisms.values()) {
-            try {
-                messageDigest = scramMechanism.getMessageDigestInstance();
-            } catch(RuntimeException ex) {
-                fail(ex.getMessage());
-                return;
-            }
-            assertNotNull("got a null MessageDigest", messageDigest);
-            assertEquals(
-                    "algorithm name and obtained algorithm name differ",
-                    scramMechanism.getHashAlgorithmName(),
-                    messageDigest.getAlgorithm()
-            );
+            digest = scramMechanism.digest(new byte[0]);
+            assertNotNull("got a null digest", digest);
         }
     }
 
     @Test
     public void TestHMACSupportedByJVM() {
-        Mac hmac;
+        byte[] hmac;
         for(ScramMechanisms scramMechanism : ScramMechanisms.values()) {
-            try {
-                hmac = scramMechanism.getMacInstance();
-            } catch(RuntimeException ex) {
-                fail(ex.getMessage());
-                return;
-            }
+            hmac = scramMechanism.hmac(new byte[] { 0 }, new byte[0]);
             assertNotNull("got a null HMAC", hmac);
-            assertEquals(
-                    "algorithm name and obtained algorithm name differ",
-                    scramMechanism.getHmacAlgorithmName(),
-                    hmac.getAlgorithm()
-            );
         }
     }
+    
+    private interface Predicate<T> {
+        boolean test(T t);
+    }
 
-    private void testNames(String[] names, Predicate<Optional<ScramMechanisms>> predicate) {
+
+    private void testNames(String[] names, Predicate<ScramMechanisms> predicate) {
+        int count = 0;
+        for (String name : names) {
+          if (predicate.test(ScramMechanisms.byName(name))) {
+            count++;
+          }
+        }
         assertEquals(
                 names.length,
-                Arrays.stream(names).map(s -> ScramMechanisms.byName(s)).filter(predicate).count()
+                count
         );
     }
 
@@ -85,7 +71,12 @@ public class ScramMechanismsTest {
     public void byNameValid() {
         testNames(
                 new String[] { "SCRAM-SHA-1", "SCRAM-SHA-1-PLUS", "SCRAM-SHA-256", "SCRAM-SHA-256-PLUS" },
-                v -> v.isPresent()
+                new Predicate<ScramMechanisms>() {
+                    @Override
+                    public boolean test(ScramMechanisms scramMechanisms) {
+                      return scramMechanisms != null;
+                    }
+                  }
         );
     }
 
@@ -93,13 +84,18 @@ public class ScramMechanismsTest {
     public void byNameInvalid() {
         testNames(
                 new String[] { "SCRAM-SHA", "SHA-1-PLUS", "SCRAM-SHA-256-", "SCRAM-SHA-256-PLUS!" },
-                v -> ! v.isPresent()
+                new Predicate<ScramMechanisms>() {
+                    @Override
+                    public boolean test(ScramMechanisms scramMechanisms) {
+                      return scramMechanisms == null;
+                    }
+                  }
         );
     }
 
     private void selectMatchingMechanismTest(ScramMechanisms scramMechanisms, boolean channelBinding, String... names) {
         assertEquals(
-                scramMechanisms, ScramMechanisms.selectMatchingMechanism(channelBinding, names).orElse(null)
+                scramMechanisms, ScramMechanisms.selectMatchingMechanism(channelBinding, names)
         );
     }
 

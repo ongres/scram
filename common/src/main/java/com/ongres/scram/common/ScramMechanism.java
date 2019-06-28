@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, OnGres.
+ * Copyright 2019, OnGres.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -24,17 +24,14 @@
 package com.ongres.scram.common;
 
 
-import javax.crypto.Mac;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.SecretKeySpec;
-import java.security.MessageDigest;
+import com.ongres.scram.common.stringprep.StringPreparation;
 
 
 /**
  * Definition of the functionality to be provided by every ScramMechanism.
  *
- * Every ScramMechanism implemented must provide implementations of their respective {@link MessageDigest}
- * and {@link Mac} that will not throw a RuntimeException on any JVM, to guarantee true portability of this library.
+ * Every ScramMechanism implemented must provide implementations of their respective digest and hmac
+ * function that will not throw a RuntimeException on any JVM, to guarantee true portability of this library.
  */
 public interface ScramMechanism {
     /**
@@ -46,31 +43,21 @@ public interface ScramMechanism {
     String getName();
 
     /**
-     * Gets a constructed {@link MessageDigest} instance, according to the algorithm of the SCRAM mechanism.
-     * @return The MessageDigest instance
-     * @throws RuntimeException If the MessageDigest instance of the algorithm is not provided by current JVM
+     * Calculate a message digest, according to the algorithm of the SCRAM mechanism.
+     * @param message the message
+     * @return The calculated message digest
+     * @throws RuntimeException If the algorithm is not provided by current JVM or any included implementations
      */
-    MessageDigest getMessageDigestInstance() throws RuntimeException;
+    byte[] digest(byte[] message) throws RuntimeException;
 
     /**
-     * Gets a constructed {@link Mac} instance, according to the algorithm of the SCRAM mechanism.
-     * @return The Mac instance
-     * @throws RuntimeException If the Mac instance of the algorithm is not provided by current JVM
+     * Calculate the hmac of a key and a message, according to the algorithm of the SCRAM mechanism.
+     * @param key the key
+     * @param message the message
+     * @return The calculated message hmac instance
+     * @throws RuntimeException If the algorithm is not provided by current JVM or any included implementations
      */
-    Mac getMacInstance() throws RuntimeException;
-
-    /**
-     * Generates a key of the algorith used, based on the key given.
-     * @param key The bytes of the key to use
-     * @return The instance of SecretKeySpec
-     */
-    SecretKeySpec secretKeySpec(byte[] key);
-
-    /**
-     * Gets a SecretKeyFactory for the given algorithm.
-     * @return The SecretKeyFactory
-     */
-    SecretKeyFactory secretKeyFactory();
+    byte[] hmac(byte[] key, byte[] message) throws RuntimeException;
 
     /**
      * Returns the length of the key length  of the algorithm.
@@ -83,4 +70,11 @@ public interface ScramMechanism {
      * @return True if it supports channel binding, false otherwise
      */
     boolean supportsChannelBinding();
+
+    /**
+     * Compute the salted password
+     * @return The salted password
+     */
+    byte[] saltedPassword(StringPreparation stringPreparation, String password,
+            byte[] salt, int iteration);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, OnGres.
+ * Copyright 2019, OnGres.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -30,16 +30,21 @@ import com.ongres.scram.common.exception.ScramServerErrorException;
 import com.ongres.scram.common.stringprep.StringPreparations;
 import org.junit.Test;
 
-import static com.ongres.scram.common.RfcExample.*;
+import static com.ongres.scram.common.RfcExampleSha1.*;
 import static org.junit.Assert.*;
-
 
 public class ScramSessionTest {
     private final ScramClient scramClient = ScramClient
             .channelBinding(ScramClient.ChannelBinding.NO)
             .stringPreparation(StringPreparations.NO_PREPARATION)
             .selectMechanismBasedOnServerAdvertised("SCRAM-SHA-1")
-            .nonceSupplier(() -> CLIENT_NONCE)
+            .nonceSupplier
+            (new NonceSupplier() {
+                @Override
+                public String get() {
+                    return CLIENT_NONCE;
+                }
+            })
             .setup();
 
     @Test

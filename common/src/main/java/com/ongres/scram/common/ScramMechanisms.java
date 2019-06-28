@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, OnGres.
+ * Copyright 2019, OnGres.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -24,20 +24,24 @@
 package com.ongres.scram.common;
 
 
-import javax.crypto.Mac;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.SecretKeySpec;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 import static com.ongres.scram.common.util.Preconditions.gt0;
 
+import com.ongres.scram.common.bouncycastle.pbkdf2.DigestFactory;
+import com.ongres.scram.common.bouncycastle.pbkdf2.KeyParameter;
+import com.ongres.scram.common.bouncycastle.pbkdf2.PBEParametersGenerator;
+import com.ongres.scram.common.bouncycastle.pbkdf2.PKCS5S2ParametersGenerator;
+import com.ongres.scram.common.stringprep.StringPreparation;
+import com.ongres.scram.common.util.CryptoUtil;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.crypto.Mac;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  * SCRAM Mechanisms supported by this library.
@@ -63,8 +67,7 @@ public enum ScramMechanisms implements ScramMechanism {
     private static final String SCRAM_MECHANISM_NAME_PREFIX = "SCRAM-";
     private static final String CHANNEL_BINDING_SUFFIX = "-PLUS";
     private static final String PBKDF2_PREFIX_ALGORITHM_NAME = "PBKDF2With";
-    private static final Map<String,ScramMechanisms> BY_NAME_MAPPING =
-            Arrays.stream(values()).collect(Collectors.toMap(v -> v.getName(), v -> v));
+    private static final Map<String,ScramMechanisms> BY_NAME_MAPPING = valuesAsMap();
 
     private final String mechanismName;
     private final String hashAlgorithmName;
@@ -121,40 +124,49 @@ public enum ScramMechanisms implements ScramMechanism {
     }
 
     @Override
-    public MessageDigest getMessageDigestInstance() {
+    public int algorithmKeyLength() {
+        return keyLength;
+    }
+
+    @Override
+    public byte[] digest(byte[] message) {
         try {
-            return MessageDigest.getInstance(hashAlgorithmName);
+            return MessageDigest.getInstance(hashAlgorithmName).digest(message);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("Algorithm " + hashAlgorithmName + " not present in current JVM");
         }
     }
 
     @Override
-    public Mac getMacInstance() {
+    public byte[] hmac(byte[] key, byte[] message) {
         try {
-            return Mac.getInstance(hmacAlgorithmName);
+            return CryptoUtil.hmac(new SecretKeySpec(key, hmacAlgorithmName), Mac.getInstance(hmacAlgorithmName), message);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("MAC Algorithm " + hmacAlgorithmName + " not present in current JVM");
         }
     }
 
     @Override
-    public SecretKeySpec secretKeySpec(byte[] key) {
-        return new SecretKeySpec(key, hmacAlgorithmName);
-    }
-
-    @Override
-    public SecretKeyFactory secretKeyFactory() {
+    public byte[] saltedPassword(StringPreparation stringPreparation, String password, byte[] salt,
+            int iterations) {
+        char[] normalizedString = stringPreparation.normalize(password).toCharArray();
         try {
-            return SecretKeyFactory.getInstance(PBKDF2_PREFIX_ALGORITHM_NAME + hmacAlgorithmName);
+            return CryptoUtil.hi(
+                SecretKeyFactory.getInstance(PBKDF2_PREFIX_ALGORITHM_NAME + hmacAlgorithmName),
+                algorithmKeyLength(),
+                normalizedString,
+                salt,
+                iterations);
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Unsupported PBKDF2 for " + mechanismName);
-        }
-    }
+            if(!ScramMechanisms.SCRAM_SHA_256.getHmacAlgorithmName().equals(getHmacAlgorithmName())) {
+                throw new RuntimeException("Unsupported PBKDF2 for " + mechanismName);
+            }
 
-    @Override
-    public int algorithmKeyLength() {
-        return keyLength;
+            PBEParametersGenerator generator = new PKCS5S2ParametersGenerator(DigestFactory.createSHA256());
+            generator.init(PBEParametersGenerator.PKCS5PasswordToUTF8Bytes(normalizedString), salt, iterations);
+            KeyParameter params = (KeyParameter)generator.generateDerivedParameters(algorithmKeyLength());
+            return params.getKey();
+        }
     }
 
     /**
@@ -162,10 +174,10 @@ public enum ScramMechanisms implements ScramMechanism {
      * @param name The standard IANA full name of the mechanism.
      * @return An Optional instance that contains the ScramMechanism if it was found, or empty otherwise.
      */
-    public static Optional<ScramMechanisms> byName(String name) {
+    public static ScramMechanisms byName(String name) {
         checkNotNull(name, "name");
 
-        return Optional.ofNullable(BY_NAME_MAPPING.get(name));
+        return BY_NAME_MAPPING.get(name);
     }
 
     /**
@@ -179,17 +191,30 @@ public enum ScramMechanisms implements ScramMechanism {
      * @param peerMechanisms The mechanisms supported by the other peer
      * @return The selected mechanism, or null if no mechanism matched
      */
-    public static Optional<ScramMechanism> selectMatchingMechanism(boolean channelBinding, String... peerMechanisms) {
-        return Arrays.stream(peerMechanisms)
-                .map(s -> BY_NAME_MAPPING.get(s))
-                .filter(m -> m != null)             // Filter out invalid names
-                .flatMap(m -> Arrays.stream(values())
-                        .filter(
-                                v -> channelBinding == v.channelBinding && v.mechanismName.equals(m.mechanismName)
-                        )
-                )
-                .max(Comparator.comparing(c -> c.priority))
-                .map(m -> (ScramMechanism) m)
-        ;
+    public static ScramMechanism selectMatchingMechanism(boolean channelBinding, String... peerMechanisms) {
+        ScramMechanisms selectedScramMechanisms = null;
+        for (String peerMechanism : peerMechanisms) {
+            ScramMechanisms matchedScramMechanisms = BY_NAME_MAPPING.get(peerMechanism);
+            if (matchedScramMechanisms != null) {
+                for (ScramMechanisms candidateScramMechanisms : ScramMechanisms.values()) {
+                    if (channelBinding == candidateScramMechanisms.channelBinding
+                        && candidateScramMechanisms.mechanismName.equals(matchedScramMechanisms.mechanismName)
+                        && (selectedScramMechanisms == null 
+                            || selectedScramMechanisms.priority < candidateScramMechanisms.priority)) {
+                        selectedScramMechanisms = candidateScramMechanisms;
+                    }
+                }
+            }
+        }
+        return selectedScramMechanisms;
     }
+    
+    private static Map<String, ScramMechanisms> valuesAsMap() {
+        Map<String, ScramMechanisms> mapScramMechanisms = new HashMap<>(values().length);
+        for (ScramMechanisms scramMechanisms : values()) {
+            mapScramMechanisms.put(scramMechanisms.getName(), scramMechanisms);
+        }
+        return mapScramMechanisms;
+    }
+
 }

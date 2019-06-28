@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, OnGres.
+ * Copyright 2019, OnGres.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -24,19 +24,18 @@
 package com.ongres.scram.common;
 
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-
 import static com.ongres.scram.common.util.Preconditions.checkNotEmpty;
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
+
+import java.nio.charset.StandardCharsets;
+
+import com.ongres.scram.common.bouncycastle.base64.Base64;
 
 /**
  * Class with static methods that provide support for converting to/from salNames.
  * @see <a href="https://tools.ietf.org/html/rfc5802#section-7">[RFC5802] Section 7: Formal Syntax</a>
  */
 public class ScramStringFormatting {
-    private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder();
-    private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
 
     /**
      * Given a value-safe-char (normalized UTF-8 String),
@@ -137,7 +136,7 @@ public class ScramStringFormatting {
     }
 
     public static String base64Encode(byte[] value) throws IllegalArgumentException {
-        return BASE64_ENCODER.encodeToString(checkNotNull(value, "value"));
+        return Base64.toBase64String(checkNotNull(value, "value"));
     }
 
     public static String base64Encode(String value) throws IllegalArgumentException {
@@ -145,6 +144,6 @@ public class ScramStringFormatting {
     }
 
     public static byte[] base64Decode(String value) throws IllegalArgumentException {
-        return BASE64_DECODER.decode(checkNotEmpty(value, "value"));
+        return Base64.decode(checkNotEmpty(value, "value"));
     }
 }

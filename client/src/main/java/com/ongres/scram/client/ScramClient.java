@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, OnGres.
+ * Copyright 2019, OnGres.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -33,11 +33,8 @@ import com.ongres.scram.common.util.CryptoUtil;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import static com.ongres.scram.common.util.Preconditions.*;
 
@@ -104,16 +101,16 @@ public class ScramClient {
     private final StringPreparation stringPreparation;
     private final ScramMechanism scramMechanism;
     private final SecureRandom secureRandom;
-    private final Supplier<String> nonceSupplier;
+    private final NonceSupplier nonceSupplier;
 
     private ScramClient(
             ChannelBinding channelBinding, StringPreparation stringPreparation,
-            Optional<ScramMechanism> nonChannelBindingMechanism, Optional<ScramMechanism> channelBindingMechanism,
-            SecureRandom secureRandom, Supplier<String> nonceSupplier
+            ScramMechanism nonChannelBindingMechanism, ScramMechanism channelBindingMechanism,
+            SecureRandom secureRandom, NonceSupplier nonceSupplier
     ) {
         assert null != channelBinding : "channelBinding";
         assert null != stringPreparation : "stringPreparation";
-        assert nonChannelBindingMechanism.isPresent() || channelBindingMechanism.isPresent()
+        assert null != nonChannelBindingMechanism || null != channelBindingMechanism 
                 : "Either a channel-binding or a non-binding mechanism must be present";
         assert null != secureRandom : "secureRandom";
         assert null != nonceSupplier : "nonceSupplier";
@@ -121,7 +118,7 @@ public class ScramClient {
 
         this.channelBinding = channelBinding;
         this.stringPreparation = stringPreparation;
-        this.scramMechanism = nonChannelBindingMechanism.orElseGet(() -> channelBindingMechanism.get());
+        this.scramMechanism = null != nonChannelBindingMechanism ? nonChannelBindingMechanism : channelBindingMechanism;
         this.secureRandom = secureRandom;
         this.nonceSupplier = nonceSupplier;
     }
@@ -164,8 +161,8 @@ public class ScramClient {
      */
     public static class PreBuilder2 extends PreBuilder1 {
         protected final StringPreparation stringPreparation;
-        protected Optional<ScramMechanism> nonChannelBindingMechanism = Optional.empty();
-        protected Optional<ScramMechanism> channelBindingMechanism = Optional.empty();
+        protected ScramMechanism nonChannelBindingMechanism = null;
+        protected ScramMechanism channelBindingMechanism = null;
 
         private PreBuilder2(ChannelBinding channelBinding, StringPreparation stringPreparation) {
             super(channelBinding);
@@ -189,16 +186,16 @@ public class ScramClient {
             checkArgument(null != serverMechanisms && serverMechanisms.length > 0, "serverMechanisms");
 
             nonChannelBindingMechanism = ScramMechanisms.selectMatchingMechanism(false, serverMechanisms);
-            if(channelBinding == ChannelBinding.NO && ! nonChannelBindingMechanism.isPresent()) {
+            if(channelBinding == ChannelBinding.NO && null == nonChannelBindingMechanism) {
                 throw new IllegalArgumentException("Server does not support non channel binding mechanisms");
             }
 
             channelBindingMechanism = ScramMechanisms.selectMatchingMechanism(true, serverMechanisms);
-            if(channelBinding == ChannelBinding.YES && ! channelBindingMechanism.isPresent()) {
+            if(channelBinding == ChannelBinding.YES && null == channelBindingMechanism) {
                 throw new IllegalArgumentException("Server does not support channel binding mechanisms");
             }
 
-            if(! (channelBindingMechanism.isPresent() || nonChannelBindingMechanism.isPresent())) {
+            if(null == channelBindingMechanism && null == nonChannelBindingMechanism) {
                 throw new IllegalArgumentException("There are no matching mechanisms between client and server");
             }
 
@@ -246,9 +243,9 @@ public class ScramClient {
             }
 
             if(scramMechanism.supportsChannelBinding()) {
-                return new Builder(channelBinding, stringPreparation, Optional.empty(), Optional.of(scramMechanism));
+                return new Builder(channelBinding, stringPreparation, null, scramMechanism);
             } else {
-                return new Builder(channelBinding, stringPreparation, Optional.of(scramMechanism), Optional.empty());
+                return new Builder(channelBinding, stringPreparation, scramMechanism, null);
             }
         }
     }
@@ -258,16 +255,16 @@ public class ScramClient {
      * Use instead {@link ScramClient#channelBinding(ChannelBinding)} and chained methods.
      */
     public static class Builder extends PreBuilder2 {
-        private final Optional<ScramMechanism> nonChannelBindingMechanism;
-        private final Optional<ScramMechanism> channelBindingMechanism;
+        private final ScramMechanism nonChannelBindingMechanism;
+        private final ScramMechanism channelBindingMechanism;
 
         private SecureRandom secureRandom = new SecureRandom();
-        private Supplier<String> nonceSupplier;
+        private NonceSupplier nonceSupplier;
         private int nonceLength = DEFAULT_NONCE_LENGTH;
 
         private Builder(
                 ChannelBinding channelBinding, StringPreparation stringPreparation,
-                Optional<ScramMechanism> nonChannelBindingMechanism, Optional<ScramMechanism> channelBindingMechanism
+                ScramMechanism nonChannelBindingMechanism, ScramMechanism channelBindingMechanism
         ) {
             super(channelBinding, stringPreparation);
             this.nonChannelBindingMechanism = nonChannelBindingMechanism;
@@ -279,7 +276,7 @@ public class ScramClient {
          * based on the given algorithm and optionally provider.
          * This SecureRandom instance will be used to generate secure random values,
          * like the ones required to generate the nonce
-         * (unless an external nonce provider is given via {@link Builder#nonceSupplier(Supplier)}).
+         * (unless an external nonce provider is given via {@link Builder#nonceSupplier(NonceSupplier)}).
          * Algorithm and provider names are those supported by the {@link SecureRandom} class.
          * @param algorithm The name of the algorithm to use.
          * @param provider The name of the provider of SecureRandom. Might be null.
@@ -311,7 +308,7 @@ public class ScramClient {
          * @return The same class
          * @throws IllegalArgumentException If nonceSupplier is null
          */
-        public Builder nonceSupplier(Supplier<String> nonceSupplier) throws IllegalArgumentException {
+        public Builder nonceSupplier(NonceSupplier nonceSupplier) throws IllegalArgumentException {
             this.nonceSupplier = checkNotNull(nonceSupplier, "nonceSupplier");
 
             return this;
@@ -319,7 +316,7 @@ public class ScramClient {
 
         /**
          * Sets a non-default ({@link ScramClient#DEFAULT_NONCE_LENGTH}) length for the nonce generation,
-         * if no alternate nonceSupplier is provided via {@link Builder#nonceSupplier(Supplier)}.
+         * if no alternate nonceSupplier is provided via {@link Builder#nonceSupplier(NonceSupplier)}.
          * @param length The length of the nonce. Must be positive and greater than 0
          * @return The same class
          * @throws IllegalArgumentException If length is less than 1
@@ -342,11 +339,17 @@ public class ScramClient {
             return new ScramClient(
                     channelBinding, stringPreparation, nonChannelBindingMechanism, channelBindingMechanism,
                     secureRandom,
-                    nonceSupplier != null ? nonceSupplier : () -> CryptoUtil.nonce(nonceLength, secureRandom)
+                    nonceSupplier != null ? nonceSupplier : new NonceSupplier() {
+                        @Override
+                        public String get() {
+                            return CryptoUtil.nonce(nonceLength, secureRandom);
+                        }
+                      }
+
             );
         }
     }
-
+    
     public StringPreparation getStringPreparation() {
         return stringPreparation;
     }
@@ -360,7 +363,11 @@ public class ScramClient {
      * @return A list of the IANA-registered, SCRAM supported mechanisms
      */
     public static List<String> supportedMechanisms() {
-        return Arrays.stream(ScramMechanisms.values()).map(m -> m.getName()).collect(Collectors.toList());
+        List<String> supportedMechanisms = new ArrayList<>();
+        for (ScramMechanisms scramMechanisms : ScramMechanisms.values()) {
+            supportedMechanisms.add(scramMechanisms.getName());
+          }
+        return supportedMechanisms;
     }
 
     /**

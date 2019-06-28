@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, OnGres.
+ * Copyright 2019, OnGres.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -31,8 +31,6 @@ import com.ongres.scram.common.gssapi.Gs2Header;
 import com.ongres.scram.common.util.StringWritable;
 import com.ongres.scram.common.util.StringWritableCsv;
 
-import java.util.Optional;
-
 import static com.ongres.scram.common.util.Preconditions.checkNotEmpty;
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 
@@ -54,17 +52,17 @@ public class ClientFinalMessage implements StringWritable {
     private final String nonce;
     private final byte[] proof;
 
-    private static String generateCBind(Gs2Header gs2Header, Optional<byte[]> cbindData) {
+    private static String generateCBind(Gs2Header gs2Header, byte[] cbindData) {
         StringBuffer sb = new StringBuffer();
         gs2Header.writeTo(sb)
                 .append(',');
 
-        cbindData.ifPresent(
-                v -> new ScramAttributeValue(
-                        ScramAttributes.CHANNEL_BINDING,
-                        ScramStringFormatting.base64Encode(cbindData.get())
-                ).writeTo(sb)
-        );
+        if(null != cbindData) {
+            new ScramAttributeValue(
+                    ScramAttributes.CHANNEL_BINDING,
+                    ScramStringFormatting.base64Encode(cbindData)
+                    ).writeTo(sb);
+        }
 
         return sb.toString();
     }
@@ -78,10 +76,10 @@ public class ClientFinalMessage implements StringWritable {
      * @param nonce The nonce
      * @param proof The bytes representing the computed client proof
      */
-    public ClientFinalMessage(Gs2Header gs2Header, Optional<byte[]> cbindData, String nonce, byte[] proof) {
+    public ClientFinalMessage(Gs2Header gs2Header, byte[] cbindData, String nonce, byte[] proof) {
         this.cbind = generateCBind(
                 checkNotNull(gs2Header, "gs2Header"),
-                checkNotNull(cbindData, "cbindData")
+                cbindData
         );
         this.nonce = checkNotEmpty(nonce, "nonce");
         this.proof = checkNotNull(proof, "proof");
@@ -96,13 +94,13 @@ public class ClientFinalMessage implements StringWritable {
     }
 
     private static StringBuffer writeToWithoutProof(
-            StringBuffer sb, Gs2Header gs2Header, Optional<byte[]> cbindData, String nonce
+            StringBuffer sb, Gs2Header gs2Header, byte[] cbindData, String nonce
     ) {
         return writeToWithoutProof(
                 sb,
                 generateCBind(
                         checkNotNull(gs2Header, "gs2Header"),
-                        checkNotNull(cbindData, "cbindData")
+                        cbindData
                 ),
                 nonce
         );
@@ -116,7 +114,7 @@ public class ClientFinalMessage implements StringWritable {
      * @param nonce The nonce
      * @return The String representation of the part of the message that excludes the proof
      */
-    public static StringBuffer writeToWithoutProof(Gs2Header gs2Header, Optional<byte[]> cbindData, String nonce) {
+    public static StringBuffer writeToWithoutProof(Gs2Header gs2Header, byte[] cbindData, String nonce) {
         return writeToWithoutProof(new StringBuffer(), gs2Header, cbindData, nonce);
     }
 

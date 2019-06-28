@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, OnGres.
+ * Copyright 2019, OnGres.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -28,7 +28,7 @@ import com.ongres.scram.common.exception.ScramParseException;
 import com.ongres.scram.common.gssapi.Gs2CbindFlag;
 import org.junit.Test;
 
-import static com.ongres.scram.common.RfcExample.CLIENT_NONCE;
+import static com.ongres.scram.common.RfcExampleSha1.CLIENT_NONCE;
 import static org.junit.Assert.*;
 
 
@@ -92,27 +92,27 @@ public class ClientFirstMessageTest  {
         ClientFirstMessage m1 = ClientFirstMessage.parseFrom("n,,n=user,r=" + CLIENT_NONCE);
         assertTrue(
                 ! m1.isChannelBinding() && m1.getChannelBindingFlag() == Gs2CbindFlag.CLIENT_NOT
-                && ! m1.getAuthzid().isPresent() && "user".equals(m1.getUser()) && CLIENT_NONCE.equals(m1.getNonce())
+                && null == m1.getAuthzid() && "user".equals(m1.getUser()) && CLIENT_NONCE.equals(m1.getNonce())
         );
 
         ClientFirstMessage m2 = ClientFirstMessage.parseFrom("y,,n=user,r=" + CLIENT_NONCE);
         assertTrue(
                 ! m2.isChannelBinding() && m2.getChannelBindingFlag() == Gs2CbindFlag.CLIENT_YES_SERVER_NOT
-                        && ! m2.getAuthzid().isPresent() && "user".equals(m2.getUser()) && CLIENT_NONCE.equals(m2.getNonce())
+                        && null == m2.getAuthzid() && "user".equals(m2.getUser()) && CLIENT_NONCE.equals(m2.getNonce())
         );
 
         ClientFirstMessage m3 = ClientFirstMessage.parseFrom("y,a=user2,n=user,r=" + CLIENT_NONCE);
         assertTrue(
                 ! m3.isChannelBinding() && m3.getChannelBindingFlag() == Gs2CbindFlag.CLIENT_YES_SERVER_NOT
-                        && m3.getAuthzid().isPresent() && "user2".equals(m3.getAuthzid().get())
+                        && null != m3.getAuthzid() && "user2".equals(m3.getAuthzid())
                         && "user".equals(m3.getUser()) && CLIENT_NONCE.equals(m3.getNonce())
         );
 
         ClientFirstMessage m4 = ClientFirstMessage.parseFrom("p=channel,a=user2,n=user,r=" + CLIENT_NONCE);
         assertTrue(
                 m4.isChannelBinding() && m4.getChannelBindingFlag() == Gs2CbindFlag.CHANNEL_BINDING_REQUIRED
-                        && m4.getChannelBindingName().isPresent() && "channel".equals(m4.getChannelBindingName().get())
-                        && m4.getAuthzid().isPresent() && "user2".equals(m4.getAuthzid().get())
+                        && null != m4.getChannelBindingName() && "channel".equals(m4.getChannelBindingName())
+                        && null != m4.getAuthzid() && "user2".equals(m4.getAuthzid())
                         && "user".equals(m4.getUser()) && CLIENT_NONCE.equals(m4.getNonce())
         );
     }

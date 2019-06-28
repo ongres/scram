@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, OnGres.
+ * Copyright 2019, OnGres.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -30,7 +30,6 @@ import com.ongres.scram.common.util.CryptoUtil;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-
 /**
  * Utility functions (e.g. crypto) for SCRAM.
  */
@@ -57,10 +56,7 @@ public class ScramFunctions {
             ScramMechanism scramMechanism, StringPreparation stringPreparation, String password, byte[] salt,
             int iteration
     ) {
-        return CryptoUtil.hi(
-                scramMechanism.secretKeyFactory(), scramMechanism.algorithmKeyLength(),
-                stringPreparation.normalize(password), salt, iteration
-        );
+        return scramMechanism.saltedPassword(stringPreparation, password, salt, iteration);
     }
 
     /**
@@ -71,7 +67,7 @@ public class ScramFunctions {
      * @return The computed HMAC
      */
     public static byte[] hmac(ScramMechanism scramMechanism, byte[] message, byte[] key) {
-        return CryptoUtil.hmac(scramMechanism.secretKeySpec(key), scramMechanism.getMacInstance(), message);
+        return scramMechanism.hmac(key, message);
     }
 
     /**
@@ -155,7 +151,7 @@ public class ScramFunctions {
      * @return The hashed value
      */
     public static byte[] hash(ScramMechanism scramMechanism, byte[] value) {
-        return scramMechanism.getMessageDigestInstance().digest(value);
+        return scramMechanism.digest(value);
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, OnGres.
+ * Copyright 2019, OnGres.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -27,13 +27,12 @@ package com.ongres.scram.common.message;
 import com.ongres.scram.common.ScramAttributes;
 import com.ongres.scram.common.ScramFunctions;
 import com.ongres.scram.common.ScramMechanisms;
+import com.ongres.scram.common.bouncycastle.base64.Base64;
 import com.ongres.scram.common.exception.ScramParseException;
 import com.ongres.scram.common.stringprep.StringPreparations;
 import org.junit.Test;
 
-import java.util.Base64;
-
-import static com.ongres.scram.common.RfcExample.*;
+import static com.ongres.scram.common.RfcExampleSha1.*;
 import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -46,7 +45,7 @@ public class ServerFinalMessageTest {
                 ScramMechanisms.SCRAM_SHA_1,
                 StringPreparations.NO_PREPARATION,
                 PASSWORD,
-                Base64.getDecoder().decode(SERVER_SALT),
+                Base64.decode(SERVER_SALT),
                 SERVER_ITERATIONS
         );
         ServerFinalMessage serverFinalMessage1 = new ServerFinalMessage(
@@ -69,6 +68,6 @@ public class ServerFinalMessageTest {
         ServerFinalMessage serverFinalMessage2 = ServerFinalMessage.parseFrom("e=channel-binding-not-supported");
         assertEquals("e=channel-binding-not-supported", serverFinalMessage2.toString());
         assertTrue(serverFinalMessage2.isError());
-        assertTrue(serverFinalMessage2.getError().get() == ServerFinalMessage.Error.CHANNEL_BINDING_NOT_SUPPORTED);
+        assertTrue(serverFinalMessage2.getError() == ServerFinalMessage.Error.CHANNEL_BINDING_NOT_SUPPORTED);
     }
 }

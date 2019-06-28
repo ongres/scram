@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, OnGres.
+ * Copyright 2019, OnGres.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -32,8 +32,6 @@ import com.ongres.scram.common.gssapi.Gs2CbindFlag;
 import com.ongres.scram.common.gssapi.Gs2Header;
 import com.ongres.scram.common.util.StringWritable;
 import com.ongres.scram.common.util.StringWritableCsv;
-
-import java.util.Optional;
 
 import static com.ongres.scram.common.util.Preconditions.checkNotEmpty;
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
@@ -118,11 +116,11 @@ public class ClientFirstMessage implements StringWritable {
         return gs2Header.getChannelBindingFlag() == Gs2CbindFlag.CHANNEL_BINDING_REQUIRED;
     }
 
-    public Optional<String> getChannelBindingName() {
+    public String getChannelBindingName() {
         return gs2Header.getChannelBindingName();
     }
 
-    public Optional<String> getAuthzid() {
+    public String getAuthzid() {
         return gs2Header.getAuthzid();
     }
 

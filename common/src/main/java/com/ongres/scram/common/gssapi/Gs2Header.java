@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, OnGres.
+ * Copyright 2019, OnGres.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -28,8 +28,6 @@ import com.ongres.scram.common.util.StringWritableCsv;
 import com.ongres.scram.common.ScramStringFormatting;
 import com.ongres.scram.common.util.AbstractStringWritable;
 
-import java.util.Optional;
-
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 
 
@@ -49,7 +47,7 @@ import static com.ongres.scram.common.util.Preconditions.checkNotNull;
  */
 public class Gs2Header extends AbstractStringWritable {
     private final Gs2AttributeValue cbind;
-    private final Optional<Gs2AttributeValue> authzid;
+    private final Gs2AttributeValue authzid;
 
     /**
      * Construct and validates a Gs2Header.
@@ -68,10 +66,7 @@ public class Gs2Header extends AbstractStringWritable {
         cbind = new Gs2AttributeValue(Gs2Attributes.byGS2CbindFlag(cbindFlag), cbName);
 
         this.authzid = authzid == null ?
-                Optional.empty() :
-                Optional.of(
-                        new Gs2AttributeValue(Gs2Attributes.AUTHZID, ScramStringFormatting.toSaslName(authzid))
-                )
+                null : new Gs2AttributeValue(Gs2Attributes.AUTHZID, ScramStringFormatting.toSaslName(authzid))
         ;
     }
 
@@ -99,17 +94,17 @@ public class Gs2Header extends AbstractStringWritable {
         return Gs2CbindFlag.byChar(cbind.getChar());
     }
 
-    public Optional<String> getChannelBindingName() {
-        return Optional.ofNullable(cbind.getValue());
+    public String getChannelBindingName() {
+        return cbind.getValue();
     }
 
-    public Optional<String> getAuthzid() {
-        return authzid.map(a -> a.getValue());
+    public String getAuthzid() {
+        return authzid != null ? authzid.getValue() : null;
     }
 
     @Override
     public StringBuffer writeTo(StringBuffer sb) {
-        return StringWritableCsv.writeTo(sb, cbind, authzid.orElse(null));
+        return StringWritableCsv.writeTo(sb, cbind, authzid);
     }
 
     /**

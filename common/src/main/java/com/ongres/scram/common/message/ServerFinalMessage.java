@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, OnGres.
+ * Copyright 2019, OnGres.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -24,18 +24,20 @@
 package com.ongres.scram.common.message;
 
 
-import com.ongres.scram.common.*;
+import static com.ongres.scram.common.util.Preconditions.checkNotEmpty;
+import static com.ongres.scram.common.util.Preconditions.checkNotNull;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import com.ongres.scram.common.ScramAttributeValue;
+import com.ongres.scram.common.ScramAttributes;
+import com.ongres.scram.common.ScramStringFormatting;
 import com.ongres.scram.common.exception.ScramParseException;
 import com.ongres.scram.common.util.StringWritable;
 import com.ongres.scram.common.util.StringWritableCsv;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import static com.ongres.scram.common.util.Preconditions.checkNotEmpty;
-import static com.ongres.scram.common.util.Preconditions.checkNotNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 
 /**
@@ -97,8 +99,7 @@ public class ServerFinalMessage implements StringWritable {
         OTHER_ERROR("other-error")
         ;
 
-        private static final Map<String,Error> BY_NAME_MAPPING =
-                Arrays.stream(values()).collect(Collectors.toMap(v -> v.errorMessage, v -> v));
+        private static final Map<String,Error> BY_NAME_MAPPING = valuesAsMap();
 
         private final String errorMessage;
 
@@ -119,10 +120,19 @@ public class ServerFinalMessage implements StringWritable {
 
             return BY_NAME_MAPPING.get(errorMessage);
         }
+        
+        private static Map<String, Error> valuesAsMap() {
+            Map<String, Error> map = new HashMap<>(values().length);
+            for (Error error : values()) {
+                map.put(error.errorMessage, error);
+            }
+            return map;
+        }
+
     }
 
-    private final Optional<byte[]> verifier;
-    private final Optional<Error> error;
+    private final byte[] verifier;
+    private final Error error;
 
     /**
      * Constructs a server-final-message with no errors, and the provided server verifier
@@ -130,8 +140,8 @@ public class ServerFinalMessage implements StringWritable {
      * @throws IllegalArgumentException If the verifier is null
      */
     public ServerFinalMessage(byte[] verifier) throws IllegalArgumentException {
-        this.verifier = Optional.of(checkNotNull(verifier, "verifier"));
-        this.error = Optional.empty();
+        this.verifier = checkNotNull(verifier, "verifier");
+        this.error = null;
     }
 
     /**
@@ -140,8 +150,8 @@ public class ServerFinalMessage implements StringWritable {
      * @throws IllegalArgumentException If the error is null
      */
     public ServerFinalMessage(Error error) throws IllegalArgumentException {
-        this.error = Optional.of(checkNotNull(error, "error"));
-        this.verifier = Optional.empty();
+        this.error = checkNotNull(error, "error");
+        this.verifier = null;
     }
 
     /**
@@ -149,14 +159,15 @@ public class ServerFinalMessage implements StringWritable {
      * @return True if it contains an error, false if it contains a verifier
      */
     public boolean isError() {
-        return error.isPresent();
+        return null != error;
     }
 
-    public Optional<byte[]> getVerifier() {
+    @SuppressFBWarnings("EI_EXPOSE_REP")
+    public byte[] getVerifier() {
         return verifier;
     }
 
-    public Optional<Error> getError() {
+    public Error getError() {
         return error;
     }
 
@@ -165,9 +176,9 @@ public class ServerFinalMessage implements StringWritable {
         return StringWritableCsv.writeTo(
                 sb,
                 isError() ?
-                        new ScramAttributeValue(ScramAttributes.ERROR, error.get().errorMessage)
+                        new ScramAttributeValue(ScramAttributes.ERROR, error.errorMessage)
                         : new ScramAttributeValue(
-                                ScramAttributes.SERVER_SIGNATURE, ScramStringFormatting.base64Encode(verifier.get())
+                                ScramAttributes.SERVER_SIGNATURE, ScramStringFormatting.base64Encode(verifier)
                         )
         );
     }

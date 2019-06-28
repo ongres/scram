@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, OnGres.
+ * Copyright 2019, OnGres.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -24,12 +24,10 @@
 package com.ongres.scram.common.message;
 
 
-import com.ongres.scram.common.RfcExample;
+import com.ongres.scram.common.RfcExampleSha1;
 import com.ongres.scram.common.gssapi.Gs2CbindFlag;
 import com.ongres.scram.common.gssapi.Gs2Header;
 import org.junit.Test;
-
-import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 
@@ -38,9 +36,9 @@ public class ClientFinalMessageTest {
     @Test
     public void writeToWithoutProofValid() {
         StringBuffer sb = ClientFinalMessage.writeToWithoutProof(
-                new Gs2Header(Gs2CbindFlag.CLIENT_NOT), Optional.empty(), RfcExample.FULL_NONCE
+                new Gs2Header(Gs2CbindFlag.CLIENT_NOT), null, RfcExampleSha1.FULL_NONCE
         );
 
-        assertEquals(RfcExample.CLIENT_FINAL_MESSAGE_WITHOUT_PROOF, sb.toString());
+        assertEquals(RfcExampleSha1.CLIENT_FINAL_MESSAGE_WITHOUT_PROOF, sb.toString());
     }
 }

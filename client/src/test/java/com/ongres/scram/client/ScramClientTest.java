@@ -1,5 +1,5 @@
 /*
- * Copyright 2017, OnGres.
+ * Copyright 2019, OnGres.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -24,16 +24,17 @@
 package com.ongres.scram.client;
 
 
-import com.ongres.scram.common.ScramMechanism;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.util.Arrays;
+
+import org.junit.Test;
+
 import com.ongres.scram.common.ScramMechanisms;
 import com.ongres.scram.common.stringprep.StringPreparations;
 import com.ongres.scram.common.util.CryptoUtil;
-import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.stream.Stream;
-
-import static org.junit.Assert.*;
 
 
 public class ScramClientTest {
@@ -54,7 +55,13 @@ public class ScramClientTest {
                 .channelBinding(ScramClient.ChannelBinding.IF_SERVER_SUPPORTS_IT)
                 .stringPreparation(StringPreparations.NO_PREPARATION)
                 .selectMechanismBasedOnServerAdvertised("SCRAM-SHA-1", "SCRAM-SHA-1-PLUS")
-                .nonceSupplier(() -> CryptoUtil.nonce(36))
+                .nonceSupplier
+                (new NonceSupplier() {
+                    @Override
+                    public String get() {
+                        return CryptoUtil.nonce(36);
+                    }
+                })
                 .setup();
         ScramClient client4 = ScramClient
                 .channelBinding(ScramClient.ChannelBinding.IF_SERVER_SUPPORTS_IT)
@@ -81,7 +88,11 @@ public class ScramClientTest {
                 .selectClientMechanism(ScramMechanisms.SCRAM_SHA_256_PLUS)
                 .setup();
 
-        Stream.of(client1, client2, client3, client4, client5, client6, client7).forEach(c -> assertNotNull(c));
+        for (ScramClient client : new ScramClient[] {
+                client1, client2, client3, client4, client5, client6, client7
+            }) {
+                assertNotNull(client);
+            }
     }
 
     @Test
@@ -178,11 +189,13 @@ public class ScramClientTest {
 
     @Test
     public void supportedMechanismsTestAll() {
+        String[] expecteds = new String[] { "SCRAM-SHA-1", "SCRAM-SHA-1-PLUS", "SCRAM-SHA-256", "SCRAM-SHA-256-PLUS" };
+        Arrays.sort(expecteds);
+        String[] actuals = ScramClient.supportedMechanisms().toArray(new String[0]);
+        Arrays.sort(actuals);
         assertArrayEquals(
-                Arrays.stream(
-                        new String[] { "SCRAM-SHA-1", "SCRAM-SHA-1-PLUS", "SCRAM-SHA-256", "SCRAM-SHA-256-PLUS" }
-                ).sorted().toArray(),
-                ScramClient.supportedMechanisms().stream().sorted().toArray()
+                expecteds,
+                actuals
         );
     }
 }
