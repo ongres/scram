@@ -27,9 +27,7 @@ package com.ongres.scram.common;
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 import static com.ongres.scram.common.util.Preconditions.gt0;
 
-import com.ongres.scram.common.bouncycastle.pbkdf2.Digest;
 import com.ongres.scram.common.bouncycastle.pbkdf2.DigestFactory;
-import com.ongres.scram.common.bouncycastle.pbkdf2.HMac;
 import com.ongres.scram.common.bouncycastle.pbkdf2.KeyParameter;
 import com.ongres.scram.common.bouncycastle.pbkdf2.PBEParametersGenerator;
 import com.ongres.scram.common.bouncycastle.pbkdf2.PKCS5S2ParametersGenerator;
@@ -135,15 +133,7 @@ public enum ScramMechanisms implements ScramMechanism {
         try {
             return MessageDigest.getInstance(hashAlgorithmName).digest(message);
         } catch (NoSuchAlgorithmException e) {
-            if(!ScramMechanisms.SCRAM_SHA_256.getHmacAlgorithmName().equals(getHmacAlgorithmName())) {
-              throw new RuntimeException("Algorithm " + hashAlgorithmName + " not present in current JVM");
-            }
-
-            Digest digest = DigestFactory.createSHA256();
-            digest.update(message, 0, message.length);
-            byte[] out = new byte[digest.getDigestSize()];
-            digest.doFinal(out, 0);
-            return out;
+            throw new RuntimeException("Algorithm " + hashAlgorithmName + " not present in current JVM");
         }
     }
 
@@ -152,16 +142,7 @@ public enum ScramMechanisms implements ScramMechanism {
         try {
             return CryptoUtil.hmac(new SecretKeySpec(key, hmacAlgorithmName), Mac.getInstance(hmacAlgorithmName), message);
         } catch (NoSuchAlgorithmException e) {
-            if(!ScramMechanisms.SCRAM_SHA_256.getHmacAlgorithmName().equals(getHmacAlgorithmName())) {
-              throw new RuntimeException("MAC Algorithm " + hmacAlgorithmName + " not present in current JVM");
-            }
-
-            HMac mac = new HMac(DigestFactory.createSHA256());
-            mac.init(new KeyParameter(key));
-            mac.update(message, 0, message.length);
-            byte[] out = new byte[mac.getMacSize()];
-            mac.doFinal(out, 0);
-            return out;
+            throw new RuntimeException("MAC Algorithm " + hmacAlgorithmName + " not present in current JVM");
         }
     }
 
@@ -178,7 +159,7 @@ public enum ScramMechanisms implements ScramMechanism {
                 iterations);
         } catch (NoSuchAlgorithmException e) {
             if(!ScramMechanisms.SCRAM_SHA_256.getHmacAlgorithmName().equals(getHmacAlgorithmName())) {
-              throw new RuntimeException("Unsupported PBKDF2 for " + mechanismName);
+                throw new RuntimeException("Unsupported PBKDF2 for " + mechanismName);
             }
 
             PBEParametersGenerator generator = new PKCS5S2ParametersGenerator(DigestFactory.createSHA256());
