@@ -50,7 +50,8 @@ public class SaslPrep {
             final int codepoint = normalized.codePointAt(i);
             // 3. Prohibit
             if (prohibited(codepoint)) {
-                throw new IllegalArgumentException("Prohibited character '"+Character.getName(codepoint)+"' at position " + i);
+                throw new IllegalArgumentException("Prohibited codepoint " + codepoint + " at position " + i 
+                    + " (unicode name: " + Character.getName(codepoint) + ")");
             }
 
             // 4. Check bidi

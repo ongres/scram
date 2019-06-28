@@ -17,7 +17,9 @@ public class SaslPrepTest {
             SaslPrep.saslPrep("\u0007");
             Assert.fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
-            Assert.assertEquals("Prohibited character 'BELL' at position 0", e.getMessage());
+            Assert.assertTrue("Expected error message to start with"
+                + " \"Prohibited codepoint 7 at position 0 \" but was \""
+                + e.getMessage() + "\"", e.getMessage().startsWith("Prohibited codepoint 7 at position 0 "));
         }
         try {
             SaslPrep.saslPrep("\u0627\u0031");
