@@ -1,8 +1,0 @@
-dist: trusty
-
-language: java
-script: mvn -Psafer -B -e -T 1C verify
-
-jdk:
-  - openjdk8
-
