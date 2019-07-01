@@ -1,6 +1,6 @@
 # SCRAM Java Implementation
 
-[![Build Status](https://travis-ci.org/ongres/scram.svg?branch=master)](https://travis-ci.org/ongres/scram)
+[![Build Status](https://travis-ci.org/ongres/scram.svg?branch=master)](https://gitlab-ci.org/ongres/scram)
 
 
 ## Overview
@@ -38,7 +38,6 @@ Current functionality includes:
 
 Current limitations:
 
-* SASLPrep is not implemented yet.
 * Server API and integration tests will be added soon.
 
 
