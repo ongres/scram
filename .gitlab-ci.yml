@@ -14,3 +14,7 @@ build:
       - .m2/
   script:
     - bash mvnw clean verify -P safer
+
+build-oracle-jdk-7:
+  extends: build
+  image: registry.gitlab.com/ongresinc/scram/oracle-jdk:7
