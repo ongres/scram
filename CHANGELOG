@@ -1,0 +1,13 @@
+# 1.9-beta1
+
+* API change to be compatible with Java 7
+* Added standard SASLPrep
+* Failover to bouncy castle implementation of PBKDF2WithHmacSHA256 to support Oracle JDK 7
+
+# 1.0.0-beta.2
+
+* Fix maven issue and javadoc
+
+# 1.0.0-beta.1
+
+* First version
