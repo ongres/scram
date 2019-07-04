@@ -1,8 +1,5 @@
 # SCRAM Java Implementation
 
-[![Build Status](https://travis-ci.org/ongres/scram.svg?branch=master)](https://travis-ci.org/ongres/scram)
-
-
 ## Overview
 
 SCRAM (Salted Challenge Response Authentication Mechanism) is part of the family
@@ -38,7 +35,6 @@ Current functionality includes:
 
 Current limitations:
 
-* SASLPrep is not implemented yet.
 * Server API and integration tests will be added soon.
 
 
