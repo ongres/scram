@@ -8,7 +8,7 @@
 
     <groupId>com.ongres.scram</groupId>
     <artifactId>parent</artifactId>
-    <version>1.9-SNAPSHOT</version>
+    <version>2.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -18,8 +18,8 @@
 
     <name>SCRAM</name>
     <description>Java Implementation of the Salted Challenge Response Authentication Mechanism (SCRAM)</description>
-    <url>https://github.com/ongres/scram</url>
-    <inceptionYear>2017</inceptionYear>
+    <url>https://gitlab.com/ongresinc/scram</url>
+    <inceptionYear>2019</inceptionYear>
 
     <developers>
         <developer>
@@ -27,6 +27,16 @@
             <name>Álvaro Hernández Tortosa</name>
             <email>aht@ongres.com</email>
         </developer>
+        <developer>
+            <id>com.ongres.matteom</id>
+            <name>Matteo Melli</name>
+            <email>matteom@ongres.com</email>
+        </developer>
+        <developer>
+            <id>com.ongres.begona</id>
+            <name>Begoña Pérez Martín</name>
+            <email>begonapm@ongres.com</email>
+         </developer>
     </developers>
 
     <licenses>
@@ -38,14 +48,14 @@
     </licenses>
 
     <scm>
-        <connection>scm:git:https://github.com/ongres/scram.git</connection>
-        <developerConnection>scm:git:git@github.com:ongres/scram.git</developerConnection>
-        <url>git@github.com:ongres/scram.git</url>
+        <connection>scm:git:https://gitlab.com/ongresinc/scram.git</connection>
+        <developerConnection>scm:git:git@gitlab.com:ongresinc/scram.git</developerConnection>
+        <url>git@gitlab.com:ongresinc/scram.git</url>
     </scm>
 
     <issueManagement>
-        <system>GitHub</system>
-        <url>https://github.com/ongres/scram/issues</url>
+        <system>GitLab</system>
+        <url>https://gitlab.com/ongresinc/scram/issues</url>
     </issueManagement>
 
     <distributionManagement>

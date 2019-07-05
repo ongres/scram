@@ -24,10 +24,10 @@
 package com.ongres.scram.common.stringprep;
 
 
+import com.ongres.saslprep.SaslPrep;
 import com.ongres.scram.common.util.UsAsciiUtils;
 
 import static com.ongres.scram.common.util.Preconditions.checkNotEmpty;
-
 
 public enum StringPreparations implements StringPreparation {
     /**
@@ -52,7 +52,7 @@ public enum StringPreparations implements StringPreparation {
     SASL_PREPARATION {
         @Override
         protected String doNormalize(String value) throws IllegalArgumentException {
-            return SaslPrep.saslPrep(value);
+            return SaslPrep.saslPrep(value, true);
         }
     }
     ;

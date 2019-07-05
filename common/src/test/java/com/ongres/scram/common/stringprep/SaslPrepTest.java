@@ -1,70 +1,83 @@
 package com.ongres.scram.common.stringprep;
 
+import com.ongres.saslprep.SaslPrep;
+import com.ongres.stringprep.StringPrep;
+import java.io.IOException;
+
 import org.junit.Assert;
 import org.junit.Test;
 
 public class SaslPrepTest {
 
     @Test
-    public void rfc4013Examples() {
+    public void rfc4013Examples() throws IOException {
         // Taken from https://tools.ietf.org/html/rfc4013#section-3
-        Assert.assertEquals("IX", SaslPrep.saslPrep("I\u00ADX"));
-        Assert.assertEquals("user", SaslPrep.saslPrep("user"));
-        Assert.assertEquals("USER", SaslPrep.saslPrep("USER"));
-        Assert.assertEquals("a", SaslPrep.saslPrep("\u00AA"));
-        Assert.assertEquals("IX", SaslPrep.saslPrep("\u2168"));
+        Assert.assertEquals("IX", SaslPrep.saslPrep("I\u00ADX", true));
+        Assert.assertEquals("user", SaslPrep.saslPrep("user", true));
+        Assert.assertEquals("USER", SaslPrep.saslPrep("USER", true));
+        Assert.assertEquals("a", SaslPrep.saslPrep("\u00AA", true));
+        Assert.assertEquals("IX", SaslPrep.saslPrep("\u2168", true));
         try {
-            SaslPrep.saslPrep("\u0007");
+            SaslPrep.saslPrep("\u0007", true);
             Assert.fail("Should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
-            Assert.assertTrue("Expected error message to start with"
-                + " \"Prohibited codepoint 7 at position 0 \" but was \""
-                + e.getMessage() + "\"", e.getMessage().startsWith("Prohibited codepoint 7 at position 0 "));
+            Assert.assertEquals("Prohibited character ", e.getMessage());
         }
         try {
-            SaslPrep.saslPrep("\u0627\u0031");
+            SaslPrep.saslPrep("\u0627\u0031", true);
             Assert.fail("Should thow IllegalArgumentException");
         } catch (IllegalArgumentException e) {
-            Assert.assertEquals("First character is RandALCat, but last character is not", e.getMessage());
+            Assert.assertEquals("The string contains any RandALCat character but a RandALCat character "
+                    + "is not the first and the last characters", e.getMessage());
         }
     }
 
     @Test
-    public void mappedToSpace() {
-        Assert.assertEquals("A B", SaslPrep.saslPrep("A\u00A0B"));
+    public void mappedToSpace() throws IOException {
+        Assert.assertEquals("A B", SaslPrep.saslPrep("A\u00A0B", true));
     }
 
     @Test
-    public void bidi2() {
+    public void bidi2() throws IOException {
         // RandALCat character first *and* last is OK
-        Assert.assertEquals("\u0627\u0031\u0627", SaslPrep.saslPrep("\u0627\u0031\u0627"));
+        Assert.assertEquals("\u0627\u0031\u0627", SaslPrep.saslPrep("\u0627\u0031\u0627", true));
         // Both RandALCat character and LCat is not allowed
         try {
-            SaslPrep.saslPrep("\u0627\u0041\u0627");
+            SaslPrep.saslPrep("\u0627\u0041\u0627", true);
             Assert.fail("Should thow IllegalArgumentException");
         } catch (IllegalArgumentException e) {
-            Assert.assertEquals("Contains both RandALCat characters and LCat characters", e.getMessage());
+            Assert.assertEquals("Prohibited string with RandALCat and LCat", e.getMessage());
         }
     }
 
     @Test
-    public void unassigned() {
+    public void unassigned() throws IOException {
         int unassignedCodepoint;
         for (unassignedCodepoint = Character.MAX_CODE_POINT;
              unassignedCodepoint >= Character.MIN_CODE_POINT;
              unassignedCodepoint--) {
-            if (!Character.isDefined(unassignedCodepoint)
-                    && !SaslPrep.prohibited(unassignedCodepoint)) {
+            if (!Character.isDefined(unassignedCodepoint) && 
+                    !StringPrep.prohibitionAsciiControl(unassignedCodepoint) &&
+                    !StringPrep.prohibitionAsciiSpace(unassignedCodepoint) &&
+                    !StringPrep.prohibitionChangeDisplayProperties(unassignedCodepoint) &&
+                    !StringPrep.prohibitionInappropriateCanonicalRepresentation(unassignedCodepoint) &&
+                    !StringPrep.prohibitionInappropriatePlainText(unassignedCodepoint) &&
+                    !StringPrep.prohibitionNonAsciiControl(unassignedCodepoint) &&
+                    !StringPrep.prohibitionNonAsciiSpace(unassignedCodepoint) &&
+                    !StringPrep.prohibitionNonCharacterCodePoints(unassignedCodepoint) &&
+                    !StringPrep.prohibitionPrivateUse(unassignedCodepoint) &&
+                    !StringPrep.prohibitionSurrogateCodes(unassignedCodepoint) &&
+                    !StringPrep.prohibitionTaggingCharacters(unassignedCodepoint)) {
                 break;
             }
         }
         String withUnassignedChar = "abc"+new String(Character.toChars(unassignedCodepoint));
         //Assert.assertEquals(withUnassignedChar, saslPrepQuery(withUnassignedChar));
         try {
-            SaslPrep.saslPrep(withUnassignedChar);
+            SaslPrep.saslPrep(withUnassignedChar, true);
             Assert.fail("Should thow IllegalArgumentException");
         } catch (IllegalArgumentException e) {
-            Assert.assertEquals("Character at position 3 is unassigned", e.getMessage());
+            Assert.assertEquals("Prohibited character 󯿽", e.getMessage());
         }
     }
 }
