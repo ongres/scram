@@ -2,7 +2,7 @@
 
 [![Javadocs](http://javadoc.io/badge/com.ongres.scram/client.svg?label=client)](http://javadoc.io/doc/com.ongres.scram/client)
 
-For general description, please refer to [the main README.md](https://github.com/ongres/scram).
+For general description, please refer to [the main README.md](https://gitlab.com/ongresinc/scram).
 
 
 ## How to use the client API

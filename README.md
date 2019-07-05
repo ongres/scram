@@ -66,8 +66,8 @@ and check the Javadoc: [![Javadocs](http://javadoc.io/badge/com.ongres.scram/com
 
 ## Contributing
 
-Please submit [Push Requests](https://github.com/ongres/scram) for code contributions.
-Make sure to compile with `mvn -Psafer` before submitting a PR.
+Please submit [Merge Requests](https://gitlab.com/ongresinc/scram) for code contributions.
+Make sure to compile with `mvn -Psafer` before submitting a MR.
 
 Releases (on the master branch only) must be verified with:
 
