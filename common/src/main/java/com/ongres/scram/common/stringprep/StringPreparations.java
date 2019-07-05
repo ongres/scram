@@ -29,9 +29,6 @@ import com.ongres.scram.common.util.UsAsciiUtils;
 
 import static com.ongres.scram.common.util.Preconditions.checkNotEmpty;
 
-import java.io.IOException;
-
-
 public enum StringPreparations implements StringPreparation {
     /**
      * Implementation of StringPreparation that performs no preparation.
@@ -55,11 +52,7 @@ public enum StringPreparations implements StringPreparation {
     SASL_PREPARATION {
         @Override
         protected String doNormalize(String value) throws IllegalArgumentException {
-            try {
-                return SaslPrep.saslPrep(value, true);
-            } catch (IOException e) {
-                throw new IllegalArgumentException("RFC files with the properties of saslprep profile can't be read");
-            }
+            return SaslPrep.saslPrep(value, true);
         }
     }
     ;
