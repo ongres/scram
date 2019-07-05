@@ -1,3 +1,7 @@
+# 2.0-beta1
+
+* Add new dependency StringPrep
+
 # 1.9-beta1
 
 * API change to be compatible with Java 7
