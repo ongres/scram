@@ -3,7 +3,12 @@ of the project were the source code has been copied together with the
 path of the copied source files, their license, their notice (if any)
 and the modification that have been done.
 
-1. Tests of SaslPrep
+1. saslprep
+
+Dependency SaslPrep is used from project stringprep developed by various authors (https://gitlab.com/ongresinc/stringprep)
+and licensed under the BSD 2-Clause "Simplified" License (see thirdparty/saslprep-LICENSE).
+
+2. Tests of SaslPrep
 
 File common/src/test/java/com/ongres/scram/common/stringprep/ScramFunctionsTest contains tests 
 from project passlib_lambda developed by davidchua (https://github.com/davidchua/passlib_lambda)
@@ -11,7 +16,7 @@ and licensed under the MIT license (see thirdparty/passlib_lambda-LICENSE).
 The source has been modified to be included under the Java package 
 com.ongres.scram.common.ScramFunctionsTest and to only include used parts.
 
-2. bouncy castle
+3. bouncy castle
 
 All Java source files included into folder common/src/main/java/com/ongres/scram/common/bouncycastle
 are copied from project bouncy castle developed by various authors (https://www.bouncycastle.org/)
