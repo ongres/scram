@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, OnGres.
+ * Copyright 2017, OnGres.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -19,7 +19,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-
 
 package com.ongres.scram.common.stringprep;
 

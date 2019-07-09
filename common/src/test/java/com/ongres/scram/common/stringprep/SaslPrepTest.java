@@ -1,3 +1,25 @@
+/*
+ * Copyright 2019, OnGres.
+ *
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+ * following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+ * disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+ * following disclaimer in the documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ */
+
 package com.ongres.scram.common.stringprep;
 
 import com.ongres.saslprep.SaslPrep;
@@ -29,24 +51,6 @@ public class SaslPrepTest {
         } catch (IllegalArgumentException e) {
             Assert.assertEquals("The string contains any RandALCat character but a RandALCat character "
                     + "is not the first and the last characters", e.getMessage());
-        }
-    }
-
-    @Test
-    public void mappedToSpace() throws IOException {
-        Assert.assertEquals("A B", SaslPrep.saslPrep("A\u00A0B", true));
-    }
-
-    @Test
-    public void bidi2() throws IOException {
-        // RandALCat character first *and* last is OK
-        Assert.assertEquals("\u0627\u0031\u0627", SaslPrep.saslPrep("\u0627\u0031\u0627", true));
-        // Both RandALCat character and LCat is not allowed
-        try {
-            SaslPrep.saslPrep("\u0627\u0041\u0627", true);
-            Assert.fail("Should thow IllegalArgumentException");
-        } catch (IllegalArgumentException e) {
-            Assert.assertEquals("Prohibited string with RandALCat and LCat", e.getMessage());
         }
     }
 
