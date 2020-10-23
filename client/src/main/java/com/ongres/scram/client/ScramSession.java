@@ -218,7 +218,7 @@ public class ScramSession {
          * @return The message
          * @throws IllegalArgumentException If the channel binding data is null
          */
-        private String clientFinalMessage(byte[] cbindData) throws IllegalArgumentException {
+        public String clientFinalMessage(byte[] cbindData) throws IllegalArgumentException {
             if(null == authMessage) {
                 generateAndCacheAuthMessage(cbindData);
             }
