@@ -43,7 +43,7 @@ public class UsAsciiUtils {
             int c = (int) chr;
             if (c < 0 || c >= 127) {
                 throw new IllegalArgumentException("value contains character '" + chr + "' which is non US-ASCII");
-            } else if (c > 32) {
+            } else if (c >= 32) {
                 printable[i++] = chr;
             }
         }
