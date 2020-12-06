@@ -15,7 +15,7 @@ It is described as part of [RFC 5802](https://tools.ietf.org/html/rfc5802) and
 
 This project will serve for the basis of
 [PostgreSQL's](https://www.postgresql.org) [JDBC](https://jdbc.postgresql.org/)
-driver SCRAM support (coming in PostgreSQL 10).
+driver SCRAM support (supported since PostgreSQL 10).
 
 The code is licensed under the BSD "Simplified 2 Clause" license (see [LICENSE](LICENSE)).
 
@@ -71,4 +71,4 @@ Make sure to compile with `mvn -Psafer` before submitting a PR.
 
 Releases (on the master branch only) must be verified with:
 
-    mvn -Psafer -Pmaster-branch
+    mvn -Psafer -Pmaster-branch verify
