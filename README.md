@@ -12,7 +12,7 @@ It is described as part of [RFC 5802](https://tools.ietf.org/html/rfc5802) and
 
 This project will serve for the basis of
 [PostgreSQL's](https://www.postgresql.org) [JDBC](https://jdbc.postgresql.org/)
-driver SCRAM support (coming in PostgreSQL 10).
+driver SCRAM support (supported since PostgreSQL 10).
 
 The code is licensed under the BSD "Simplified 2 Clause" license (see [LICENSE](LICENSE)).
 
@@ -45,7 +45,6 @@ Please read [Client's README.md](client).
 Javadoc: [![Javadocs](http://javadoc.io/badge/com.ongres.scram/client.svg?label=client)](http://javadoc.io/doc/com.ongres.scram/client)
 
 
-
 ## Common API
 
 'common' is the module that contains code common to both client and server SCRAM projects.
@@ -56,15 +55,13 @@ API. Import maven dependency:
         <groupId>com.ongres.scram</groupId>
         <artifactId>common</artifactId>
     </dependency>
-    
+
 and check the Javadoc: [![Javadocs](http://javadoc.io/badge/com.ongres.scram/common.svg)](http://javadoc.io/doc/com.ongres.scram/common)
 
 
 ## Contributing
 
 Please submit [Merge Requests](https://gitlab.com/ongresinc/scram) for code contributions.
-Make sure to compile with `mvn -Psafer` before submitting a MR.
+Make sure to compile with `mvn verify -Psafer` before submitting a MR.
 
-Releases (on the master branch only) must be verified with:
-
-    mvn -Psafer -Pmaster-branch
+By making a contribution to this project, you certify that you adhere to requirements of the [DCO](https://developercertificate.org/) by signing-off your commits (`git commit -s`).:

@@ -8,7 +8,7 @@
 
     <groupId>com.ongres.scram</groupId>
     <artifactId>parent</artifactId>
-    <version>2.1</version>
+    <version>2.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -97,7 +97,7 @@
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
-            <version>3.0.1</version>
+            <version>3.0.2</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -107,7 +107,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.6.1</version>
+                <version>3.8.1</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
@@ -120,7 +120,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.0.1</version>
+                <version>3.2.0</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -133,7 +133,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.4</version>
+                <version>3.2.0</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -157,7 +157,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>findbugs-maven-plugin</artifactId>
-                        <version>3.0.4</version>
+                        <version>3.0.5</version>
                         <configuration>
                             <effort>Max</effort>
                             <threshold>Low</threshold>
@@ -184,7 +184,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-enforcer-plugin</artifactId>
-                        <version>1.4.1</version>
+                        <version>3.0.0-M3</version>
                         <executions>
                             <execution>
                                 <id>enforce-release</id>
