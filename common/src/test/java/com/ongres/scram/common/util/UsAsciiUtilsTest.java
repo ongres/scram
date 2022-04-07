@@ -46,7 +46,7 @@ public class UsAsciiUtilsTest {
     @Test
     public void toPrintableNonPrintable() {
         String[] original = new String[] { " u ",   "a" + (char) 12,    (char) 0 + "ttt" + (char) 31 };
-        String[] expected = new String[] { "u",     "a",                "ttt" };
+        String[] expected = new String[] { " u ",     "a",                "ttt" };
 
         for(int i = 0; i < original.length; i++) {
             assertEquals("", expected[i], UsAsciiUtils.toPrintable(original[i]));

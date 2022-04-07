@@ -13,7 +13,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class StringPreparationTest {
-    private static final String[] ONLY_NON_PRINTABLE_STRINGS = new String[] { " ", (char) 13 + "", (char) 13 + "   " };
+    private static final String[] ONLY_NON_PRINTABLE_STRINGS = new String[] { (char) 13 + "", (char) 13 + "\n\n" };
 
     @Test
     public void doNormalizeNullEmpty() {
