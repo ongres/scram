@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+  <!-- Ignore spotbugs reports from generated sources -->
+  <Match>
+    <Package name="~.*\.generated\..*" />
+  </Match>
+  <Match>
+    <Source name="~.*generated-sources.*\.java" />
+  </Match>
+
+  <!-- Ignore spotbugs reports from incomplete detectors -->
+  <Match>
+    <Bug pattern="TESTING" />
+  </Match>
+
+  <!-- Ignore experimental -->
+  <Match>
+    <Bug pattern="IMPROPER_UNICODE" />
+  </Match>
+</FindBugsFilter>

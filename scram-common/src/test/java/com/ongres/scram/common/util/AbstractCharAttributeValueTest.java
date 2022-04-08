@@ -5,77 +5,76 @@
 
 package com.ongres.scram.common.util;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
 
-public class AbstractCharAttributeValueTest {
-    private class MockCharAttribute implements CharAttribute {
-        private final char c;
+class AbstractCharAttributeValueTest {
+  private class MockCharAttribute implements CharAttribute {
+    private final char c;
 
-        public MockCharAttribute(char c) {
-            this.c = c;
-        }
-
-        @Override
-        public char getChar() {
-            return c;
-        }
+    public MockCharAttribute(char c) {
+      this.c = c;
     }
 
-    @Test
-    public void constructorNullAttribute() {
-        try {
-            assertNotNull(new AbstractCharAttributeValue((CharAttribute) null, "value"));
-        } catch(IllegalArgumentException e) {
-            return;
-        }
+    @Override
+    public char getChar() {
+      return c;
+    }
+  }
 
-        fail("IllegalArgumentException must be thrown if the CharAttribute is null");
+  @Test
+  void constructorNullAttribute() {
+    try {
+      assertNotNull(new AbstractCharAttributeValue((CharAttribute) null, "value"));
+    } catch (IllegalArgumentException e) {
+      return;
     }
 
-    @Test
-    public void constructorEmptyValue() {
-        try {
-            assertNotNull(new AbstractCharAttributeValue(new MockCharAttribute('c'), ""));
-        } catch(IllegalArgumentException e) {
-            return;
-        }
+    fail("IllegalArgumentException must be thrown if the CharAttribute is null");
+  }
 
-        fail("IllegalArgumentException must be thrown if the value is empty");
+  @Test
+  void constructorEmptyValue() {
+    try {
+      assertNotNull(new AbstractCharAttributeValue(new MockCharAttribute('c'), ""));
+    } catch (IllegalArgumentException e) {
+      return;
     }
 
-    @Test
-    public void writeToNonNullValues() {
-        String[] legalValues = new String[] { "a", "----", "value" };
-        char c = 'c';
-        for(String s : legalValues) {
-            assertEquals(
-                    "" + c + '=' + s,
-                    new AbstractCharAttributeValue(new MockCharAttribute(c), s).toString()
-            );
-        }
-    }
+    fail("IllegalArgumentException must be thrown if the value is empty");
+  }
 
-    @Test
-    public void writeToNullValue() {
-        char c = 'd';
-        assertEquals(
-                "" + c,
-                new AbstractCharAttributeValue(new MockCharAttribute(c), null).toString()
-        );
+  @Test
+  void writeToNonNullValues() {
+    String[] legalValues = new String[] {"a", "----", "value"};
+    char c = 'c';
+    for (String s : legalValues) {
+      assertEquals(
+          "" + c + '=' + s,
+          new AbstractCharAttributeValue(new MockCharAttribute(c), s).toString());
     }
+  }
 
-    @Test
-    public void writeToEscapedValues() {
-        char c = 'a';
-        MockCharAttribute mockCharAttribute = new MockCharAttribute(c);
-        String[] values = new String[]   {  "a=b",      "c,a",      ",",    "=,",       "=,,="          };
-        for(int i = 0; i < values.length; i++) {
-            assertEquals(
-                    "" + c + '=' + values[i],
-                    new AbstractCharAttributeValue(mockCharAttribute, values[i]).toString()
-            );
-        }
+  @Test
+  void writeToNullValue() {
+    char c = 'd';
+    assertEquals(
+        "" + c,
+        new AbstractCharAttributeValue(new MockCharAttribute(c), null).toString());
+  }
+
+  @Test
+  void writeToEscapedValues() {
+    char c = 'a';
+    MockCharAttribute mockCharAttribute = new MockCharAttribute(c);
+    String[] values = new String[] {"a=b", "c,a", ",", "=,", "=,,="};
+    for (int i = 0; i < values.length; i++) {
+      assertEquals(
+          "" + c + '=' + values[i],
+          new AbstractCharAttributeValue(mockCharAttribute, values[i]).toString());
     }
+  }
 }

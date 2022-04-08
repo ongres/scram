@@ -18,8 +18,6 @@ import com.ongres.scram.common.exception.ScramParseException;
 import com.ongres.scram.common.util.StringWritable;
 import com.ongres.scram.common.util.StringWritableCsv;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 /**
  * Constructs and parses server-final-messages. Formal syntax is:
  *
@@ -142,7 +140,6 @@ public class ServerFinalMessage implements StringWritable {
         return null != error;
     }
 
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     public byte[] getVerifier() {
         return verifier;
     }

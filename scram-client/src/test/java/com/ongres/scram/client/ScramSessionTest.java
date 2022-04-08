@@ -5,14 +5,22 @@
 
 package com.ongres.scram.client;
 
+import static com.ongres.scram.common.RfcExampleSha1.CLIENT_FINAL_MESSAGE;
+import static com.ongres.scram.common.RfcExampleSha1.CLIENT_FIRST_MESSAGE;
+import static com.ongres.scram.common.RfcExampleSha1.CLIENT_NONCE;
+import static com.ongres.scram.common.RfcExampleSha1.PASSWORD;
+import static com.ongres.scram.common.RfcExampleSha1.SERVER_FINAL_MESSAGE;
+import static com.ongres.scram.common.RfcExampleSha1.SERVER_FIRST_MESSAGE;
+import static com.ongres.scram.common.RfcExampleSha1.SERVER_ITERATIONS;
+import static com.ongres.scram.common.RfcExampleSha1.SERVER_SALT;
+import static com.ongres.scram.common.RfcExampleSha1.USER;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.ongres.scram.common.exception.ScramInvalidServerSignatureException;
 import com.ongres.scram.common.exception.ScramParseException;
 import com.ongres.scram.common.exception.ScramServerErrorException;
 import com.ongres.scram.common.stringprep.StringPreparations;
-import org.junit.Test;
-
-import static com.ongres.scram.common.RfcExampleSha1.*;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
 
 public class ScramSessionTest {
     private final ScramClient scramClient = ScramClient

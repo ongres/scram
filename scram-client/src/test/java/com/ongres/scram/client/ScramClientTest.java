@@ -5,17 +5,16 @@
 
 package com.ongres.scram.client;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Arrays;
-
-import org.junit.Test;
 
 import com.ongres.scram.common.ScramMechanisms;
 import com.ongres.scram.common.stringprep.StringPreparations;
 import com.ongres.scram.common.util.CryptoUtil;
+import org.junit.jupiter.api.Test;
 
 public class ScramClientTest {
     @Test

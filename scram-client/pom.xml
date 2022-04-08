@@ -3,8 +3,8 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <artifactId>scram-parent</artifactId>
     <groupId>com.ongres.scram</groupId>
+    <artifactId>scram-parent</artifactId>
     <version>3.0-SNAPSHOT</version>
   </parent>
 
@@ -18,77 +18,13 @@
       <artifactId>scram-common</artifactId>
       <version>${project.version}</version>
     </dependency>
-
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>com.ongres.scram</groupId>
       <artifactId>scram-common</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
       <type>test-jar</type>
+      <scope>test</scope>
     </dependency>
   </dependencies>
-
-  <profiles>
-    <profile>
-      <id>javadoc.io-links</id>
-      <activation>
-        <property>
-          <name>!maven.javadoc.skip</name>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <!-- Used to generate JavaDoc with links pointing to javadoc.io -->
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <version>3.1.2</version>
-            <executions>
-              <execution>
-                <id>unpack-javadoc</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>unpack</goal>
-                </goals>
-                <configuration>
-                  <artifactItems>
-                    <artifactItem>
-                      <!-- For each dependency in this same project -->
-                      <groupId>${project.groupId}</groupId>
-                      <artifactId>scram-common</artifactId>
-                      <classifier>javadoc</classifier>
-                      <version>${project.version}</version>
-                      <overWrite>false</overWrite>
-                      <outputDirectory>${project.build.directory}/scram-common-javadoc</outputDirectory>
-                    </artifactItem>
-                  </artifactItems>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-
-          <plugin>
-            <!-- Used to generate JavaDoc with links pointing to javadoc.io -->
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <configuration>
-              <offlineLinks>
-                <offlineLink>
-                  <!-- For each dependency in this same project -->
-                  <url>http://static.javadoc.io/${project.groupId}/scram-common/${project.version}</url>
-                  <location>${project.build.directory}/scram-common-javadoc</location>
-                </offlineLink>
-              </offlineLinks>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 
 </project>
