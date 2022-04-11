@@ -5,6 +5,9 @@
 
 package com.ongres.scram.common;
 
+/**
+ * Constants for examples of the RFC for SHA-256 tests.
+ */
 public class RfcExampleSha256 {
   public static final String USER = "user";
   public static final String PASSWORD = "pencil";

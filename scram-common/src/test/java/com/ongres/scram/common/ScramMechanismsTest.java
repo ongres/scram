@@ -13,8 +13,9 @@ import java.util.function.Predicate;
 import org.junit.jupiter.api.Test;
 
 class ScramMechanismsTest {
+
   @Test
-  void TestHashSupportedByJVM() {
+  void testHashSupportedByJvm() {
     byte[] digest;
     for (ScramMechanisms scramMechanism : ScramMechanisms.values()) {
       digest = scramMechanism.digest(new byte[0]);
@@ -23,7 +24,7 @@ class ScramMechanismsTest {
   }
 
   @Test
-  void TestHMACSupportedByJVM() {
+  void testHmacSupportedByJvm() {
     byte[] hmac;
     for (ScramMechanisms scramMechanism : ScramMechanisms.values()) {
       hmac = scramMechanism.hmac(new byte[] {0}, new byte[0]);

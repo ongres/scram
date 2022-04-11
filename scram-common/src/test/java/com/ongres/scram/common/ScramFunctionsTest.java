@@ -12,14 +12,14 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
-import com.ongres.scram.common.bouncycastle.base64.Base64;
 import com.ongres.scram.common.stringprep.StringPreparations;
 import org.junit.jupiter.api.Test;
 
 class ScramFunctionsTest {
   private void assertBytesEqualsBase64(String expected, byte[] actual) {
-    assertArrayEquals(Base64.decode(expected), actual);
+    assertArrayEquals(Base64.getDecoder().decode(expected), actual);
   }
 
   @Test
@@ -40,13 +40,13 @@ class ScramFunctionsTest {
   private byte[] generateSaltedPassword() {
     return ScramFunctions.saltedPassword(
         ScramMechanisms.SCRAM_SHA_1, StringPreparations.NO_PREPARATION, "pencil",
-        Base64.decode("QSXCR+Q6sek8bf92"), 4096);
+        Base64.getDecoder().decode("QSXCR+Q6sek8bf92"), 4096);
   }
 
   private byte[] generateSaltedPasswordSha256() {
     return ScramFunctions.saltedPassword(
         ScramMechanisms.SCRAM_SHA_256, StringPreparations.NO_PREPARATION, "pencil",
-        Base64.decode("W22ZaJ0SNY7soEsUEjb6gQ=="), 4096);
+        Base64.getDecoder().decode("W22ZaJ0SNY7soEsUEjb6gQ=="), 4096);
   }
 
   @Test
@@ -58,21 +58,21 @@ class ScramFunctionsTest {
   void saltedPasswordWithSaslPrep() {
     assertBytesEqualsBase64("YniLes+b8WFMvBhtSACZyyvxeCc=", ScramFunctions.saltedPassword(
         ScramMechanisms.SCRAM_SHA_1, StringPreparations.SASL_PREPARATION, "\u2168\u3000a\u0300",
-        Base64.decode("0BojBCBE6P2/N4bQ"), 6400));
+        Base64.getDecoder().decode("0BojBCBE6P2/N4bQ"), 6400));
     assertBytesEqualsBase64("YniLes+b8WFMvBhtSACZyyvxeCc=", ScramFunctions.saltedPassword(
         ScramMechanisms.SCRAM_SHA_1, StringPreparations.SASL_PREPARATION, "\u00ADIX \u00E0",
-        Base64.decode("0BojBCBE6P2/N4bQ"), 6400));
+        Base64.getDecoder().decode("0BojBCBE6P2/N4bQ"), 6400));
     assertBytesEqualsBase64("YniLes+b8WFMvBhtSACZyyvxeCc=", ScramFunctions.saltedPassword(
         ScramMechanisms.SCRAM_SHA_1, StringPreparations.SASL_PREPARATION, "IX \u00E0",
-        Base64.decode("0BojBCBE6P2/N4bQ"), 6400));
+        Base64.getDecoder().decode("0BojBCBE6P2/N4bQ"), 6400));
     assertBytesEqualsBase64("HZbuOlKbWl+eR8AfIposuKbhX30=", ScramFunctions.saltedPassword(
         ScramMechanisms.SCRAM_SHA_1, StringPreparations.SASL_PREPARATION, "\u0070enc\u1806il",
-        Base64.decode("QSXCR+Q6sek8bf92"), 4096));
+        Base64.getDecoder().decode("QSXCR+Q6sek8bf92"), 4096));
     try {
       ScramFunctions.saltedPassword(
           ScramMechanisms.SCRAM_SHA_1, StringPreparations.SASL_PREPARATION,
           "\u2168\u3000a\u0300\u0007",
-          Base64.decode("QSXCR+Q6sek8bf92"), 6400);
+          Base64.getDecoder().decode("QSXCR+Q6sek8bf92"), 6400);
       fail();
     } catch (IllegalArgumentException e) {
       assertEquals("Prohibited character \u0007", e.getMessage());

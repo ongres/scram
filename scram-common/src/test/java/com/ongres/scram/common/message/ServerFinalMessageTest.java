@@ -14,10 +14,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Base64;
+
 import com.ongres.scram.common.ScramAttributes;
 import com.ongres.scram.common.ScramFunctions;
 import com.ongres.scram.common.ScramMechanisms;
-import com.ongres.scram.common.bouncycastle.base64.Base64;
 import com.ongres.scram.common.exception.ScramParseException;
 import com.ongres.scram.common.stringprep.StringPreparations;
 import org.junit.jupiter.api.Test;
@@ -29,7 +30,7 @@ class ServerFinalMessageTest {
         ScramMechanisms.SCRAM_SHA_1,
         StringPreparations.NO_PREPARATION,
         PASSWORD,
-        Base64.decode(SERVER_SALT),
+        Base64.getDecoder().decode(SERVER_SALT),
         SERVER_ITERATIONS);
     ServerFinalMessage serverFinalMessage1 = new ServerFinalMessage(
         ScramFunctions.serverSignature(ScramMechanisms.SCRAM_SHA_1, serverKey, AUTH_MESSAGE));
@@ -53,7 +54,7 @@ class ServerFinalMessageTest {
         ServerFinalMessage.parseFrom("e=channel-binding-not-supported");
     assertEquals("e=channel-binding-not-supported", serverFinalMessage2.toString());
     assertTrue(serverFinalMessage2.isError());
-    assertTrue(
-        serverFinalMessage2.getError() == ServerFinalMessage.Error.CHANNEL_BINDING_NOT_SUPPORTED);
+    assertEquals(ServerFinalMessage.Error.CHANNEL_BINDING_NOT_SUPPORTED,
+        serverFinalMessage2.getError());
   }
 }

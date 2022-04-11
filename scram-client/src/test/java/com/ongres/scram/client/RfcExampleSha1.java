@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-package com.ongres.scram.common;
+package com.ongres.scram.client;
 
 /**
  * Constants for examples of the RFC for SHA-1 tests.
  */
-public class RfcExampleSha1 {
+class RfcExampleSha1 {
   public static final String USER = "user";
   public static final String PASSWORD = "pencil";
   public static final String CLIENT_NONCE = "fyko+d2lbbFgONRv9qkxdawL";

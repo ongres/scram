@@ -9,7 +9,10 @@ package com.ongres.scram.common.util;
  * Basic implementation of the StringWritable interface, that overrides the toString() method.
  */
 public abstract class AbstractStringWritable implements StringWritable {
-    public String toString() {
-        return writeTo(new StringBuffer()).toString();
-    }
+
+  @Override
+  public String toString() {
+    return writeTo(new StringBuffer()).toString();
+  }
+
 }

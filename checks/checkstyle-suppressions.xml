@@ -3,4 +3,6 @@
 <suppressions>
   <suppress checks=".*" files=".*/target/.*" />
   <suppress checks=".*" files=".*/generated/.*" />
+
+  <suppress checks="AvoidEscapedUnicodeCharacters" files=".*/src/test/java/.*" />
 </suppressions>

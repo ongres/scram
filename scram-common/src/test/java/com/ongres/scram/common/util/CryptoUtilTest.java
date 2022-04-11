@@ -28,12 +28,12 @@ class CryptoUtilTest {
 
   @Test
   void nonceValid() {
-    int nNonces = 1000;
+    int nonces = 1000;
     int nonceMaxSize = 100;
     Random random = new Random();
 
     // Some more random testing
-    for (int i = 0; i < nNonces; i++) {
+    for (int i = 0; i < nonces; i++) {
       for (char c : CryptoUtil.nonce(random.nextInt(nonceMaxSize) + 1, SECURE_RANDOM)
           .toCharArray()) {
         if (c == ',' || c < (char) 33 || c > (char) 126) {

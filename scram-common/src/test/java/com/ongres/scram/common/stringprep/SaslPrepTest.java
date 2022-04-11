@@ -41,25 +41,25 @@ class SaslPrepTest {
 
   @Test
   void unassigned() throws IOException {
-    int unassignedCodepoint;
-    for (unassignedCodepoint =
-        Character.MAX_CODE_POINT; unassignedCodepoint >= Character.MIN_CODE_POINT; unassignedCodepoint--) {
-      if (!Character.isDefined(unassignedCodepoint) &&
-          !StringPrep.prohibitionAsciiControl(unassignedCodepoint) &&
-          !StringPrep.prohibitionAsciiSpace(unassignedCodepoint) &&
-          !StringPrep.prohibitionChangeDisplayProperties(unassignedCodepoint) &&
-          !StringPrep.prohibitionInappropriateCanonicalRepresentation(unassignedCodepoint) &&
-          !StringPrep.prohibitionInappropriatePlainText(unassignedCodepoint) &&
-          !StringPrep.prohibitionNonAsciiControl(unassignedCodepoint) &&
-          !StringPrep.prohibitionNonAsciiSpace(unassignedCodepoint) &&
-          !StringPrep.prohibitionNonCharacterCodePoints(unassignedCodepoint) &&
-          !StringPrep.prohibitionPrivateUse(unassignedCodepoint) &&
-          !StringPrep.prohibitionSurrogateCodes(unassignedCodepoint) &&
-          !StringPrep.prohibitionTaggingCharacters(unassignedCodepoint)) {
+    int unassignedCp;
+    for (unassignedCp =
+        Character.MAX_CODE_POINT; unassignedCp >= Character.MIN_CODE_POINT; unassignedCp--) {
+      if (!Character.isDefined(unassignedCp)
+          && !StringPrep.prohibitionAsciiControl(unassignedCp)
+          && !StringPrep.prohibitionAsciiSpace(unassignedCp)
+          && !StringPrep.prohibitionChangeDisplayProperties(unassignedCp)
+          && !StringPrep.prohibitionInappropriateCanonicalRepresentation(unassignedCp)
+          && !StringPrep.prohibitionInappropriatePlainText(unassignedCp)
+          && !StringPrep.prohibitionNonAsciiControl(unassignedCp)
+          && !StringPrep.prohibitionNonAsciiSpace(unassignedCp)
+          && !StringPrep.prohibitionNonCharacterCodePoints(unassignedCp)
+          && !StringPrep.prohibitionPrivateUse(unassignedCp)
+          && !StringPrep.prohibitionSurrogateCodes(unassignedCp)
+          && !StringPrep.prohibitionTaggingCharacters(unassignedCp)) {
         break;
       }
     }
-    String withUnassignedChar = "abc" + new String(Character.toChars(unassignedCodepoint));
+    String withUnassignedChar = "abc" + new String(Character.toChars(unassignedCp));
     // Assert.assertEquals(withUnassignedChar, saslPrepQuery(withUnassignedChar));
     try {
       SaslPrep.saslPrep(withUnassignedChar, true);

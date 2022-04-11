@@ -12,16 +12,16 @@ import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.Test;
 
 class AbstractCharAttributeValueTest {
-  private class MockCharAttribute implements CharAttribute {
-    private final char c;
+  private static class MockCharAttribute implements CharAttribute {
+    private final char character;
 
     public MockCharAttribute(char c) {
-      this.c = c;
+      this.character = c;
     }
 
     @Override
     public char getChar() {
-      return c;
+      return character;
     }
   }
 

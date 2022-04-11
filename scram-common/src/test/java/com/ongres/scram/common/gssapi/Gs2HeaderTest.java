@@ -64,7 +64,6 @@ class Gs2HeaderTest {
     for (String invalid : invalids) {
       try {
         Gs2Header.parseFrom(invalid);
-        System.out.println(invalid);
       } catch (IllegalArgumentException e) {
         n++;
       }
