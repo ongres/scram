@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" child.project.url.inherit.append.path="false">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.ongres.scram</groupId>
@@ -9,6 +9,7 @@
 
   <name>SCRAM</name>
   <description>Java Implementation of the Salted Challenge Response Authentication Mechanism (SCRAM)</description>
+  <url>https://gitlab.com/ongresinc/scram</url>
   <inceptionYear>2017</inceptionYear>
   <organization>
     <name>OnGres, Inc</name>
@@ -230,25 +231,19 @@
           </executions>
         </plugin>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-resources-plugin</artifactId>
-          <version>${resources-plugin.version}</version>
+          <groupId>com.coderplus.maven.plugins</groupId>
+          <artifactId>copy-rename-maven-plugin</artifactId>
+          <version>1.0.1</version>
           <executions>
             <execution>
-              <id>add-license</id>
+              <id>copy-license-file</id>
+              <phase>generate-sources</phase>
               <goals>
-                <goal>copy-resources</goal>
+                <goal>copy</goal>
               </goals>
-              <phase>generate-resources</phase>
               <configuration>
-                <outputDirectory>${project.build.outputDirectory}/META-INF</outputDirectory>
-                <resources>
-                  <resource>
-                    <directory>${project.basedir}/..</directory>
-                    <include>LICENSE</include>
-                    <filtering>false</filtering>
-                  </resource>
-                </resources>
+                <sourceFile>${project.basedir}/../LICENSE</sourceFile>
+                <destinationFile>${project.build.outputDirectory}/META-INF/LICENSE-scram</destinationFile>
               </configuration>
             </execution>
           </executions>

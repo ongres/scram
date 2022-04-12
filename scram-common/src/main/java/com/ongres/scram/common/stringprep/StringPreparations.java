@@ -7,8 +7,9 @@ package com.ongres.scram.common.stringprep;
 
 import static com.ongres.scram.common.util.Preconditions.checkNotEmpty;
 
-import com.ongres.saslprep.SaslPrep;
 import com.ongres.scram.common.util.UsAsciiUtils;
+import com.ongres.stringprep.Profile;
+import com.ongres.stringprep.Stringprep;
 
 /**
  * StringPreparations enumerations to use in SCRAM.
@@ -35,11 +36,14 @@ public enum StringPreparations implements StringPreparation {
    * implementation will normalize as SaslPrep does.
    */
   SASL_PREPARATION {
+
     @Override
     protected String doNormalize(String value) throws IllegalArgumentException {
-      return SaslPrep.saslPrep(value, true);
+      return saslPrep.prepareStored(value);
     }
   };
+
+  private static final Profile saslPrep = Stringprep.getProvider("SASLprep");
 
   protected abstract String doNormalize(String value) throws IllegalArgumentException;
 

@@ -75,7 +75,7 @@ class ScramFunctionsTest {
           Base64.getDecoder().decode("QSXCR+Q6sek8bf92"), 6400);
       fail();
     } catch (IllegalArgumentException e) {
-      assertEquals("Prohibited character \u0007", e.getMessage());
+      assertEquals("Prohibited ASCII control \"0x0007\"", e.getMessage());
     }
   }
 
