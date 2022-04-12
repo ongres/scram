@@ -15,11 +15,3 @@ from project passlib_lambda developed by davidchua (https://github.com/davidchua
 and licensed under the MIT license (see thirdparty/passlib_lambda-LICENSE).
 The source has been modified to be included under the Java package 
 com.ongres.scram.common.ScramFunctionsTest and to only include used parts.
-
-3. bouncy castle
-
-All Java source files included into folder common/src/main/java/com/ongres/scram/common/bouncycastle
-are copied from project bouncy castle developed by various authors (https://www.bouncycastle.org/)
-and licensed under the bouncy castle license (see thirdparty/bouncycastle-LICENSE).
-The source has been modified to be included under the Java package com.ongres.scram.common.bouncycastle
-and to only include used parts.

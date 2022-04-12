@@ -1,4 +1,4 @@
 ^\/\*$
-^ \* Copyright \(C\) 20[12]\d OnGres, Inc\.$
+^ \* Copyright \(c\) 2017 OnGres, Inc\.$
 ^ \* SPDX-License-Identifier: BSD-2-Clause$
 ^ \*\/$

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 OnGres, Inc.
+ * Copyright (c) 2017 OnGres, Inc.
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
