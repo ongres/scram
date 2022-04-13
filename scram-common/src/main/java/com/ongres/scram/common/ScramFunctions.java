@@ -39,7 +39,7 @@ public final class ScramFunctions {
    * @return The salted password
    */
   public static byte[] saltedPassword(
-      ScramMechanism scramMechanism, StringPreparation stringPreparation, String password,
+      ScramMechanism scramMechanism, StringPreparation stringPreparation, char[] password,
       byte[] salt,
       int iteration) {
     return scramMechanism.saltedPassword(stringPreparation, password, salt, iteration);
@@ -88,7 +88,7 @@ public final class ScramFunctions {
    * @return The client key
    */
   public static byte[] clientKey(
-      ScramMechanism scramMechanism, StringPreparation stringPreparation, String password,
+      ScramMechanism scramMechanism, StringPreparation stringPreparation, char[] password,
       byte[] salt,
       int iteration) {
     return clientKey(scramMechanism,
@@ -125,10 +125,8 @@ public final class ScramFunctions {
    * @param iteration The number of iterations
    * @return The server key
    */
-  public static byte[] serverKey(
-      ScramMechanism scramMechanism, StringPreparation stringPreparation, String password,
-      byte[] salt,
-      int iteration) {
+  public static byte[] serverKey(ScramMechanism scramMechanism, StringPreparation stringPreparation,
+      char[] password, byte[] salt, int iteration) {
     return serverKey(scramMechanism,
         saltedPassword(scramMechanism, stringPreparation, password, salt, iteration));
   }

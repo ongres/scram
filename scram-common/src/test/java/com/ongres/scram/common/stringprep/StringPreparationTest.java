@@ -5,156 +5,142 @@
 
 package com.ongres.scram.common.stringprep;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.Random;
+import java.security.SecureRandom;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class StringPreparationTest {
   private static final String[] ONLY_NON_PRINTABLE_STRINGS =
       new String[] {(char) 13 + "", (char) 13 + "\n\n"};
 
-  @Test
-  void doNormalizeNullEmpty() {
-    String[] nullEmpty = new String[] {null, ""};
-    int n = 0;
+  @ParameterizedTest
+  @NullAndEmptySource
+  void doNormalizeNullEmpty(char[] value) {
     for (StringPreparation stringPreparation : StringPreparations.values()) {
-      for (String s : nullEmpty) {
-        try {
-          stringPreparation.normalize(s);
-        } catch (IllegalArgumentException e) {
-          n++;
-        }
-      }
+      assertThrows(IllegalArgumentException.class, () -> stringPreparation.normalize(value));
     }
-
-    assertTrue(n == nullEmpty.length * StringPreparations.values().length,
-        "IllegalArgumentException not thrown for either null or empty input");
   }
 
-  @Test
-  void doNormalizeValidAsciiCases() {
-    // 200 usernames from http://jimpix.co.uk/words/random-username-list.asp
-    String[] validAsciiUsernames = new String[] {
-        "toastingxenotime", "infecttolerant", "cobblerjack", "zekedigital", "freshscarisdale",
-        "lamwaylon",
-        "lagopodousmonkeys", "fanfarecheesy", "willowfinnegan", "canoeamoeba", "stinkeroddball",
-        "terracecomet",
-        "cakebrazos", "headersidesaddle", "cloudultracrepidarian", "grimegastropub", "stallchilli",
-        "shawnapentagon", "chapeltarp", "rydbergninja", "differencegym", "europiummuscle",
-        "swilledonce",
-        "defensivesyntaxis", "desktopredundant", "stakingsky", "goofywaiting", "boundsemm",
-        "pipermonstrous",
-        "faintfrog", "riskinsist", "constantjunkie", "rejectbroth", "ceilbeau", "ponyjaialai",
-        "burnishselfies",
-        "unamusedglenmore", "parmesanporcupine", "suteconcerto", "ribstony", "sassytwelve",
-        "coursesnasturtium",
-        "singlecinders", "kinkben", "chiefpussface", "unknownivery", "robterra", "wearycubes",
-        "bearcontent",
-        "aquifertrip", "insulinlick", "batterypeace", "rubigloo", "fixessnizort", "coalorecheesy",
-        "logodarthvader",
-        "equipmentbizarre", "charitycolne", "gradecomputer", "incrediblegases", "ingotflyingfish",
-        "abaftmounting",
-        "kissingfluke", "chesterdinky", "anthropicdip", "portalcairo", "purebredhighjump",
-        "jamaicansteeping",
-        "skaterscoins", "chondrulelocust", "modespretty", "otisnadrid", "lagoonone", "arrivepayday",
-        "lawfulpatsy",
-        "customersdeleted", "superiorarod", "abackwarped", "footballcyclic", "sawtshortstop",
-        "waskerleysanidine",
-        "polythenehead", "carpacciosierra", "gnashgabcheviot", "plunkarnisdale", "surfacebased",
-        "wickedpark",
-        "capitalistivan", "kinglassmuse", "adultsceiriog", "medrones", "climaxshops",
-        "archeangolfer", "tomfront",
-        "kobeshift", "nettleaugustus", "bitesizedlion", "crickedbunting", "englishrichard",
-        "dangerousdelmonico",
-        "sparklemicrosoft", "kneepadsfold", "enunciatesunglasses", "parchmentsteak", "meigpiton",
-        "puttingcitrusy",
-        "eyehash", "newtonatomiser", "witchesburberry", "positionwobbly", "clipboardamber",
-        "ricolobster",
-        "calendarpetal", "shinywound", "dealemral", "moonrakerfinnish", "banditliberated",
-        "whippedfanatical",
-        "jargongreasy", "yumlayla", "dwarfismtransition", "doleriteduce", "sikickball",
-        "columngymnastics", "draybowmont", "jupitersnorkling", "siderealmolding", "dowdyrosary",
-        "novaskeeter",
-        "whickerpulley", "rutlandsliders", "categoryflossed", "coiltiedogfish", "brandwaren",
-        "altairlatigo",
-        "acruxyouthscape", "harmonicdash", "jasperserver", "slicedaggie", "gravityfern",
-        "bitsstorm",
-        "readymadehobby", "surfeitgrape", "pantheonslabs", "ammandecent", "skicrackers",
-        "speyfashions",
-        "languagedeeno", "pettyconfit", "minutesshimmering", "thinhopeangellist",
-        "sleevelesscadmium", "controlarc",
-        "robinvolvox", "postboxskylark", "tortepleasing", "lutzdillinger", "amnioteperl",
-        "burntmaximize",
-        "gamblingearn", "bumsouch", "coronagraphdown", "bodgeelearning", "hackingscraper",
-        "hartterbium",
-        "mindyurgonian", "leidlebalki", "labelthumbs", "lincolncrisps", "pearhamster", "termsfiona",
-        "tickingsomber", "hatellynfi", "northumberlandgrotesque", "harpistcaramel", "gentryswiss",
-        "illusionnooks",
-        "easilyrows", "highgluten", "backedallegiance", "laelsitesearch", "methodfix",
-        "teethminstral",
-        "chemicalchildish", "likablepace", "alikealeph", "nalasincere", "investbaroque",
-        "conditionenvelope",
-        "splintsmccue", "carnonprompt", "resultharvey", "acceptsheba", "redditmonsoon",
-        "multiplepostbox",
-        "invitationchurch", "drinksgaliath", "ordersvivid", "mugsgit", "clumpingfreak"
-    };
-
+  @ParameterizedTest
+  @ValueSource(strings = {
+      "toastingxenotime", "infecttolerant", "cobblerjack", "zekedigital", "freshscarisdale",
+      "lamwaylon",
+      "lagopodousmonkeys", "fanfarecheesy", "willowfinnegan", "canoeamoeba", "stinkeroddball",
+      "terracecomet",
+      "cakebrazos", "headersidesaddle", "cloudultracrepidarian", "grimegastropub", "stallchilli",
+      "shawnapentagon", "chapeltarp", "rydbergninja", "differencegym", "europiummuscle",
+      "swilledonce",
+      "defensivesyntaxis", "desktopredundant", "stakingsky", "goofywaiting", "boundsemm",
+      "pipermonstrous",
+      "faintfrog", "riskinsist", "constantjunkie", "rejectbroth", "ceilbeau", "ponyjaialai",
+      "burnishselfies",
+      "unamusedglenmore", "parmesanporcupine", "suteconcerto", "ribstony", "sassytwelve",
+      "coursesnasturtium",
+      "singlecinders", "kinkben", "chiefpussface", "unknownivery", "robterra", "wearycubes",
+      "bearcontent",
+      "aquifertrip", "insulinlick", "batterypeace", "rubigloo", "fixessnizort", "coalorecheesy",
+      "logodarthvader",
+      "equipmentbizarre", "charitycolne", "gradecomputer", "incrediblegases", "ingotflyingfish",
+      "abaftmounting",
+      "kissingfluke", "chesterdinky", "anthropicdip", "portalcairo", "purebredhighjump",
+      "jamaicansteeping",
+      "skaterscoins", "chondrulelocust", "modespretty", "otisnadrid", "lagoonone", "arrivepayday",
+      "lawfulpatsy",
+      "customersdeleted", "superiorarod", "abackwarped", "footballcyclic", "sawtshortstop",
+      "waskerleysanidine",
+      "polythenehead", "carpacciosierra", "gnashgabcheviot", "plunkarnisdale", "surfacebased",
+      "wickedpark",
+      "capitalistivan", "kinglassmuse", "adultsceiriog", "medrones", "climaxshops",
+      "archeangolfer", "tomfront",
+      "kobeshift", "nettleaugustus", "bitesizedlion", "crickedbunting", "englishrichard",
+      "dangerousdelmonico",
+      "sparklemicrosoft", "kneepadsfold", "enunciatesunglasses", "parchmentsteak", "meigpiton",
+      "puttingcitrusy",
+      "eyehash", "newtonatomiser", "witchesburberry", "positionwobbly", "clipboardamber",
+      "ricolobster",
+      "calendarpetal", "shinywound", "dealemral", "moonrakerfinnish", "banditliberated",
+      "whippedfanatical",
+      "jargongreasy", "yumlayla", "dwarfismtransition", "doleriteduce", "sikickball",
+      "columngymnastics", "draybowmont", "jupitersnorkling", "siderealmolding", "dowdyrosary",
+      "novaskeeter",
+      "whickerpulley", "rutlandsliders", "categoryflossed", "coiltiedogfish", "brandwaren",
+      "altairlatigo",
+      "acruxyouthscape", "harmonicdash", "jasperserver", "slicedaggie", "gravityfern",
+      "bitsstorm",
+      "readymadehobby", "surfeitgrape", "pantheonslabs", "ammandecent", "skicrackers",
+      "speyfashions",
+      "languagedeeno", "pettyconfit", "minutesshimmering", "thinhopeangellist",
+      "sleevelesscadmium", "controlarc",
+      "robinvolvox", "postboxskylark", "tortepleasing", "lutzdillinger", "amnioteperl",
+      "burntmaximize",
+      "gamblingearn", "bumsouch", "coronagraphdown", "bodgeelearning", "hackingscraper",
+      "hartterbium",
+      "mindyurgonian", "leidlebalki", "labelthumbs", "lincolncrisps", "pearhamster", "termsfiona",
+      "tickingsomber", "hatellynfi", "northumberlandgrotesque", "harpistcaramel", "gentryswiss",
+      "illusionnooks",
+      "easilyrows", "highgluten", "backedallegiance", "laelsitesearch", "methodfix",
+      "teethminstral",
+      "chemicalchildish", "likablepace", "alikealeph", "nalasincere", "investbaroque",
+      "conditionenvelope",
+      "splintsmccue", "carnonprompt", "resultharvey", "acceptsheba", "redditmonsoon",
+      "multiplepostbox",
+      "invitationchurch", "drinksgaliath", "ordersvivid", "mugsgit", "clumpingfreak"
+  })
+  void doNormalizeValidAsciiCases(String username) {
+    char[] validAsciiUsername = username.toCharArray();
     for (StringPreparation stringPreparation : StringPreparations.values()) {
-      for (String s : validAsciiUsernames) {
-        assertEquals(s, stringPreparation.normalize(s));
-      }
+      assertArrayEquals(validAsciiUsername, stringPreparation.normalize(validAsciiUsername));
     }
+  }
+
+  private static Stream<String> provideRandomStrings() {
+    final SecureRandom srand = new SecureRandom();
+    return IntStream.iterate(0, i -> i)
+        .limit(1000)
+        .mapToObj(c -> srand.ints(32, 127)
+            .filter(i -> (i >= 32) && (i <= 127))
+            .limit(128)
+            .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+            .toString());
   }
 
   /*
    * Some simple random testing won't hurt. If a test would fail, create new test with the generated
    * word.
    */
-  @Test
-  void doNormalizeValidAsciiRandom() {
-    int n = 10 * 1000;
-    int maxLenght = 64;
-    Random random = new Random();
-    String[] values = new String[n];
-    for (int i = 0; i < n; i++) {
-      char[] charValue = new char[random.nextInt(maxLenght) + 1];
-      for (int j = 0; j < charValue.length; j++) {
-        charValue[j] = (char) (random.nextInt(127 - 33) + 33);
-      }
-      values[i] = new String(charValue);
-    }
-
+  @ParameterizedTest
+  @MethodSource("provideRandomStrings")
+  void doNormalizeValidAsciiRandom(String random) {
     for (StringPreparation stringPreparation : StringPreparations.values()) {
-      for (String s : values) {
-        assertEquals(s, stringPreparation.normalize(s),
-            "'" + s + "' is a printable ASCII string, should not be changed by normalize()");
-      }
+      assertArrayEquals(random.toCharArray(), stringPreparation.normalize(random.toCharArray()),
+          "'" + random + "' is a printable ASCII string, should not be changed by normalize()");
     }
   }
 
   @Test
   void doNormalizeNoPreparationEmptyAfterNormalization() {
-    int n = 0;
     for (String s : ONLY_NON_PRINTABLE_STRINGS) {
-      try {
-        StringPreparations.NO_PREPARATION.normalize(s);
-      } catch (IllegalArgumentException e) {
-        n++;
-      }
+      char[] charArray = s.toCharArray();
+      assertThrows(IllegalArgumentException.class,
+          () -> StringPreparations.NO_PREPARATION.normalize(charArray));
     }
-
-    assertTrue(n == ONLY_NON_PRINTABLE_STRINGS.length,
-        "IllegalArgumentException not thrown for either null or empty output after normalization");
   }
 
   @Test
   void doNormalizeNoPreparationNonEmptyAfterNormalization() {
     // No exception should be thrown
     for (String s : ONLY_NON_PRINTABLE_STRINGS) {
-      StringPreparations.NO_PREPARATION.normalize(s + "a");
+      StringPreparations.NO_PREPARATION.normalize((s + "a").toCharArray());
     }
   }
 }

@@ -49,6 +49,23 @@ public final class Preconditions {
   }
 
   /**
+   * Checks that the char[] is not null and not empty.
+   *
+   * @param value The String to check
+   * @param valueName The name of the value that is checked in the method
+   * @return The same String passed as argument
+   * @throws IllegalArgumentException If value is null or empty
+   */
+  public static char[] checkNotEmpty(char[] value, String valueName)
+      throws IllegalArgumentException {
+    if (checkNotNull(value, valueName).length == 0) {
+      throw new IllegalArgumentException("Empty string '" + valueName + "'");
+    }
+
+    return value;
+  }
+
+  /**
    * Checks that the argument is valid, based in a check boolean condition.
    *
    * @param check The boolean check

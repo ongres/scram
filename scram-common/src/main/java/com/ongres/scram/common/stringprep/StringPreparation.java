@@ -17,5 +17,5 @@ public interface StringPreparation {
    * @return The prepared String
    * @throws IllegalArgumentException If the String to prepare is not valid.
    */
-  String normalize(String value) throws IllegalArgumentException;
+  char[] normalize(char[] value) throws IllegalArgumentException;
 }

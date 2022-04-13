@@ -29,7 +29,7 @@ class ServerFinalMessageTest {
     byte[] serverKey = ScramFunctions.serverKey(
         ScramMechanisms.SCRAM_SHA_1,
         StringPreparations.NO_PREPARATION,
-        PASSWORD,
+        PASSWORD.toCharArray(),
         Base64.getDecoder().decode(SERVER_SALT),
         SERVER_ITERATIONS);
     ServerFinalMessage serverFinalMessage1 = new ServerFinalMessage(

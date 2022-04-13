@@ -42,7 +42,7 @@ class ScramSessionTest {
     assertEquals(SERVER_ITERATIONS, serverFirstProcessor.getIteration());
 
     ScramSession.ClientFinalProcessor clientFinalProcessor =
-        serverFirstProcessor.clientFinalProcessor(PASSWORD);
+        serverFirstProcessor.clientFinalProcessor(PASSWORD.toCharArray());
     assertEquals(CLIENT_FINAL_MESSAGE, clientFinalProcessor.clientFinalMessage());
 
     clientFinalProcessor.receiveServerFinalMessage(SERVER_FINAL_MESSAGE);

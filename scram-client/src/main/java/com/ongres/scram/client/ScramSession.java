@@ -304,7 +304,7 @@ public class ScramSession {
      * @return The handler
      * @throws IllegalArgumentException If the message is null or empty
      */
-    public ClientFinalProcessor clientFinalProcessor(String password)
+    public ClientFinalProcessor clientFinalProcessor(char[] password)
         throws IllegalArgumentException {
       return new ClientFinalProcessor(
           serverFirstMessage.getNonce(),
@@ -320,7 +320,7 @@ public class ScramSession {
      * user's password.
      *
      * @param clientKey The client key, as per the SCRAM algorithm. It can be generated with:
-     *        {@link ScramFunctions#clientKey(ScramMechanism, StringPreparation, String, byte[], int)}
+     *        {@link ScramFunctions#clientKey(ScramMechanism, StringPreparation, char[], byte[], int)}
      * @param storedKey The stored key, as per the SCRAM algorithm. It can be generated from the
      *        client key with: {@link ScramFunctions#storedKey(ScramMechanism, byte[])}
      * @return The handler
@@ -340,7 +340,7 @@ public class ScramSession {
    * server-final-message and verify server's signature.
    *
    * <p>Generate the processor by calling either
-   * {@link ServerFirstProcessor#clientFinalProcessor(String)} or
+   * {@link ServerFirstProcessor#clientFinalProcessor(char[])} or
    * {@link ServerFirstProcessor#clientFinalProcessor(byte[], byte[])}.
    */
   public class ClientFinalProcessor {
@@ -373,7 +373,7 @@ public class ScramSession {
           ScramFunctions.serverKey(scramMechanism, saltedPassword));
     }
 
-    private ClientFinalProcessor(String nonce, String password, String salt, int iteration) {
+    private ClientFinalProcessor(String nonce, char[] password, String salt, int iteration) {
       this(
           nonce,
           ScramFunctions.saltedPassword(
@@ -401,9 +401,8 @@ public class ScramSession {
      *
      * @param cbindData The bytes of the channel-binding data
      * @return The message
-     * @throws IllegalArgumentException If the channel binding data is null
      */
-    private String clientFinalMessage(byte[] cbindData) throws IllegalArgumentException {
+    public String clientFinalMessage(byte[] cbindData) {
       if (null == authMessage) {
         generateAndCacheAuthMessage(cbindData);
       }

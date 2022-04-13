@@ -25,8 +25,8 @@ public enum StringPreparations implements StringPreparation {
    */
   NO_PREPARATION {
     @Override
-    protected String doNormalize(String value) throws IllegalArgumentException {
-      return UsAsciiUtils.toPrintable(value);
+    protected char[] doNormalize(char[] value) throws IllegalArgumentException {
+      return UsAsciiUtils.toPrintable(String.valueOf(value)).toCharArray();
     }
   },
   /**
@@ -36,24 +36,23 @@ public enum StringPreparations implements StringPreparation {
    * implementation will normalize as SaslPrep does.
    */
   SASL_PREPARATION {
-
     @Override
-    protected String doNormalize(String value) throws IllegalArgumentException {
-      return saslPrep.prepareStored(value);
+    protected char[] doNormalize(char[] value) throws IllegalArgumentException {
+      return saslPrep.prepareStored(String.valueOf(value)).toCharArray();
     }
   };
 
   private static final Profile saslPrep = Stringprep.getProvider("SASLprep");
 
-  protected abstract String doNormalize(String value) throws IllegalArgumentException;
+  protected abstract char[] doNormalize(char[] value) throws IllegalArgumentException;
 
   @Override
-  public String normalize(String value) throws IllegalArgumentException {
+  public char[] normalize(char[] value) throws IllegalArgumentException {
     checkNotEmpty(value, "value");
 
-    String normalized = doNormalize(value);
+    char[] normalized = doNormalize(value);
 
-    if (null == normalized || normalized.isEmpty()) {
+    if (null == normalized || normalized.length == 0) {
       throw new IllegalArgumentException("null or empty value after normalization");
     }
 

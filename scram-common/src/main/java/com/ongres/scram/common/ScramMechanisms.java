@@ -126,9 +126,9 @@ public enum ScramMechanisms implements ScramMechanism {
   }
 
   @Override
-  public byte[] saltedPassword(StringPreparation stringPreparation, String password, byte[] salt,
+  public byte[] saltedPassword(StringPreparation stringPreparation, char[] password, byte[] salt,
       int iterations) {
-    char[] normalizedString = stringPreparation.normalize(password).toCharArray();
+    char[] normalizedString = stringPreparation.normalize(password);
     try {
       return CryptoUtil.hi(
           SecretKeyFactory.getInstance(PBKDF2_PREFIX_ALGORITHM_NAME + hmacAlgorithmName),

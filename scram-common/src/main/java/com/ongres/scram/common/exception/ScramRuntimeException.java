@@ -5,12 +5,8 @@
 
 package com.ongres.scram.common.exception;
 
-import javax.security.sasl.SaslException;
-
 /**
  * This class represents an error when using SCRAM, which is a SASL method.
- *
- * {@link SaslException}
  */
 public class ScramRuntimeException extends RuntimeException {
 
