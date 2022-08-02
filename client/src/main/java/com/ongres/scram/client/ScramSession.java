@@ -216,9 +216,8 @@ public class ScramSession {
          * Generates the SCRAM representation of the client-final-message, including the given channel-binding data.
          * @param cbindData The bytes of the channel-binding data
          * @return The message
-         * @throws IllegalArgumentException If the channel binding data is null
          */
-        private String clientFinalMessage(byte[] cbindData) throws IllegalArgumentException {
+        public String clientFinalMessage(byte[] cbindData) {
             if(null == authMessage) {
                 generateAndCacheAuthMessage(cbindData);
             }
