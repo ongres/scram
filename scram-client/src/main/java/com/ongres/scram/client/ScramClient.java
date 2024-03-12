@@ -13,364 +13,537 @@ import static com.ongres.scram.common.util.Preconditions.gt0;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.function.Supplier;
 
+import com.ongres.scram.common.ClientFinalMessage;
+import com.ongres.scram.common.ClientFirstMessage;
+import com.ongres.scram.common.Gs2CbindFlag;
+import com.ongres.scram.common.ScramFunctions;
 import com.ongres.scram.common.ScramMechanism;
-import com.ongres.scram.common.ScramMechanisms;
-import com.ongres.scram.common.gssapi.Gs2CbindFlag;
-import com.ongres.scram.common.stringprep.StringPreparation;
-import com.ongres.scram.common.util.CryptoUtil;
+import com.ongres.scram.common.ServerFinalMessage;
+import com.ongres.scram.common.ServerFirstMessage;
+import com.ongres.scram.common.StringPreparation;
+import com.ongres.scram.common.exception.ScramInvalidServerSignatureException;
+import com.ongres.scram.common.exception.ScramParseException;
+import com.ongres.scram.common.exception.ScramServerErrorException;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
- * A class that can be parametrized to generate {@link ScramSession}s. This class supports the
- * channel binding and string preparation mechanisms that are provided by module scram-common.
+ * A class that represents a SCRAM client. Use this class to perform a SCRAM negotiation with a
+ * SCRAM server. This class performs an authentication execution for a given user, and has state
+ * related to it. Thus, it cannot be shared across users or authentication executions.
  *
- * <p>The class is fully configurable, including options to selected the desired channel binding,
- * automatically pick the best client SCRAM mechanism based on those supported (advertised) by the
- * server, selecting an externally-provided SecureRandom instance or an external nonceProvider, or
- * choosing the nonce length.
+ * <p>Example of usage:
  *
- * <p>This class is thread-safe if the two following conditions are met: <ul> <li>The SecureRandom
- * used ({@link SecureRandom} by default) are thread-safe too. The contract of
- * {@link java.util.Random} marks it as thread-safe, so inherited classes are also expected to
- * maintain it. </li> <li>No external nonceSupplier is provided; or if provided, it is
- * thread-safe.</li> </ul> So this class, once instantiated via the {@link Builder#setup()}} method,
- * can serve for multiple users and authentications.
+ * <pre>{@code
+ * ScramClient scramClient = ScramClient.builder()
+ *     .advertisedMechanisms(Arrays.asList("SCRAM-SHA-256", "SCRAM-SHA-256-PLUS"))
+ *     .username("user")
+ *     .password("pencil".toCharArray())
+ *     .channelBinding("tls-server-end-point", channelBindingData) // client supports channel binding
+ *     .build();
+ *
+ *   // The build() call negotiates the SCRAM mechanism to be used. In this example,
+ *   // since the server advertise support for the SCRAM-SHA-256-PLUS mechanism,
+ *   // and the builder is set with the channel binding type and data, the constructed
+ *   // scramClient will use the "SCRAM-SHA-256-PLUS" mechanism for authentication.
+ *
+ * // Send the client-first-message ("p=...,,n=...,r=...")
+ * ClientFirstMessage clientFirstMsg = scramClient.clientFirstMessage();
+ * ...
+ * // Receive the server-first-message
+ * ServerFirstMessage serverFirstMsg = scramClient.serverFirstMessage("r=...,s=...,i=...");
+ * ...
+ * // Send the client-final-message ("c=...,r=...,p=...")
+ * ClientFinalMessage clientFinalMsg = scramClient.clientFinalMessage();
+ * ...
+ * // Receive the server-final-message, throw an ScramException on error
+ * ServerFinalMessage serverFinalMsg = scramClient.serverFinalMessage("v=...");
+ * }</pre>
+ *
+ * <p>Commonly, a protocol will specify that the server advertises supported and available
+ * mechanisms to the client via some facility provided by the protocol, and the client will then
+ * select the "best" mechanism from this list that it supports and finds suitable.
+ *
+ * <p>When building the ScramClient, it provides mechanism negotiation based on parameters, if
+ * channel binding is missing the client will use {@code "n"} as gs2-cbind-flag, if the channel
+ * binding is set, but the mechanisms send by the server do not advertise the {@code -PLUS}
+ * version, it will use {@code "y"} as gs2-cbind-flag, when both client and server support channel
+ * binding, it will use {@code "p=" cb-name} as gs2-cbind-flag.
+ *
+ * @see <a href="https://www.rfc-editor.org/rfc/rfc5802.html">RFC-5802: Salted Challenge Response
+ *      Authentication Mechanism (SCRAM) SASL and GSS-API Mechanisms</a>
+ * @see <a href="https://www.rfc-editor.org/rfc/rfc7677.html">RFC-7677: SCRAM-SHA-256 and
+ *      SCRAM-SHA-256-PLUS Simple Authentication and Security Layer (SASL) Mechanisms</a>
  */
-public final class ScramClient {
+public final class ScramClient implements MessageFlow {
 
-  /**
-   * Length (in characters, bytes) of the nonce generated by default (if no nonce supplier is
-   * provided).
-   */
-  public static final int DEFAULT_NONCE_LENGTH = 24;
-
-  /**
-   * Select whether this client will support channel binding or not.
-   */
-  public enum ChannelBinding {
-    /**
-     * Don't use channel binding. Server must support at least one non-channel binding mechanism.
-     */
-    NO(Gs2CbindFlag.CLIENT_NOT),
-
-    /**
-     * Force use of channel binding. Server must support at least one channel binding mechanism.
-     * Channel binding data will need to be provided as part of the ClientFirstMessage.
-     */
-    YES(Gs2CbindFlag.CHANNEL_BINDING_REQUIRED),
-
-    /**
-     * Channel binding is preferred. Non-channel binding mechanisms will be used if either the
-     * server does not support channel binding, or no channel binding data is provided as part of
-     * the ClientFirstMessage
-     */
-    IF_SERVER_SUPPORTS_IT(Gs2CbindFlag.CLIENT_YES_SERVER_NOT);
-
-    private final Gs2CbindFlag gs2CbindFlag;
-
-    ChannelBinding(Gs2CbindFlag gs2CbindFlag) {
-      this.gs2CbindFlag = gs2CbindFlag;
-    }
-
-    public Gs2CbindFlag gs2CbindFlag() {
-      return gs2CbindFlag;
-    }
-  }
-
-  private final ChannelBinding channelBinding;
-  private final StringPreparation stringPreparation;
   private final ScramMechanism scramMechanism;
-  private final SecureRandom secureRandom;
-  private final Supplier<String> nonceSupplier;
+  private final Gs2CbindFlag channelBinding;
+  private final StringPreparation stringPreparation;
+  private final String username;
+  private final char[] password;
+  private final byte[] saltedPassword;
+  private final byte[] clientKey;
+  private final byte[] serverKey;
+  private final String cbindType;
+  private final byte[] cbindData;
+  private final String authzid;
+  private final String nonce;
 
-  private ScramClient(
-      ChannelBinding channelBinding, StringPreparation stringPreparation,
-      ScramMechanism nonChannelBindingMechanism, ScramMechanism channelBindingMechanism,
-      SecureRandom secureRandom, Supplier<String> nonceSupplier) {
-    assert null != channelBinding : "channelBinding";
-    assert null != stringPreparation : "stringPreparation";
-    assert null != nonChannelBindingMechanism
-        || null != channelBindingMechanism : "Either a channel-binding or a non-binding mechanism must be present";
-    assert null != secureRandom : "secureRandom";
-    assert null != nonceSupplier : "nonceSupplier";
+  private Stage currentState = Stage.NONE;
+  private ClientFirstMessage clientFirstMessage;
 
-    this.channelBinding = channelBinding;
-    this.stringPreparation = stringPreparation;
-    this.scramMechanism =
-        null != nonChannelBindingMechanism ? nonChannelBindingMechanism : channelBindingMechanism;
-    this.secureRandom = secureRandom;
-    this.nonceSupplier = nonceSupplier;
-  }
+  private ServerFirstProcessor serverFirstProcessor;
+
+  private ClientFinalProcessor clientFinalProcessor;
 
   /**
-   * Selects for the client whether to use channel binding. Refer to {@link ChannelBinding}
-   * documentation for the description of the possible values.
+   * Constructs a SCRAM client, to perform an authentication for a given user. This class can not be
+   * instantiated directly, use a {@link #builder()} is used instead.
    *
-   * @param channelBinding The channel binding setting
-   * @return The next step in the chain (PreBuilder1).
-   * @throws IllegalArgumentException If channelBinding is null
+   * @param builder The Builder used to initialize this client
    */
-  public static PreBuilder1 channelBinding(ChannelBinding channelBinding)
-      throws IllegalArgumentException {
-    return new PreBuilder1(checkNotNull(channelBinding, "channelBinding"));
+  private ScramClient(@NotNull Builder builder) {
+    this.channelBinding = builder.channelBinding;
+    this.scramMechanism = builder.selectedScramMechanism;
+    this.stringPreparation = builder.stringPreparation;
+    this.username = builder.username;
+    this.password = builder.password != null ? builder.password.clone() : null;
+    this.saltedPassword = builder.saltedPassword;
+    this.clientKey = builder.clientKey;
+    this.serverKey = builder.serverKey;
+    this.nonce = builder.nonce;
+    this.cbindType = builder.cbindType;
+    this.cbindData = builder.cbindData;
+    this.authzid = builder.authzid;
   }
 
   /**
-   * This class is not meant to be used directly. Use
-   * {@link ScramClient#channelBinding(ChannelBinding)} instead.
+   * Returns the scram mechanism negotiated by this SASL client.
+   *
+   * @return the SCRAM mechanims selected during the negotiation
    */
-  public static class PreBuilder1 {
-    protected final ChannelBinding channelBinding;
-
-    private PreBuilder1(ChannelBinding channelBinding) {
-      this.channelBinding = channelBinding;
-    }
-
-    /**
-     * Selects the string preparation algorithm to use by the client.
-     *
-     * @param stringPreparation The string preparation algorithm
-     * @return PreBuilder2 that constructs the client
-     * @throws IllegalArgumentException If stringPreparation is null
-     */
-    public PreBuilder2 stringPreparation(StringPreparation stringPreparation)
-        throws IllegalArgumentException {
-      return new PreBuilder2(channelBinding, checkNotNull(stringPreparation, "stringPreparation"));
-    }
-  }
-
-  /**
-   * This class is not meant to be used directly. Use
-   * {@link ScramClient#channelBinding(ChannelBinding)}.{#stringPreparation(StringPreparation)}
-   * instead.
-   */
-  public static class PreBuilder2 extends PreBuilder1 {
-    protected final StringPreparation stringPreparation;
-    protected ScramMechanism nonChannelBindingMechanism = null;
-    protected ScramMechanism channelBindingMechanism = null;
-
-    private PreBuilder2(ChannelBinding channelBinding, StringPreparation stringPreparation) {
-      super(channelBinding);
-      this.stringPreparation = stringPreparation;
-    }
-
-    /**
-     * Inform the client of the SCRAM mechanisms supported by the server. Based on this list, the
-     * channel binding settings previously specified, and the relative strength of the supported
-     * SCRAM mechanisms for this client, the client will have enough data to select which mechanism
-     * to use for future interactions with the server. All names provided here need to be standar
-     * IANA Registry names for SCRAM mechanisms, or will be ignored.
-     *
-     * @see <a href="https://www.iana.org/assignments/sasl-mechanisms/sasl-mechanisms.xhtml#scram">
-     *      SASL SCRAM Family Mechanisms</a>
-     *
-     * @param serverMechanisms One or more IANA-registered SCRAM mechanism names, as advertised by
-     *        the server
-     * @return Builder that constructs the client
-     * @throws IllegalArgumentException If no server mechanisms are provided
-     */
-    public Builder selectMechanismBasedOnServerAdvertised(String... serverMechanisms) {
-      checkArgument(null != serverMechanisms && serverMechanisms.length > 0, "serverMechanisms");
-
-      nonChannelBindingMechanism = ScramMechanisms.selectMatchingMechanism(false, serverMechanisms);
-      if (channelBinding == ChannelBinding.NO && null == nonChannelBindingMechanism) {
-        throw new IllegalArgumentException(
-            "Server does not support non channel binding mechanisms");
-      }
-
-      channelBindingMechanism = ScramMechanisms.selectMatchingMechanism(true, serverMechanisms);
-      if (channelBinding == ChannelBinding.YES && null == channelBindingMechanism) {
-        throw new IllegalArgumentException("Server does not support channel binding mechanisms");
-      }
-
-      if (null == channelBindingMechanism && null == nonChannelBindingMechanism) {
-        throw new IllegalArgumentException(
-            "There are no matching mechanisms between client and server");
-      }
-
-      return new Builder(channelBinding, stringPreparation, nonChannelBindingMechanism,
-          channelBindingMechanism);
-    }
-
-    /**
-     * Inform the client of the SCRAM mechanisms supported by the server. Calls
-     * {@link Builder#selectMechanismBasedOnServerAdvertised(String...)} with the results of
-     * splitting the received comma-separated values.
-     *
-     * @param serverMechanismsCsv A CSV (Comma-Separated Values) String, containining all the SCRAM
-     *        mechanisms supported by the server
-     * @return Builder that constructs the client
-     * @throws IllegalArgumentException If selectMechanismBasedOnServerAdvertisedCsv is null
-     */
-    public Builder selectMechanismBasedOnServerAdvertisedCsv(String serverMechanismsCsv)
-        throws IllegalArgumentException {
-      return selectMechanismBasedOnServerAdvertised(
-          checkNotNull(serverMechanismsCsv, "serverMechanismsCsv").split(","));
-    }
-
-    /**
-     * Select a fixed client mechanism. It must be compatible with the channel binding selection
-     * previously performed. If automatic selection based on server advertised mechanisms is
-     * preferred, please use methods
-     * {@link Builder#selectMechanismBasedOnServerAdvertised(String...)} or
-     * {@link Builder#selectMechanismBasedOnServerAdvertisedCsv(String)}.
-     *
-     * @param scramMechanism The selected scram mechanism
-     * @return Builder that constructs the client
-     * @throws IllegalArgumentException If the selected mechanism is null or not compatible with the
-     *         prior channel binding selection, or channel binding selection is dependent on the
-     *         server advertised methods
-     */
-    public Builder selectClientMechanism(ScramMechanism scramMechanism) {
-      checkNotNull(scramMechanism, "scramMechanism");
-      if (channelBinding == ChannelBinding.IF_SERVER_SUPPORTS_IT) {
-        throw new IllegalArgumentException(
-            "If server selection is considered, no direct client selection should be performed");
-      }
-      if (channelBinding == ChannelBinding.YES && !scramMechanism.supportsChannelBinding()
-          ||
-          channelBinding == ChannelBinding.NO && scramMechanism.supportsChannelBinding()) {
-        throw new IllegalArgumentException(
-            "Incompatible selection of mechanism and channel binding");
-      }
-
-      if (scramMechanism.supportsChannelBinding()) {
-        return new Builder(channelBinding, stringPreparation, null, scramMechanism);
-      } else {
-        return new Builder(channelBinding, stringPreparation, scramMechanism, null);
-      }
-    }
-  }
-
-  /**
-   * This class is not meant to be used directly. Use instead
-   * {@link ScramClient#channelBinding(ChannelBinding)} and chained methods.
-   */
-  public static class Builder extends PreBuilder2 {
-    private final ScramMechanism nonChannelBindingMechanism;
-    private final ScramMechanism channelBindingMechanism;
-
-    private SecureRandom secureRandom = new SecureRandom();
-    private Supplier<String> nonceSupplier;
-    private int nonceLength = DEFAULT_NONCE_LENGTH;
-
-    private Builder(
-        ChannelBinding channelBinding, StringPreparation stringPreparation,
-        ScramMechanism nonChannelBindingMechanism, ScramMechanism channelBindingMechanism) {
-      super(channelBinding, stringPreparation);
-      this.nonChannelBindingMechanism = nonChannelBindingMechanism;
-      this.channelBindingMechanism = channelBindingMechanism;
-    }
-
-    /**
-     * Optional call. Selects a non-default SecureRandom instance, based on the given algorithm and
-     * optionally provider. This SecureRandom instance will be used to generate secure random
-     * values, like the ones required to generate the nonce (unless an external nonce provider is
-     * given via {@link Builder#nonceSupplier(Supplier)}). Algorithm and provider names are those
-     * supported by the {@link SecureRandom} class.
-     *
-     * @param algorithm The name of the algorithm to use.
-     * @param provider The name of the provider of SecureRandom. Might be null.
-     * @return The same class
-     * @throws IllegalArgumentException If algorithm is null, or either the algorithm or provider
-     *         are not supported
-     */
-    public Builder secureRandomAlgorithmProvider(String algorithm, String provider)
-        throws IllegalArgumentException {
-      checkNotNull(algorithm, "algorithm");
-      try {
-        secureRandom = null == provider ? SecureRandom.getInstance(algorithm)
-            : SecureRandom.getInstance(algorithm, provider);
-      } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
-        throw new IllegalArgumentException("Invalid algorithm or provider", e);
-      }
-
-      return this;
-    }
-
-    /**
-     * Optional call. The client will use a default nonce generator, unless an external one is
-     * provided by this method. *
-     *
-     * @param nonceSupplier A supplier of valid nonce Strings. Please note that according to the <a
-     *        href="https://tools.ietf.org/html/rfc5802#section-7">SCRAM RFC</a> only ASCII
-     *        printable characters (except the comma, ',') are permitted on a nonce. Length is not
-     *        limited.
-     * @return The same class
-     * @throws IllegalArgumentException If nonceSupplier is null
-     */
-    public Builder nonceSupplier(Supplier<String> nonceSupplier) throws IllegalArgumentException {
-      this.nonceSupplier = checkNotNull(nonceSupplier, "nonceSupplier");
-
-      return this;
-    }
-
-    /**
-     * Sets a non-default ({@link ScramClient#DEFAULT_NONCE_LENGTH}) length for the nonce
-     * generation, if no alternate nonceSupplier is provided via
-     * {@link Builder#nonceSupplier(Supplier)}.
-     *
-     * @param length The length of the nonce. Must be positive and greater than 0
-     * @return The same class
-     * @throws IllegalArgumentException If length is less than 1
-     */
-    public Builder nonceLength(int length) throws IllegalArgumentException {
-      this.nonceLength = gt0(length, "length");
-
-      return this;
-    }
-
-    /**
-     * Gets the client, fully constructed and configured, with the provided channel binding, string
-     * preparation properties, and the selected SCRAM mechanism based on server supported
-     * mechanisms. If no SecureRandom algorithm and provider were provided, a default one would be
-     * used. If no nonceSupplier was provided, a default nonce generator would be used, of the
-     * {@link ScramClient#DEFAULT_NONCE_LENGTH} length, unless {@link Builder#nonceLength(int)} is
-     * called.
-     *
-     * @return The fully built instance.
-     */
-    public ScramClient setup() {
-      return new ScramClient(
-          channelBinding, stringPreparation, nonChannelBindingMechanism, channelBindingMechanism,
-          secureRandom,
-          nonceSupplier != null ? nonceSupplier
-              : () -> CryptoUtil.nonce(nonceLength, secureRandom));
-    }
-  }
-
-  public StringPreparation getStringPreparation() {
-    return stringPreparation;
-  }
-
   public ScramMechanism getScramMechanism() {
     return scramMechanism;
   }
 
   /**
-   * List all the supported SCRAM mechanisms by this client implementation.
+   * Returns the text representation of a SCRAM {@code client-first-message}.
    *
-   * @return A list of the IANA-registered, SCRAM supported mechanisms
+   * @apiNote should be the initial call and can be called only once
+   * @return The {@code client-first-message}
    */
-  public static List<String> supportedMechanisms() {
-    List<String> supportedMechanisms = new ArrayList<>();
-    for (ScramMechanisms scramMechanisms : ScramMechanisms.values()) {
-      supportedMechanisms.add(scramMechanisms.getName());
+  @Override
+  public ClientFirstMessage clientFirstMessage() {
+    if (currentState != Stage.NONE) {
+      throw new IllegalStateException("Invalid state for processing client first message");
     }
-    return supportedMechanisms;
+    this.clientFirstMessage =
+        new ClientFirstMessage(channelBinding, cbindType, authzid, username, nonce);
+    this.currentState = Stage.CLIENT_FIRST;
+    return clientFirstMessage;
   }
 
   /**
-   * Instantiates a {@link ScramSession} for the specified user and this parametrized generator.
+   * Process the {@code server-first-message}, from its String representation.
    *
-   * @param user The username of the authentication exchange
-   * @return The ScramSession instance
+   * @apiNote should be called after {@link #clientFirstMessage()} and can be called only once
+   * @param serverFirstMessage The {@code server-first-message}
+   * @throws ScramParseException If the message is not a valid server-first-message
+   * @throws IllegalArgumentException If the message is null or empty
    */
-  public ScramSession scramSession(String user) {
-    return new ScramSession(scramMechanism, stringPreparation, checkNotEmpty(user, "user"),
-        nonceSupplier.get());
+  @Override
+  public ServerFirstMessage serverFirstMessage(String serverFirstMessage)
+      throws ScramParseException {
+    if (currentState != Stage.CLIENT_FIRST) {
+      throw new IllegalStateException("Invalid state for processing server first message");
+    }
+    checkNotEmpty(serverFirstMessage, "serverFirstMessage");
+    this.serverFirstProcessor =
+        new ServerFirstProcessor(scramMechanism, stringPreparation, serverFirstMessage, nonce,
+            clientFirstMessage);
+    this.currentState = Stage.SERVER_FIRST;
+    return serverFirstProcessor.getServerFirstMessage();
   }
+
+  /**
+   * Returns the text representation of a SCRAM {@code client-final-message}.
+   *
+   * @apiNote should be called after {@link #serverFirstMessage(String)} and can be called only once
+   * @return The {@code client-final-message}
+   */
+  @Override
+  public ClientFinalMessage clientFinalMessage() {
+    if (currentState != Stage.SERVER_FIRST) {
+      throw new IllegalStateException("Invalid state for processing client final message");
+    }
+    if (password != null) {
+      this.clientFinalProcessor = serverFirstProcessor.clientFinalProcessor(password);
+      Arrays.fill(password, (char) 0); // clear password after use
+    } else if (saltedPassword != null) {
+      this.clientFinalProcessor = serverFirstProcessor.clientFinalProcessor(saltedPassword);
+    } else if (clientKey != null && serverKey != null) {
+      this.clientFinalProcessor = serverFirstProcessor.clientFinalProcessor(clientKey, serverKey);
+    }
+    ClientFinalMessage clientFinalMessage = clientFinalProcessor.clientFinalMessage(cbindData);
+    this.currentState = Stage.CLIENT_FINAL;
+    return clientFinalMessage;
+  }
+
+  /**
+   * Process and verify the {@code server-final-message}, from its String representation.
+   *
+   * @apiNote should be called after {@link #clientFinalMessage()} and can be called only once
+   * @param serverFinalMessage The {@code server-final-message}
+   * @throws ScramParseException If the message is not a valid
+   * @throws ScramServerErrorException If the message is an error
+   * @throws ScramInvalidServerSignatureException If the verification fails
+   * @throws IllegalArgumentException If the message is null or empty
+   */
+  @Override
+  public ServerFinalMessage serverFinalMessage(String serverFinalMessage)
+      throws ScramParseException, ScramServerErrorException, ScramInvalidServerSignatureException {
+    if (currentState != Stage.CLIENT_FINAL) {
+      throw new IllegalStateException("Invalid state for processing server final message");
+    }
+    ServerFinalMessage receiveServerFinalMessage =
+        clientFinalProcessor.receiveServerFinalMessage(serverFinalMessage);
+    this.currentState = Stage.SERVER_FINAL;
+    return receiveServerFinalMessage;
+  }
+
+  /**
+   * Creates a builder for {@link ScramClient ScramClient} instances.
+   *
+   * @return Builder instance to contruct a {@link ScramClient ScramClient}
+   */
+  public static MechanismsBuildStage builder() {
+    return new Builder();
+  }
+
+  /**
+   * Builder stage for the advertised mechanisms.
+   */
+  public interface MechanismsBuildStage {
+
+    /**
+     * List of the advertised mechanisms that will be negotiated between the server and the client.
+     *
+     * @param allowedMechanisms list with the IANA-registered mechanism name of this SASL client
+     * @return {@code this} builder for use in a chained invocation
+     */
+    UsernameBuildStage advertisedMechanisms(@NotNull Collection<@NotNull String> allowedMechanisms);
+  }
+
+  /**
+   * Builder stage for the required username.
+   */
+  public interface UsernameBuildStage {
+
+    /**
+     * Sets the username.
+     *
+     * @param username the required username
+     * @return {@code this} builder for use in a chained invocation
+     */
+    PasswordBuildStage username(@NotNull String username);
+  }
+
+  /**
+   * Builder stage for the password (or a ClientKey/ServerKey, or SaltedPassword).
+   */
+  public interface PasswordBuildStage {
+
+    /**
+     * Sets the password.
+     *
+     * @param password the required password
+     * @return {@code this} builder for use in a chained invocation
+     */
+    FinalBuildStage password(char @NotNull [] password);
+
+    /**
+     * Sets the SaltedPassword.
+     *
+     * @param saltedPassword the required SaltedPassword
+     * @return {@code this} builder for use in a chained invocation
+     */
+    FinalBuildStage saltedPassword(byte @NotNull [] saltedPassword);
+
+    /**
+     * Sets the ClientKey/ServerKey.
+     *
+     * @param clientKey the required ClientKey
+     * @param serverKey the required ServerKey
+     * @return {@code this} builder for use in a chained invocation
+     */
+    FinalBuildStage clientAndServerKey(byte @NotNull [] clientKey, byte @NotNull [] serverKey);
+  }
+
+  /**
+   * Builder stage for the optional atributes and the final build() call.
+   */
+  public interface FinalBuildStage {
+
+    /**
+     * If the client supports channel binding negotiation, this method sets the type and data used
+     * for channel binding.
+     *
+     * @apiNote If {@code cbindType} or {@code cbindData} are null, sets the gs2-cbind-flag to 'n'
+     *          and does not use channel binding.
+     *
+     * @param cbindType channel bynding type name
+     * @param cbindData channel binding data
+     * @return {@code this} builder for use in a chained invocation
+     */
+    FinalBuildStage channelBinding(@Nullable String cbindType, byte @Nullable [] cbindData);
+
+    /**
+     * Sets the StringPreparation, is recommended to leave the default SASL_PREPARATION.
+     *
+     * @param stringPreparation type of string preparation normalization
+     * @return {@code this} builder for use in a chained invocation
+     */
+    FinalBuildStage stringPreparation(@NotNull StringPreparation stringPreparation);
+
+    /**
+     * Sets the authzid.
+     *
+     * @param authzid the optional authorization id
+     * @return {@code this} builder for use in a chained invocation
+     */
+    FinalBuildStage authzid(@NotNull String authzid);
+
+    /**
+     * Sets a non-default length for the nonce generation.
+     *
+     * <p>The default value is 24. This call overwrites the length used for the client nonce.
+     *
+     * @param length The length of the nonce. Must be positive and greater than 0
+     * @return {@code this} builder for use in a chained invocation
+     * @throws IllegalArgumentException If length is less than 1
+     */
+    FinalBuildStage nonceLength(int length);
+
+    /**
+     * The client will use a default nonce generator, unless an external one is provided by this
+     * method.
+     *
+     * @apiNote you should rely on the default randomly generated nonce instead of this, this call
+     *          exists mostly for testing with a predefined nonce
+     * @param nonceSupplier A supplier of valid nonce Strings. Please note that according to the <a
+     *          href="https://tools.ietf.org/html/rfc5802#section-7">SCRAM RFC</a> only ASCII
+     *          printable characters (except the comma, ',') are permitted on a nonce. Length is not
+     *          limited.
+     * @return {@code this} builder for use in a chained invocation
+     * @throws IllegalArgumentException If nonceSupplier is null
+     */
+    FinalBuildStage nonceSupplier(@NotNull Supplier<@NotNull String> nonceSupplier);
+
+    /**
+     * Selects a non-default SecureRandom instance, based on the given algorithm and optionally
+     * provider. This SecureRandom instance will be used to generate secure random values, like the
+     * ones required to generate the nonce. Algorithm and provider names are those supported by the
+     * {@link SecureRandom} class.
+     *
+     * @param algorithm The name of the algorithm to use
+     * @param provider The name of the provider of SecureRandom. Might be null
+     * @return {@code this} builder for use in a chained invocation
+     * @throws IllegalArgumentException If algorithm is null, or either the algorithm or provider
+     *           are not supported
+     */
+    FinalBuildStage secureRandomAlgorithmProvider(@NotNull String algorithm,
+        @Nullable String provider);
+
+    /**
+     * Returns the fully contructed ScramClient ready to start the message flow with the server.
+     *
+     * @return ScramClient specific for the set of parameters
+     * @throws IllegalArgumentException if any parameter set is invalid
+     */
+    ScramClient build();
+  }
+
+  /**
+   * Builds instances of type {@link ScramClient ScramClient}. Initialize attributes and then invoke
+   * the {@link #build()} method to create an instance.
+   *
+   * @apiNote {@code Builder} is not thread-safe and generally should not be stored in a field or
+   *          collection, but instead used immediately to create instances.
+   */
+  static class Builder
+      implements MechanismsBuildStage, UsernameBuildStage, PasswordBuildStage, FinalBuildStage {
+
+    private ScramMechanism selectedScramMechanism;
+    private Collection<String> scramMechanisms;
+    private Gs2CbindFlag channelBinding = Gs2CbindFlag.CLIENT_NOT;
+    private StringPreparation stringPreparation = StringPreparation.SASL_PREPARATION;
+    private int nonceLength = 24;
+    private String nonce;
+    private SecureRandom secureRandom;
+    private String username;
+    private char[] password;
+    private byte[] saltedPassword;
+    private byte[] clientKey;
+    private byte[] serverKey;
+    private String cbindType;
+    private byte[] cbindData;
+    private String authzid;
+    private Supplier<String> nonceSupplier;
+
+    private Builder() {
+      // called from ScramClient.builder()
+    }
+
+    @Override
+    public FinalBuildStage stringPreparation(@NotNull StringPreparation stringPreparation) {
+      this.stringPreparation = checkNotNull(stringPreparation, "stringPreparation");
+      return this;
+    }
+
+    @Override
+    public FinalBuildStage channelBinding(@Nullable String cbindType, byte @Nullable [] cbindData) {
+      this.cbindType = cbindType;
+      this.cbindData = cbindData;
+      this.channelBinding = cbindType != null && cbindData != null
+          && !cbindType.isEmpty() && cbindData.length > 0
+              ? Gs2CbindFlag.CLIENT_YES_SERVER_NOT
+              : Gs2CbindFlag.CLIENT_NOT;
+      return this;
+    }
+
+    @Override
+    public FinalBuildStage authzid(@NotNull String authzid) {
+      this.authzid = checkNotEmpty(authzid, "authzid");
+      return this;
+    }
+
+    @Override
+    public PasswordBuildStage username(@NotNull String username) {
+      this.username = checkNotEmpty(username, "username");
+      return this;
+    }
+
+    @Override
+    public FinalBuildStage password(char @NotNull [] password) {
+      this.password = checkNotEmpty(password, "password");
+      return this;
+    }
+
+    @Override
+    public FinalBuildStage saltedPassword(byte @NotNull [] saltedPassword) {
+      this.saltedPassword = checkNotNull(saltedPassword, "saltedPassword");
+      return this;
+    }
+
+    @Override
+    public FinalBuildStage clientAndServerKey(byte @NotNull [] clientKey,
+        byte @NotNull [] serverKey) {
+      this.clientKey = checkNotNull(clientKey, "clientKey");
+      this.serverKey = checkNotNull(serverKey, "serverKey");
+      return this;
+    }
+
+    @Override
+    public UsernameBuildStage advertisedMechanisms(
+        @NotNull Collection<@NotNull String> scramMechanisms) {
+      checkNotNull(scramMechanisms, "scramMechanisms");
+      checkArgument(!scramMechanisms.isEmpty(), "scramMechanisms");
+      this.scramMechanisms = scramMechanisms;
+      return this;
+    }
+
+    @Override
+    public FinalBuildStage nonceLength(int length) {
+      this.nonceLength = gt0(length, "length");
+      return this;
+    }
+
+    @Override
+    public FinalBuildStage nonceSupplier(@NotNull Supplier<@NotNull String> nonceSupplier) {
+      this.nonceSupplier = checkNotNull(nonceSupplier, "nonceSupplier");
+      return this;
+    }
+
+    @Override
+    public FinalBuildStage secureRandomAlgorithmProvider(@NotNull String algorithm,
+        @Nullable String provider) {
+      try {
+        this.secureRandom = null == provider
+            ? SecureRandom.getInstance(algorithm)
+            : SecureRandom.getInstance(algorithm, provider);
+      } catch (NoSuchAlgorithmException | NoSuchProviderException ex) {
+        throw new IllegalArgumentException("Invalid algorithm or provider", ex);
+      }
+      return this;
+    }
+
+    @Override
+    public ScramClient build() {
+      final SecureRandom random = secureRandom != null ? secureRandom : new SecureRandom();
+      this.nonce = nonceSupplier != null
+          ? nonceSupplier.get()
+          : ScramFunctions.nonce(nonceLength, random);
+      this.selectedScramMechanism = mechanismNegotiation();
+      return new ScramClient(this);
+    }
+
+    private ScramMechanism mechanismNegotiation() {
+      final ScramMechanism cbind = selectMechanism(scramMechanisms, true);
+      final ScramMechanism noncbind = selectMechanism(scramMechanisms, false);
+      ScramMechanism mechanismNegotiaion = cbind != null ? cbind : noncbind;
+      if (mechanismNegotiaion == null) {
+        throw new IllegalArgumentException("Either a bare or plus mechanism must be present");
+      }
+
+      if (channelBinding == Gs2CbindFlag.CLIENT_YES_SERVER_NOT
+          && mechanismNegotiaion.isPlus()) {
+        // Client and server supports channel binding
+        this.channelBinding = Gs2CbindFlag.CHANNEL_BINDING_REQUIRED;
+      } else {
+        // Client or server does not support channel binding
+        if (noncbind == null) {
+          throw new IllegalArgumentException("A non-PLUS mechanism was not advertised");
+        }
+        this.cbindType = null;
+        this.cbindData = null;
+        mechanismNegotiaion = noncbind;
+      }
+      if (channelBinding == Gs2CbindFlag.CHANNEL_BINDING_REQUIRED
+          && (cbindType == null || cbindData == null)) {
+        throw new IllegalArgumentException("Channel Binding type and data are required");
+      }
+
+      return mechanismNegotiaion;
+    }
+
+    /**
+     * This method classifies SCRAM mechanisms by two properties: whether they support channel
+     * binding; and a priority, which is higher for safer algorithms (like SHA-256 vs SHA-1).
+     *
+     * @param channelBinding True to select {@code -PLUS} mechanisms.
+     * @param scramMechanisms The mechanisms supported by the other peer
+     * @return The selected mechanism, or null if no mechanism matched
+     */
+    private static @Nullable ScramMechanism selectMechanism(
+        @NotNull Collection<@NotNull String> scramMechanisms,
+        boolean channelBinding) {
+      ScramMechanism selectedMechanism = null;
+      for (String mechanism : scramMechanisms) {
+        ScramMechanism candidateMechanism = ScramMechanism.byName(mechanism);
+        if (candidateMechanism != null && candidateMechanism.isPlus() == channelBinding
+            && (selectedMechanism == null
+                || candidateMechanism.ordinal() > selectedMechanism.ordinal())) {
+          selectedMechanism = candidateMechanism;
+        }
+      }
+      return selectedMechanism;
+    }
+
+  }
+
 }

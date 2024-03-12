@@ -7,9 +7,14 @@ package com.ongres.scram.common;
 
 import static com.ongres.scram.common.util.Preconditions.checkNotEmpty;
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+
+import com.ongres.saslprep.SASLprep;
+import com.ongres.stringprep.Profile;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Class with static methods that provide support for converting to/from salNames.
@@ -17,7 +22,9 @@ import java.util.Base64;
  * @see <a href="https://tools.ietf.org/html/rfc5802#section-7">[RFC5802] Section 7: Formal
  *      Syntax</a>
  */
-public final class ScramStringFormatting {
+final class ScramStringFormatting {
+
+  static final Profile SASL_PREP = new SASLprep();
 
   private ScramStringFormatting() {
     throw new IllegalStateException("Utility class");
@@ -30,15 +37,16 @@ public final class ScramStringFormatting {
    * @param value The value to convert so saslName
    * @return The saslName, with caracter escaped (if any)
    */
-  public static String toSaslName(String value) {
-    if (null == value || value.isEmpty()) {
+  @NotNull
+  static String toSaslName(@NotNull final String value) {
+    if (value.isEmpty()) {
       return value;
     }
 
+    final char[] originalChars = SASL_PREP.prepareQuery(value.toCharArray());
+
     int comma = 0;
     int equal = 0;
-    char[] originalChars = value.toCharArray();
-
     // Fast path
     for (char c : originalChars) {
       if (',' == c) {
@@ -48,7 +56,7 @@ public final class ScramStringFormatting {
       }
     }
     if (comma == 0 && equal == 0) {
-      return value;
+      return new String(originalChars);
     }
 
     // Replace chars
@@ -77,9 +85,10 @@ public final class ScramStringFormatting {
    * @param value The saslName
    * @return The saslName, unescaped
    * @throws IllegalArgumentException If a ',' character is present, or a '=' not followed by either
-   *         '2C' or '3D'
+   *           '2C' or '3D'
    */
-  public static String fromSaslName(String value) throws IllegalArgumentException {
+  @Nullable
+  static String fromSaslName(@Nullable String value) {
     if (null == value || value.isEmpty()) {
       return value;
     }
@@ -128,15 +137,13 @@ public final class ScramStringFormatting {
     return new String(replaced);
   }
 
-  public static String base64Encode(byte[] value) throws IllegalArgumentException {
-    return Base64.getEncoder().encodeToString(checkNotNull(value, "value"));
+  static @NotNull String base64Encode(byte @NotNull [] value) {
+    checkNotNull(value, "value");
+    return new String(Base64.getEncoder().encode(value), UTF_8);
   }
 
-  public static String base64Encode(String value) throws IllegalArgumentException {
-    return base64Encode(checkNotEmpty(value, "value").getBytes(StandardCharsets.UTF_8));
-  }
-
-  public static byte[] base64Decode(String value) throws IllegalArgumentException {
-    return Base64.getDecoder().decode(checkNotEmpty(value, "value"));
+  static byte @NotNull [] base64Decode(@NotNull String value) {
+    checkNotEmpty(value, "value");
+    return Base64.getDecoder().decode(value.getBytes(UTF_8));
   }
 }

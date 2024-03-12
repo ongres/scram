@@ -7,11 +7,7 @@ package com.ongres.scram.common;
 
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.ongres.scram.common.exception.ScramParseException;
-import com.ongres.scram.common.util.CharAttribute;
 
 /**
  * SCRAM Attributes as defined in <a href="https://tools.ietf.org/html/rfc5802#section-5.1">Section
@@ -19,7 +15,8 @@ import com.ongres.scram.common.util.CharAttribute;
  *
  * <p>Not all the available attributes may be available in this implementation.
  */
-public enum ScramAttributes implements CharAttribute {
+enum ScramAttributes implements CharSupplier {
+
   /**
    * This attribute specifies the name of the user whose password is used for authentication (a.k.a.
    * "authentication identity" [<a href="https://tools.ietf.org/html/rfc4422">RFC4422</a>]). If the
@@ -99,14 +96,6 @@ public enum ScramAttributes implements CharAttribute {
    */
   ERROR('e');
 
-  private static final Map<Character, ScramAttributes> REVERSE_MAPPING = new HashMap<>();
-
-  static {
-    for (ScramAttributes scramAttribute : values()) {
-      REVERSE_MAPPING.put(scramAttribute.getChar(), scramAttribute);
-    }
-  }
-
   private final char attributeChar;
 
   ScramAttributes(char attributeChar) {
@@ -126,10 +115,27 @@ public enum ScramAttributes implements CharAttribute {
    * @throws ScramParseException If no SCRAMAttribute has this character.
    */
   public static ScramAttributes byChar(char c) throws ScramParseException {
-    if (!REVERSE_MAPPING.containsKey(c)) {
-      throw new ScramParseException("Attribute with char '" + c + "' does not exist");
+    switch (c) {
+      case 'n':
+        return USERNAME;
+      case 'a':
+        return AUTHZID;
+      case 'r':
+        return NONCE;
+      case 'c':
+        return CHANNEL_BINDING;
+      case 's':
+        return SALT;
+      case 'i':
+        return ITERATION;
+      case 'p':
+        return CLIENT_PROOF;
+      case 'v':
+        return SERVER_SIGNATURE;
+      case 'e':
+        return ERROR;
+      default:
+        throw new ScramParseException("Attribute with char '" + c + "' does not exist");
     }
-
-    return REVERSE_MAPPING.get(c);
   }
 }

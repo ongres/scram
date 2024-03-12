@@ -1,0 +1,40 @@
+table {
+  border-collapse: collapse;
+  font-size: 100%;
+  margin: 1em 1em;
+}
+
+caption {
+  font-weight: bold;
+  text-align: left;
+  font-style: italic;
+  padding-bottom: 0.5em;
+}
+
+td {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: small;
+  border: 1px solid #EEEEEE;
+  padding: 0.5em 1em;
+  vertical-align: top;
+}
+
+blockquote {
+  margin-left: 10px;
+  padding: 10px 20px;
+  background-color: #f5f5f5;
+  border-left: 5px solid #ddd;
+  font-style: italic;
+  font-size: 1.1em;
+}
+
+blockquote::before {
+  content: open-quote;
+  color: #ccc;
+  margin-left: -0.5em;
+}
+
+blockquote::after {
+  content: close-quote;
+  color: #ccc;
+}

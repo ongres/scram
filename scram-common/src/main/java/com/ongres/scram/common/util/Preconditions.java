@@ -5,8 +5,14 @@
 
 package com.ongres.scram.common.util;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 /**
- * Simple methods similar to Precondition class. Avoid importing full library.
+ * Generic utility methods used to validate data.
+ *
+ * @apiNote This is not part of the public API of the SCRAM library, it's provided as a helper
+ *          utility and could be renamed or removed at any time.
  */
 public final class Preconditions {
 
@@ -21,14 +27,19 @@ public final class Preconditions {
    * @param valueName The name of the value that is checked in the method
    * @param <T> The type of the value
    * @return The same value passed as argument
-   * @throws IllegalArgumentException If value is null
+   * @throws IllegalArgumentException If value is null.
    */
-  public static <T> T checkNotNull(T value, String valueName) throws IllegalArgumentException {
+  public static <T> @NotNull T checkNotNull(@Nullable T value, @NotNull String valueName) {
     if (null == value) {
       throw new IllegalArgumentException("Null value for '" + valueName + "'");
     }
-
     return value;
+  }
+
+  @SuppressWarnings("null")
+  public static <T> @NotNull T castNonNull(@Nullable T ref) {
+    assert ref != null : "Misuse of castNonNull: called with a null argument";
+    return (@NotNull T) ref;
   }
 
   /**
@@ -39,12 +50,10 @@ public final class Preconditions {
    * @return The same String passed as argument
    * @throws IllegalArgumentException If value is null or empty
    */
-  public static String checkNotEmpty(String value, String valueName)
-      throws IllegalArgumentException {
+  public static @NotNull String checkNotEmpty(@NotNull String value, @NotNull String valueName) {
     if (checkNotNull(value, valueName).isEmpty()) {
-      throw new IllegalArgumentException("Empty string '" + valueName + "'");
+      throw new IllegalArgumentException("The value for '" + valueName + "' must not be empty");
     }
-
     return value;
   }
 
@@ -56,12 +65,10 @@ public final class Preconditions {
    * @return The same String passed as argument
    * @throws IllegalArgumentException If value is null or empty
    */
-  public static char[] checkNotEmpty(char[] value, String valueName)
-      throws IllegalArgumentException {
+  public static char @NotNull [] checkNotEmpty(char @NotNull [] value, @NotNull String valueName) {
     if (checkNotNull(value, valueName).length == 0) {
-      throw new IllegalArgumentException("Empty string '" + valueName + "'");
+      throw new IllegalArgumentException("The value for '" + valueName + "' must not be empty");
     }
-
     return value;
   }
 
@@ -72,10 +79,24 @@ public final class Preconditions {
    * @param valueName The name of the value that is checked in the method
    * @throws IllegalArgumentException if check is not valid
    */
-  public static void checkArgument(boolean check, String valueName)
-      throws IllegalArgumentException {
+  public static void checkArgument(boolean check, @NotNull String valueName) {
     if (!check) {
       throw new IllegalArgumentException("Argument '" + valueName + "' is not valid");
+    }
+  }
+
+  /**
+   * Checks that the argument is valid, based in a check boolean condition.
+   *
+   * @param check The boolean check
+   * @param valueName The name of the value that is checked in the method
+   * @param errMsg Detail of the error message
+   * @throws IllegalArgumentException if check is not valid
+   */
+  public static void checkArgument(boolean check, @NotNull String valueName,
+      @NotNull String errMsg) {
+    if (!check) {
+      throw new IllegalArgumentException("Argument '" + valueName + "' is not valid, " + errMsg);
     }
   }
 
@@ -85,13 +106,23 @@ public final class Preconditions {
    * @param value The value to be checked
    * @param valueName The name of the value that is checked in the method
    * @return The same value passed as argument
-   * @throws IllegalArgumentException If value is null
+   * @throws IllegalArgumentException If value is equal or less than 0
    */
-  public static int gt0(int value, String valueName) throws IllegalArgumentException {
+  public static int gt0(int value, @NotNull String valueName) {
     if (value <= 0) {
-      throw new IllegalArgumentException("'" + valueName + "' must be positive");
+      throw new IllegalArgumentException("'" + valueName + "' must be positive, was: " + value);
     }
-
     return value;
   }
+
+  /**
+   * Returns {@code true} if the given string is null or is the empty string.
+   *
+   * @param string a String reference to check
+   * @return {@code true} if the string is null or the string is empty
+   */
+  public static boolean isNullOrEmpty(@Nullable String string) {
+    return string == null || string.isEmpty();
+  }
+
 }

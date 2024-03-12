@@ -5,12 +5,10 @@
 
 package com.ongres.scram.common.exception;
 
-import java.io.IOException;
-
 /**
- * This class represents an error when using SCRAM, which is a SASL method.
+ * This class represents an generic error when using SCRAM, which is a SASL method.
  */
-public class ScramException extends IOException {
+public class ScramException extends Exception {
 
   private static final long serialVersionUID = 1L;
 

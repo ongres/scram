@@ -15,7 +15,7 @@ public class RfcExampleSha1 {
   public static final String CLIENT_FIRST_MESSAGE_WITHOUT_GS2_HEADER =
       "n=" + USER + ",r=" + CLIENT_NONCE;
   public static final String CLIENT_FIRST_MESSAGE =
-      "n," + "," + CLIENT_FIRST_MESSAGE_WITHOUT_GS2_HEADER;
+      "n,," + CLIENT_FIRST_MESSAGE_WITHOUT_GS2_HEADER;
   public static final String SERVER_SALT = "QSXCR+Q6sek8bf92";
   public static final int SERVER_ITERATIONS = 4096;
   public static final String SERVER_NONCE = "3rfcNHYJY1ZVvWVs7j";

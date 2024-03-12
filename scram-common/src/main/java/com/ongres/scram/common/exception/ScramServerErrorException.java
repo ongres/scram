@@ -5,44 +5,50 @@
 
 package com.ongres.scram.common.exception;
 
-import com.ongres.scram.common.message.ServerFinalMessage;
-
 /**
- * This class represents an error when parsing SCRAM messages.
+ * This class specifies an error that occurred during authentication exchange in a
+ * {@code server-final-message}.
+ *
+ * <p>It is sent by the server in its {@code server-final-message} and can help diagnose the reason
+ * for the authentication exchange failure.
  */
 public class ScramServerErrorException extends ScramException {
 
   private static final long serialVersionUID = 1L;
 
-  private final ServerFinalMessage.Error error;
+  /**
+   * {@code server-error-value}.
+   */
+  private final String serverError;
 
   /**
    * Constructs a new instance of ScramServerErrorException with a detailed message.
    *
-   * @param error The SCRAM error in the message
+   * @param serverError The SCRAM error in the message
    */
-  public ScramServerErrorException(ServerFinalMessage.Error error) {
-    super(toString(error));
-    this.error = error;
+  public ScramServerErrorException(String serverError) {
+    super(ServerErrorValue.getErrorMessage(serverError));
+    this.serverError = serverError;
   }
 
   /**
    * Constructs a new instance of ScramServerErrorException with a detailed message and a root
    * cause.
    *
-   * @param error The SCRAM error in the message
+   * @param serverError The SCRAM error in the message
    * @param ex The root exception
    */
-  public ScramServerErrorException(ServerFinalMessage.Error error, Throwable ex) {
-    super(toString(error), ex);
-    this.error = error;
+  public ScramServerErrorException(String serverError, Throwable ex) {
+    super(ServerErrorValue.getErrorMessage(serverError), ex);
+    this.serverError = serverError;
   }
 
-  private static String toString(ServerFinalMessage.Error error) {
-    return "Server-final-message is an error message. Error: " + error.getErrorMessage();
-  }
-
-  public ServerFinalMessage.Error getError() {
-    return error;
+  /**
+   * Return the "e=" server-error-value from the server-final-message.
+   *
+   * @return the error type returned in the server-final-message
+   */
+  public String getServerError() {
+    return serverError;
   }
 }

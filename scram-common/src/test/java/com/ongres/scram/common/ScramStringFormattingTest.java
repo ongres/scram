@@ -63,4 +63,5 @@ class ScramStringFormattingTest {
 
     assertTrue(n == INVALID_SASL_NAMES.length, "Not all values produced IllegalArgumentException");
   }
+
 }

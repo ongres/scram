@@ -61,7 +61,7 @@ and check the Javadoc: [![Javadocs](http://javadoc.io/badge/com.ongres.scram/com
 
 ## Contributing
 
-Please submit [Merge Requests](https://gitlab.com/ongresinc/scram) for code contributions.
-Make sure to compile with `mvn verify -Psafer` before submitting a MR.
+Please submit [Pull Requests](https://github.com/ongres/scram) for code contributions.
+Make sure to compile with `./mvnw verify -Pchecks,run-its` before submitting a PR.
 
 By making a contribution to this project, you certify that you adhere to requirements of the [DCO](https://developercertificate.org/) by signing-off your commits (`git commit -s`).:

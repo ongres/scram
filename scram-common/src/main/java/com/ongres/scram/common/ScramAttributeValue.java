@@ -5,21 +5,24 @@
 
 package com.ongres.scram.common;
 
+import static com.ongres.scram.common.util.Preconditions.castNonNull;
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 
 import com.ongres.scram.common.exception.ScramParseException;
-import com.ongres.scram.common.util.AbstractCharAttributeValue;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Parse and write SCRAM Attribute-Value pairs.
  */
-public class ScramAttributeValue extends AbstractCharAttributeValue {
-  public ScramAttributeValue(ScramAttributes attribute, String value) {
+class ScramAttributeValue extends AbstractCharAttributeValue<ScramAttributes> {
+
+  public ScramAttributeValue(@NotNull ScramAttributes attribute, @NotNull String value) {
     super(attribute, checkNotNull(value, "value"));
   }
 
-  public static StringBuffer writeTo(StringBuffer sb, ScramAttributes attribute, String value) {
-    return new ScramAttributeValue(attribute, value).writeTo(sb);
+  @Override
+  public final @NotNull String getValue() {
+    return castNonNull(super.getValue());
   }
 
   /**
@@ -29,12 +32,10 @@ public class ScramAttributeValue extends AbstractCharAttributeValue {
    * @return The parsed class
    * @throws ScramParseException If the argument is empty or an invalid Attribute-Value
    */
-  public static ScramAttributeValue parse(String value)
-      throws ScramParseException {
-    if (null == value || value.length() < 3 || value.charAt(1) != '=') {
+  public static @NotNull ScramAttributeValue parse(@NotNull String value) throws ScramParseException {
+    if (value == null || value.length() < 3 || value.charAt(1) != '=') {
       throw new ScramParseException("Invalid ScramAttributeValue '" + value + "'");
     }
-
     return new ScramAttributeValue(ScramAttributes.byChar(value.charAt(0)), value.substring(2));
   }
 }

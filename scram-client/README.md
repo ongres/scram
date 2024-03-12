@@ -1,9 +1,6 @@
 # SCRAM Client API
 
-[![Javadocs](http://javadoc.io/badge/com.ongres.scram/client.svg?label=client)](http://javadoc.io/doc/com.ongres.scram/client)
-
-For general description, please refer to [the main README.md](https://gitlab.com/ongresinc/scram).
-
+[![Javadocs](http://javadoc.io/badge/com.ongres.scram/scram-client.svg?label=scram-client)](http://javadoc.io/doc/com.ongres.scram/scram-client)
 
 ## How to use the client API
 
@@ -11,8 +8,8 @@ For general description, please refer to [the main README.md](https://gitlab.com
 ```xml
 <dependency>
     <groupId>com.ongres.scram</groupId>
-    <artifactId>client</artifactId>
-    <version>VERSION</version>
+    <artifactId>scram-client</artifactId>
+    <version>3.0</version>
 </dependency>
 ```
 

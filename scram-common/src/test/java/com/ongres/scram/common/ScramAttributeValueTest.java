@@ -17,22 +17,20 @@ import static com.ongres.scram.common.ScramAttributes.CLIENT_PROOF;
 import static com.ongres.scram.common.ScramAttributes.USERNAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.ongres.scram.common.exception.ScramParseException;
-import com.ongres.scram.common.message.ServerFinalMessage;
 import org.junit.jupiter.api.Test;
 
 class ScramAttributeValueTest {
+
+  private static final Object NULL = null; // Skip validation for null analisys
+
   @Test
   void constructorDoesNotAllowNullValue() {
-    try {
-      assertNotNull(new ScramAttributeValue(USERNAME, null));
-    } catch (IllegalArgumentException e) {
-      return;
-    }
-
-    fail("A null value must throw an IllegalArgumentException");
+    assertThrows(IllegalArgumentException.class,
+        () -> new ScramAttributeValue(USERNAME, (String) NULL),
+        "A null value must throw an IllegalArgumentException");
   }
 
   @Test
@@ -59,16 +57,9 @@ class ScramAttributeValueTest {
     // test will fail and will need to be fixed
     String[] values = new String[] {"z=asdfasdf", "!=value"};
 
-    int n = 0;
     for (String value : values) {
-      try {
-        assertNotNull(ScramAttributeValue.parse(value));
-      } catch (ScramParseException e) {
-        n++;
-      }
+      assertThrows(ScramParseException.class, () -> ScramAttributeValue.parse(value));
     }
-
-    assertEquals(values.length, n, "Not every illegal value thrown ScramParseException");
   }
 
   @Test
@@ -89,9 +80,6 @@ class ScramAttributeValueTest {
       assertNotNull(ScramAttributeValue.parse(value));
     }
 
-    // Test all possible error messages
-    for (ServerFinalMessage.Error e : ServerFinalMessage.Error.values()) {
-      assertNotNull(ScramAttributeValue.parse("e=" + e.getErrorMessage()));
-    }
+    assertNotNull(ScramAttributeValue.parse("e=unsupported-channel-binding-type"));
   }
 }
