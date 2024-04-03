@@ -233,10 +233,10 @@ public final class ScramClient implements MessageFlow {
     /**
      * List of the advertised mechanisms that will be negotiated between the server and the client.
      *
-     * @param allowedMechanisms list with the IANA-registered mechanism name of this SASL client
+     * @param scramMechanisms list with the IANA-registered mechanism name of this SASL client
      * @return {@code this} builder for use in a chained invocation
      */
-    UsernameBuildStage advertisedMechanisms(@NotNull Collection<@NotNull String> allowedMechanisms);
+    UsernameBuildStage advertisedMechanisms(@NotNull Collection<@NotNull String> scramMechanisms);
   }
 
   /**
