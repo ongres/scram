@@ -4,7 +4,7 @@
 
   <groupId>com.ongres.scram</groupId>
   <artifactId>scram-parent</artifactId>
-  <version>3.0</version>
+  <version>3.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>SCRAM - Parent</name>
@@ -415,7 +415,7 @@
             <includeRuntimeScope>false</includeRuntimeScope>
             <includeSystemScope>false</includeSystemScope>
             <includeTestScope>false</includeTestScope>
-        </configuration>
+          </configuration>
           <executions>
             <execution>
               <goals>
