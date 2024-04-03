@@ -4,7 +4,7 @@
 
   <groupId>com.ongres.scram</groupId>
   <artifactId>scram-parent</artifactId>
-  <version>3.0-SNAPSHOT</version>
+  <version>3.0</version>
   <packaging>pom</packaging>
 
   <name>SCRAM - Parent</name>
@@ -71,7 +71,7 @@
     <base.java.version>8</base.java.version>
     <maven.compiler.source>${base.java.version}</maven.compiler.source>
     <maven.compiler.target>${base.java.version}</maven.compiler.target>
-    <project.build.outputTimestamp>2024-04-01T00:01:00Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2024-04-03T17:00:00Z</project.build.outputTimestamp>
     <!-- Dependency versions -->
     <junit5.version>5.10.2</junit5.version>
     <!-- Plugins versions -->
@@ -409,6 +409,13 @@
           <groupId>org.cyclonedx</groupId>
           <artifactId>cyclonedx-maven-plugin</artifactId>
           <version>${cyclonedx-plugin.version}</version>
+          <configuration>
+            <includeCompileScope>true</includeCompileScope>
+            <includeProvidedScope>false</includeProvidedScope>
+            <includeRuntimeScope>false</includeRuntimeScope>
+            <includeSystemScope>false</includeSystemScope>
+            <includeTestScope>false</includeTestScope>
+        </configuration>
           <executions>
             <execution>
               <goals>
