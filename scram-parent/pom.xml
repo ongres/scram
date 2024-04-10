@@ -154,6 +154,15 @@
                 <multiReleaseOutput>true</multiReleaseOutput>
               </configuration>
             </execution>
+            <execution>
+              <id>default-testCompile</id>
+              <goals>
+                <goal>testCompile</goal>
+              </goals>
+              <configuration>
+                <release>11</release>
+              </configuration>
+            </execution>
           </executions>
         </plugin>
         <plugin>
@@ -298,6 +307,9 @@
               <include>**/*Test.java</include>
               <include>**/*IT.java</include>
             </includes>
+            <systemPropertyVariables>
+              <buildJar>${project.build.directory}/${project.build.finalName}.jar</buildJar>
+            </systemPropertyVariables>
           </configuration>
           <executions>
             <execution>

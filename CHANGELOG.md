@@ -2,6 +2,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### :building_construction: Improvements
+- Ensure the LICENSE file is included in the Jar file.
 
 ## 3.0 - 2024-04-03
 ### :boom: Breaking changes
@@ -24,6 +26,7 @@ All notable changes to this project will be documented in this file.
 
 ### :ghost: Maintenance
 - Migrate the main repo back to GitHub.
+- Remove the shaded Bouncy Castle pbkdf2 and base64 implementation used for Java 7 support.
 
 # 2.1
 
