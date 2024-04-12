@@ -1,10 +1,11 @@
 /*
- * Copyright (C) 2017 OnGres, Inc.
+ * Copyright (c) 2024 OnGres, Inc.
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 package com.ongres.scram;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -47,7 +48,7 @@ class JarFileCheckIT {
     JarEntry jarLicense = jarFile.getJarEntry("META-INF/LICENSE");
     assertNotNull(jarLicense, "LICENSE file should be present in the final JAR file");
     try (InputStream is = jarFile.getInputStream(jarLicense);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is, UTF_8))) {
       String line = reader.readLine();
       assertEquals("Copyright (c) 2017 OnGres, Inc.", line);
     }
