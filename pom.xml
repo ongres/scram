@@ -52,4 +52,13 @@
     <module>scram-client</module>
   </modules>
 
+  <profiles>
+    <profile>
+      <id>coverage</id>
+      <modules>
+        <module>coverage-report</module>
+      </modules>
+    </profile>
+  </profiles>
+
 </project>

@@ -76,7 +76,7 @@
     <junit5.version>5.10.2</junit5.version>
     <!-- Plugins versions -->
     <compiler-plugin.version>3.13.0</compiler-plugin.version>
-    <jar-plugin.version>3.3.0</jar-plugin.version>
+    <jar-plugin.version>3.4.0</jar-plugin.version>
     <source-plugin.version>3.3.0</source-plugin.version>
     <javadoc-plugin.version>3.6.3</javadoc-plugin.version>
     <clean-plugin.version>3.3.2</clean-plugin.version>
@@ -175,9 +175,6 @@
               <manifest>
                 <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
               </manifest>
-              <manifestEntries>
-                <Multi-Release>true</Multi-Release>
-              </manifestEntries>
             </archive>
           </configuration>
         </plugin>
