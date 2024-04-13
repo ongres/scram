@@ -77,7 +77,7 @@
     <!-- Plugins versions -->
     <compiler-plugin.version>3.13.0</compiler-plugin.version>
     <jar-plugin.version>3.4.0</jar-plugin.version>
-    <source-plugin.version>3.3.0</source-plugin.version>
+    <source-plugin.version>3.3.1</source-plugin.version>
     <javadoc-plugin.version>3.6.3</javadoc-plugin.version>
     <clean-plugin.version>3.3.2</clean-plugin.version>
     <resources-plugin.version>3.3.1</resources-plugin.version>
@@ -86,7 +86,7 @@
     <install-plugin.version>3.1.1</install-plugin.version>
     <deploy-plugin.version>3.1.1</deploy-plugin.version>
     <invoker-plugin.version>3.6.1</invoker-plugin.version>
-    <gpg-plugin.version>3.2.2</gpg-plugin.version>
+    <gpg-plugin.version>3.2.3</gpg-plugin.version>
     <jacoco-plugin.verson>0.8.12</jacoco-plugin.verson>
     <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
     <flatten-maven-plugin.version>1.6.0</flatten-maven-plugin.version>
@@ -96,8 +96,8 @@
     <!-- Checkstyle, SpotBugs and PMD properties -->
     <checkstyle.version>10.15.0</checkstyle.version>
     <checkstyle-plugin.version>3.3.1</checkstyle-plugin.version>
-    <spotbugs.version>4.8.3</spotbugs.version>
-    <spotbugs-plugin.version>4.8.3.1</spotbugs-plugin.version>
+    <spotbugs.version>4.8.4</spotbugs.version>
+    <spotbugs-plugin.version>4.8.4.0</spotbugs-plugin.version>
     <findsecbugs.version>1.11.0</findsecbugs.version>
     <pmd.version>6.55.0</pmd.version>
     <pmd-plugin.version>3.21.2</pmd-plugin.version>
