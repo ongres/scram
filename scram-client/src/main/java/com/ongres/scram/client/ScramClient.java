@@ -178,7 +178,7 @@ public final class ScramClient implements MessageFlow {
    */
   @Override
   public ClientFinalMessage clientFinalMessage() {
-    if (currentState != Stage.SERVER_FIRST) {
+    if (currentState != Stage.SERVER_FIRST || serverFirstProcessor == null) {
       throw new IllegalStateException("Invalid state for processing client final message");
     }
     if (password != null) {
@@ -207,7 +207,7 @@ public final class ScramClient implements MessageFlow {
   @Override
   public ServerFinalMessage serverFinalMessage(String serverFinalMessage)
       throws ScramParseException, ScramServerErrorException, ScramInvalidServerSignatureException {
-    if (currentState != Stage.CLIENT_FINAL) {
+    if (currentState != Stage.CLIENT_FINAL || clientFinalProcessor == null) {
       throw new IllegalStateException("Invalid state for processing server final message");
     }
     ServerFinalMessage receiveServerFinalMessage =
@@ -375,7 +375,7 @@ public final class ScramClient implements MessageFlow {
    * @apiNote {@code Builder} is not thread-safe and generally should not be stored in a field or
    *          collection, but instead used immediately to create instances.
    */
-  static class Builder
+  static final class Builder
       implements MechanismsBuildStage, UsernameBuildStage, PasswordBuildStage, FinalBuildStage {
 
     private ScramMechanism selectedScramMechanism;
