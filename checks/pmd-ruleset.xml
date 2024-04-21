@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<ruleset name="Custom Rules" xmlns="http://pmd.sourceforge.net/ruleset/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+<ruleset name="Custom Rules" xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
 
   <description>Custom Rules</description>
 
@@ -12,20 +14,10 @@
   <rule ref="category/java/codestyle.xml/TooManyStaticImports" />
 
   <rule ref="category/java/design.xml">
-    <exclude name="CognitiveComplexity" />
-    <exclude name="CyclomaticComplexity" />
-    <exclude name="LawOfDemeter" />
     <exclude name="LoosePackageCoupling" />
-    <exclude name="NPathComplexity" />
-    <exclude name="GodClass" />
-    <exclude name="TooManyFields" />
   </rule>
 
   <rule ref="category/java/errorprone.xml">
-    <exclude name="AvoidLiteralsInIfCondition" />
-    <exclude name="DataflowAnomalyAnalysis" />
-    <exclude name="CloseResource" />
-    <exclude name="AvoidFieldNameMatchingMethodName" />
   </rule>
 
   <rule ref="category/java/errorprone.xml/EmptyCatchBlock">
@@ -35,6 +27,10 @@
     </properties>
   </rule>
 
-  <rule ref="category/java/performance.xml" />
+  <rule ref="category/java/multithreading.xml" />
+
+  <rule ref="category/java/performance.xml">
+    <exclude name="StringInstantiation" />
+  </rule>
 
 </ruleset>
