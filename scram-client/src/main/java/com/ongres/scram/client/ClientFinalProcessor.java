@@ -74,10 +74,9 @@ final class ClientFinalProcessor {
         clientFirstMessage, serverFirstMessage);
   }
 
-  private synchronized void generateAndCacheAuthMessage(byte[] cbindData) {
+  private void generateAndCacheAuthMessage(byte[] cbindData) {
     if (null == this.authMessage) {
-      this.authMessage =
-          ScramFunctions.authMessage(clientFirstMessage, serverFirstMessage, cbindData);
+      this.authMessage = ScramFunctions.authMessage(clientFirstMessage, serverFirstMessage, cbindData);
     }
   }
 
@@ -90,9 +89,7 @@ final class ClientFinalProcessor {
    */
   @NotNull
   ClientFinalMessage clientFinalMessage(byte @Nullable [] cbindData) {
-    if (null == authMessage) {
-      generateAndCacheAuthMessage(cbindData);
-    }
+    generateAndCacheAuthMessage(cbindData);
 
     return new ClientFinalMessage(
         clientFirstMessage.getGs2Header(),

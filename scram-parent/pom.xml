@@ -100,7 +100,7 @@
     <spotbugs.version>4.8.4</spotbugs.version>
     <spotbugs-plugin.version>4.8.4.0</spotbugs-plugin.version>
     <findsecbugs.version>1.11.0</findsecbugs.version>
-    <pmd.version>7.0.0</pmd.version>
+    <pmd.version>7.1.0</pmd.version>
     <pmd-plugin.version>3.22.0</pmd-plugin.version>
     <forbiddenapis.version>3.7</forbiddenapis.version>
     <checks.location>${maven.multiModuleProjectDirectory}/checks</checks.location>
@@ -617,7 +617,7 @@
             <artifactId>maven-pmd-plugin</artifactId>
             <version>${pmd-plugin.version}</version>
             <configuration>
-              <failurePriority>2</failurePriority>
+              <failurePriority>5</failurePriority>
               <failOnViolation>true</failOnViolation>
               <printFailingErrors>true</printFailingErrors>
               <linkXRef>false</linkXRef>

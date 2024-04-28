@@ -8,23 +8,19 @@
   <exclude-pattern>.*/target/.*</exclude-pattern>
   <exclude-pattern>.*/generated/.*</exclude-pattern>
 
-  <!-- Your rules will come here -->
   <rule ref="rulesets/java/quickstart.xml" />
 
-  <rule ref="category/java/codestyle.xml/TooManyStaticImports" />
-
-  <rule ref="category/java/design.xml">
-    <exclude name="LoosePackageCoupling" />
+  <rule ref="category/java/bestpractices.xml">
+    <exclude name="UseVarargs" />
+    <exclude name="ForLoopVariableCount" />
+    <exclude name="AvoidReassigningLoopVariables" />
+    <exclude name="AccessorClassGeneration" />
   </rule>
 
   <rule ref="category/java/errorprone.xml">
-  </rule>
-
-  <rule ref="category/java/errorprone.xml/EmptyCatchBlock">
-    <properties>
-      <property name="allowCommentedBlocks" value="true" />
-      <property name="allowExceptionNameRegex" value="^(ignored|expected)$" />
-    </properties>
+    <exclude name="AvoidLiteralsInIfCondition" />
+    <exclude name="NullAssignment" />
+    <exclude name="AvoidFieldNameMatchingMethodName" />
   </rule>
 
   <rule ref="category/java/multithreading.xml" />
@@ -32,5 +28,7 @@
   <rule ref="category/java/performance.xml">
     <exclude name="StringInstantiation" />
   </rule>
+
+  <rule ref="category/java/security.xml" />
 
 </ruleset>

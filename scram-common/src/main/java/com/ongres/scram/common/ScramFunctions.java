@@ -259,7 +259,7 @@ public final class ScramFunctions {
   public static String authMessage(ClientFirstMessage clientFirstMessage,
       ServerFirstMessage serverFirstMessage, byte[] cbindData) {
     StringBuilder sb = clientFirstMessage.clientFirstMessageBare(new StringBuilder(96))
-        .append(",").append(serverFirstMessage).append(",");
+        .append(',').append(serverFirstMessage).append(',');
     ClientFinalMessage.withoutProof(sb, clientFirstMessage.getGs2Header(),
         cbindData, serverFirstMessage.getNonce());
     return sb.toString();

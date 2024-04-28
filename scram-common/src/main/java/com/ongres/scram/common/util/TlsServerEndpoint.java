@@ -41,24 +41,24 @@ public final class TlsServerEndpoint {
    * @see <a href="https://www.rfc-editor.org/rfc/rfc5929#section-4.1">The tls-server-end-point
    *      Channel Binding Type</a>
    */
-  private static MessageDigest getDigestAlgorithm(String signatureAlgorithm) {
+  private static MessageDigest getDigestAlgorithm(final String signatureAlgorithm) {
     int index = signatureAlgorithm.indexOf("with");
-    signatureAlgorithm = index > 0 ? signatureAlgorithm.substring(0, index) : "SHA-256";
+    String algorithm = index > 0 ? signatureAlgorithm.substring(0, index) : "SHA-256";
     // if the certificate's signatureAlgorithm uses a single hash
     // function and that hash function neither MD5 nor SHA-1, then use
     // the hash function associated with the certificate's signatureAlgorithm.
-    if (!signatureAlgorithm.startsWith("SHA3-")) {
-      signatureAlgorithm = signatureAlgorithm.replace("SHA", "SHA-");
+    if (!algorithm.startsWith("SHA3-")) {
+      algorithm = algorithm.replace("SHA", "SHA-");
     }
     // if the certificate's signatureAlgorithm uses a single hash
     // function, and that hash function is either MD5 [RFC1321] or SHA-1
     // [RFC3174], then use SHA-256 [FIPS-180-3]
-    if ("MD5".equals(signatureAlgorithm) || "SHA-1".equals(signatureAlgorithm)) {
-      signatureAlgorithm = "SHA-256";
+    if ("MD5".equals(algorithm) || "SHA-1".equals(algorithm)) {
+      algorithm = "SHA-256";
     }
 
     try {
-      return MessageDigest.getInstance(signatureAlgorithm);
+      return MessageDigest.getInstance(algorithm);
     } catch (NoSuchAlgorithmException e) {
       return null;
     }

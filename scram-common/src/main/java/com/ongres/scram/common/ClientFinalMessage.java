@@ -104,11 +104,12 @@ public final class ClientFinalMessage extends AbstractScramMessage {
   }
 
   private static void checkChannelBinding(Gs2Header gs2Header, byte[] cbindData) {
-    if (gs2Header.getChannelBindingFlag() == Gs2CbindFlag.CHANNEL_BINDING_REQUIRED
+    final Gs2CbindFlag channelBindingFlag = gs2Header.getChannelBindingFlag();
+    if (channelBindingFlag == Gs2CbindFlag.CHANNEL_BINDING_REQUIRED
         && null == cbindData) {
       throw new IllegalArgumentException("Channel binding data is required");
     }
-    if (gs2Header.getChannelBindingFlag() != Gs2CbindFlag.CHANNEL_BINDING_REQUIRED
+    if (channelBindingFlag != Gs2CbindFlag.CHANNEL_BINDING_REQUIRED
         && null != cbindData) {
       throw new IllegalArgumentException("Channel binding data should not be present");
     }

@@ -378,22 +378,22 @@ public final class ScramClient implements MessageFlow {
   static final class Builder
       implements MechanismsBuildStage, UsernameBuildStage, PasswordBuildStage, FinalBuildStage {
 
-    private ScramMechanism selectedScramMechanism;
-    private Collection<String> scramMechanisms;
-    private Gs2CbindFlag channelBinding = Gs2CbindFlag.CLIENT_NOT;
-    private StringPreparation stringPreparation = StringPreparation.SASL_PREPARATION;
-    private int nonceLength = 24;
-    private String nonce;
-    private SecureRandom secureRandom;
-    private String username;
-    private char[] password;
-    private byte[] saltedPassword;
-    private byte[] clientKey;
-    private byte[] serverKey;
-    private String cbindType;
-    private byte[] cbindData;
-    private String authzid;
-    private Supplier<String> nonceSupplier;
+    ScramMechanism selectedScramMechanism;
+    Collection<String> scramMechanisms;
+    Gs2CbindFlag channelBinding = Gs2CbindFlag.CLIENT_NOT;
+    StringPreparation stringPreparation = StringPreparation.SASL_PREPARATION;
+    int nonceLength = 24;
+    String nonce;
+    SecureRandom secureRandom;
+    String username;
+    char[] password;
+    byte[] saltedPassword;
+    byte[] clientKey;
+    byte[] serverKey;
+    String cbindType;
+    byte[] cbindData;
+    String authzid;
+    Supplier<String> nonceSupplier;
 
     private Builder() {
       // called from ScramClient.builder()
@@ -408,7 +408,7 @@ public final class ScramClient implements MessageFlow {
     @Override
     public FinalBuildStage channelBinding(@Nullable String cbindType, byte @Nullable [] cbindData) {
       this.cbindType = cbindType;
-      this.cbindData = cbindData;
+      this.cbindData = cbindData != null ? cbindData.clone() : null;
       this.channelBinding = cbindType != null && cbindData != null
           && !cbindType.isEmpty() && cbindData.length > 0
               ? Gs2CbindFlag.CLIENT_YES_SERVER_NOT

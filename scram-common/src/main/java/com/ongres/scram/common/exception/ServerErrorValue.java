@@ -5,9 +5,8 @@
 
 package com.ongres.scram.common.exception;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * This attribute specifies an error that occurred during authentication exchange. It is sent by the
@@ -16,14 +15,14 @@ import java.util.Map;
  */
 public final class ServerErrorValue {
 
-  private static final Map<String, String> ERROR_MESSAGE = initServerErrorValue();
+  private static final ConcurrentMap<String, String> ERROR_MESSAGE = initServerErrorValue();
 
   private ServerErrorValue() {
     throw new IllegalStateException();
   }
 
-  private static Map<String, String> initServerErrorValue() {
-    Map<String, String> map = new HashMap<>();
+  private static ConcurrentMap<String, String> initServerErrorValue() {
+    ConcurrentMap<String, String> map = new ConcurrentHashMap<>();
     map.put("invalid-encoding", "The message format or encoding is incorrect");
     map.put("extensions-not-supported", "Requested extensions are not recognized by the server");
     map.put("invalid-proof", "The client-provided proof is invalid");
@@ -39,7 +38,7 @@ public final class ServerErrorValue {
         "The username encoding is invalid (either invalid UTF-8 or SASLprep failure)");
     map.put("no-resources", "The server lacks resources to process the request");
     map.put("other-error", "A generic error occurred that doesn't fit into other categories");
-    return Collections.unmodifiableMap(map);
+    return map;
   }
 
   /**
