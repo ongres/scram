@@ -89,7 +89,6 @@
     <invoker-plugin.version>3.6.1</invoker-plugin.version>
     <gpg-plugin.version>3.2.4</gpg-plugin.version>
     <jacoco-plugin.verson>0.8.12</jacoco-plugin.verson>
-    <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
     <flatten-maven-plugin.version>1.6.0</flatten-maven-plugin.version>
     <jdeps-plugin.version>3.1.2</jdeps-plugin.version>
     <sortpom-plugin.version>3.4.1</sortpom-plugin.version>
@@ -431,26 +430,6 @@
             </execution>
           </executions>
         </plugin>
-        <plugin>
-          <groupId>org.sonatype.plugins</groupId>
-          <artifactId>nexus-staging-maven-plugin</artifactId>
-          <version>${nexus-staging-maven-plugin.version}</version>
-          <extensions>true</extensions>
-          <configuration>
-            <serverId>ossrh</serverId>
-            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-            <autoReleaseAfterClose>false</autoReleaseAfterClose>
-          </configuration>
-          <executions>
-            <execution>
-              <id>default-deploy</id>
-              <goals>
-                <goal>deploy</goal>
-              </goals>
-              <phase>deploy</phase>
-            </execution>
-          </executions>
-        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -687,10 +666,6 @@
           <plugin>
             <groupId>org.cyclonedx</groupId>
             <artifactId>cyclonedx-maven-plugin</artifactId>
-          </plugin>
-          <plugin>
-            <groupId>org.sonatype.plugins</groupId>
-            <artifactId>nexus-staging-maven-plugin</artifactId>
           </plugin>
         </plugins>
       </build>
