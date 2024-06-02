@@ -78,28 +78,28 @@
     <compiler-plugin.version>3.13.0</compiler-plugin.version>
     <jar-plugin.version>3.4.1</jar-plugin.version>
     <source-plugin.version>3.3.1</source-plugin.version>
-    <javadoc-plugin.version>3.6.3</javadoc-plugin.version>
+    <javadoc-plugin.version>3.7.0</javadoc-plugin.version>
     <clean-plugin.version>3.3.2</clean-plugin.version>
     <resources-plugin.version>3.3.1</resources-plugin.version>
     <surefire-plugin.version>3.2.5</surefire-plugin.version>
     <failsafe-plugin.version>3.2.5</failsafe-plugin.version>
-    <enforcer-plugin.version>3.4.1</enforcer-plugin.version>
-    <install-plugin.version>3.1.1</install-plugin.version>
-    <deploy-plugin.version>3.1.1</deploy-plugin.version>
-    <invoker-plugin.version>3.6.1</invoker-plugin.version>
+    <enforcer-plugin.version>3.5.0</enforcer-plugin.version>
+    <install-plugin.version>3.1.2</install-plugin.version>
+    <deploy-plugin.version>3.1.2</deploy-plugin.version>
+    <invoker-plugin.version>3.7.0</invoker-plugin.version>
     <gpg-plugin.version>3.2.4</gpg-plugin.version>
     <jacoco-plugin.verson>0.8.12</jacoco-plugin.verson>
     <flatten-maven-plugin.version>1.6.0</flatten-maven-plugin.version>
     <jdeps-plugin.version>3.1.2</jdeps-plugin.version>
-    <sortpom-plugin.version>3.4.1</sortpom-plugin.version>
+    <sortpom-plugin.version>4.0.0</sortpom-plugin.version>
     <cyclonedx-plugin.version>2.8.0</cyclonedx-plugin.version>
     <!-- Checkstyle, SpotBugs and PMD properties -->
-    <checkstyle.version>10.15.0</checkstyle.version>
+    <checkstyle.version>10.17.0</checkstyle.version>
     <checkstyle-plugin.version>3.3.1</checkstyle-plugin.version>
-    <spotbugs.version>4.8.4</spotbugs.version>
-    <spotbugs-plugin.version>4.8.4.0</spotbugs-plugin.version>
-    <findsecbugs.version>1.11.0</findsecbugs.version>
-    <pmd.version>7.1.0</pmd.version>
+    <spotbugs.version>4.8.5</spotbugs.version>
+    <spotbugs-plugin.version>4.8.5.0</spotbugs-plugin.version>
+    <findsecbugs.version>1.13.0</findsecbugs.version>
+    <pmd.version>7.2.0</pmd.version>
     <pmd-plugin.version>3.22.0</pmd-plugin.version>
     <forbiddenapis.version>3.7</forbiddenapis.version>
     <checks.location>${maven.multiModuleProjectDirectory}/checks</checks.location>
