@@ -84,7 +84,7 @@
     <clean-plugin.version>3.3.2</clean-plugin.version>
     <resources-plugin.version>3.3.1</resources-plugin.version>
     <surefire-plugin.version>3.3.0</surefire-plugin.version>
-    <failsafe-plugin.version>3.2.5</failsafe-plugin.version>
+    <failsafe-plugin.version>3.3.0</failsafe-plugin.version>
     <enforcer-plugin.version>3.5.0</enforcer-plugin.version>
     <install-plugin.version>3.1.2</install-plugin.version>
     <deploy-plugin.version>3.1.2</deploy-plugin.version>
