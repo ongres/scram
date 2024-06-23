@@ -105,7 +105,7 @@
     <pmd.version>7.2.0</pmd.version>
     <pmd-plugin.version>3.23.0</pmd-plugin.version>
     <forbiddenapis.version>3.7</forbiddenapis.version>
-    <checks.location>${maven.multiModuleProjectDirectory}/checks</checks.location>
+    <checks.location>${rootDirectory}/checks</checks.location>
     <checkstyle.config.location>${checks.location}/checkstyle.xml</checkstyle.config.location>
     <checkstyle.suppressions.location>${checks.location}/checkstyle-suppressions.xml</checkstyle.suppressions.location>
     <checkstyle.header.file>${checks.location}/checkstyle-header.txt</checkstyle.header.file>
@@ -228,7 +228,7 @@
             <locale>en_US</locale>
             <nohelp>true</nohelp>
             <quiet>false</quiet>
-            <javadocDirectory>${maven.multiModuleProjectDirectory}/scram-parent/javadoc</javadocDirectory>
+            <javadocDirectory>${rootDirectory}/scram-parent/javadoc</javadocDirectory>
             <includeDependencySources>true</includeDependencySources>
             <dependencySourceIncludes>
               <dependencySourceInclude>${project.groupId}:*</dependencySourceInclude>
@@ -281,7 +281,7 @@
                 <outputDirectory>${project.build.outputDirectory}/META-INF</outputDirectory>
                 <resources>
                   <resource>
-                    <directory>${maven.multiModuleProjectDirectory}</directory>
+                    <directory>${rootDirectory}</directory>
                     <includes>
                       <include>LICENSE</include>
                     </includes>
