@@ -81,7 +81,7 @@
     <jar-plugin.version>3.4.1</jar-plugin.version>
     <source-plugin.version>3.3.1</source-plugin.version>
     <javadoc-plugin.version>3.7.0</javadoc-plugin.version>
-    <clean-plugin.version>3.3.2</clean-plugin.version>
+    <clean-plugin.version>3.4.0</clean-plugin.version>
     <resources-plugin.version>3.3.1</resources-plugin.version>
     <surefire-plugin.version>3.3.0</surefire-plugin.version>
     <failsafe-plugin.version>3.3.0</failsafe-plugin.version>
