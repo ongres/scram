@@ -44,7 +44,7 @@
   <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="false">
     <connection>scm:git:https://github.com/ongres/scram.git</connection>
     <developerConnection>scm:git:git@github.com:ongres/scram.git</developerConnection>
-    <tag>3.1</tag>
+    <tag>HEAD</tag>
     <url>https://github.com/ongres/scram</url>
   </scm>
 
