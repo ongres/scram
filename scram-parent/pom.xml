@@ -4,7 +4,7 @@
 
   <groupId>com.ongres.scram</groupId>
   <artifactId>scram-parent</artifactId>
-  <version>3.1-SNAPSHOT</version>
+  <version>3.1</version>
   <packaging>pom</packaging>
 
   <name>SCRAM - Parent</name>
@@ -44,6 +44,7 @@
   <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="false">
     <connection>scm:git:https://github.com/ongres/scram.git</connection>
     <developerConnection>scm:git:git@github.com:ongres/scram.git</developerConnection>
+    <tag>3.1</tag>
     <url>https://github.com/ongres/scram</url>
   </scm>
 
@@ -54,12 +55,12 @@
 
   <distributionManagement>
     <repository>
-      <id>ossrh-release</id>
+      <id>ossrh</id>
       <name>OSSRH Release repository</name>
       <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
     </repository>
     <snapshotRepository>
-      <id>ossrh-snapshot</id>
+      <id>ossrh</id>
       <name>OSSRH Snapshot repository</name>
       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
     </snapshotRepository>
@@ -71,11 +72,11 @@
     <base.java.version>8</base.java.version>
     <maven.compiler.source>${base.java.version}</maven.compiler.source>
     <maven.compiler.target>${base.java.version}</maven.compiler.target>
-    <project.build.outputTimestamp>2024-04-03T17:00:00Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2024-06-26T00:50:00Z</project.build.outputTimestamp>
     <!-- Dependency versions -->
     <jetbrains-annotations.version>24.1.0</jetbrains-annotations.version>
     <junit5.version>5.10.2</junit5.version>
-    <saslprep.version>2.1</saslprep.version>
+    <saslprep.version>2.2</saslprep.version>
     <!-- Plugins versions -->
     <compiler-plugin.version>3.13.0</compiler-plugin.version>
     <jar-plugin.version>3.4.2</jar-plugin.version>
@@ -486,9 +487,7 @@
               <compilerArgs>
                 <arg>-Xlint:all</arg>
                 <arg>-XDcompilePolicy=simple</arg>
-                <arg>-Xplugin:ErrorProne \
-                  -XepAllErrorsAsWarnings \
-                  -XepDisableWarningsInGeneratedCode</arg>
+                <arg>-Xplugin:ErrorProne -XepAllErrorsAsWarnings -XepDisableWarningsInGeneratedCode</arg>
                 <!-- Required on JDK 16+ due to JEP 396 -->
                 <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
                 <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>

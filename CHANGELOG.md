@@ -2,10 +2,18 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
-### :building_construction: Improvements
-- Ensure the LICENSE file is included in the Jar file.
 
-## 3.0 - 2024-04-03
+## [3.1] - 2024-06-26
+### :building_construction: Improvements
+- Ensure the `LICENSE` file is included in the Jar file.
+- Update of the `saslprep` dependency to 2.2.
+
+### :ghost: Maintenance
+- Added coverage report module.
+- Updated dependencies and maven plugins.
+- Remove `nexus-staging-maven-plugin`.
+
+## [3.0] - 2024-04-03
 ### :boom: Breaking changes
 - :warning: Full refactor of the `scram` java implementation, this release is compatible with Java 8+, but it's incompatible with previous releases :warning:
 
@@ -28,37 +36,6 @@ All notable changes to this project will be documented in this file.
 - Migrate the main repo back to GitHub.
 - Remove the shaded Bouncy Castle pbkdf2 and base64 implementation used for Java 7 support.
 
-# 2.1
-
-* Updated saslprep to version 1.1 to remove a build dependency coming from stringprep module
-
-# 2.0
-
-* Out of beta testing
-
-# 2.0-beta3
-
-* Fixed licenses issues
-
-# 2.0-beta2
-
-* Added saslprep tests
-
-# 2.0-beta1
-
-* Add new dependency StringPrep
-
-# 1.9-beta1
-
-* API change to be compatible with Java 7
-* Added standard SASLPrep
-* Failover to bouncy castle implementation of PBKDF2WithHmacSHA256 to support Oracle JDK 7
-
-# 1.0.0-beta.2
-
-* Fix maven issue and javadoc
-
-# 1.0.0-beta.1
-
-* First version
-
+[3.0]: https://github.com/ongres/scram/compare/2.1...3.0
+[3.1]: https://github.com/ongres/scram/compare/3.0...3.1
+[Unreleased]: https://github.com/ongres/scram/compare/3.1...main
