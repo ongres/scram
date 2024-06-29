@@ -1,3 +1,6 @@
+![Maven Central Version](https://img.shields.io/maven-central/v/com.ongres.scram/scram-aggregator)
+[![Reproducible Builds](https://img.shields.io/badge/Reproducible_Builds-ok-success?labelColor=1e5b96)](https://github.com/jvm-repo-rebuild/reproducible-central/blob/master/content/com/ongres/scram/README.md)
+
 # SCRAM Java Implementation
 
 SCRAM (Salted Challenge Response Authentication Mechanism) is part of the family of
