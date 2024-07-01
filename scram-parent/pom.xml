@@ -75,7 +75,7 @@
     <project.build.outputTimestamp>2024-06-26T00:50:00Z</project.build.outputTimestamp>
     <!-- Dependency versions -->
     <jetbrains-annotations.version>24.1.0</jetbrains-annotations.version>
-    <junit5.version>5.10.2</junit5.version>
+    <junit5.version>5.10.3</junit5.version>
     <saslprep.version>2.2</saslprep.version>
     <!-- Plugins versions -->
     <compiler-plugin.version>3.13.0</compiler-plugin.version>
