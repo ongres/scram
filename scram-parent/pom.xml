@@ -99,7 +99,7 @@
     <!-- Checkstyle, SpotBugs and PMD properties -->
     <checkstyle.version>10.17.0</checkstyle.version>
     <checkstyle-plugin.version>3.4.0</checkstyle-plugin.version>
-    <errorprone.version>2.29.2</errorprone.version>
+    <errorprone.version>2.30.0</errorprone.version>
     <spotbugs.version>4.8.6</spotbugs.version>
     <spotbugs-plugin.version>4.8.6.2</spotbugs-plugin.version>
     <findsecbugs.version>1.13.0</findsecbugs.version>
