@@ -6,8 +6,16 @@ updates:
       - "/scram-client/src/it/jpms-scram-client"
     schedule:
       interval: "weekly"
+    groups:
+      all-maven-dependencies:
+        patterns:
+          - "*"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      all-github-actions:
+        patterns:
+          - "*"
