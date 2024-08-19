@@ -90,7 +90,7 @@
     <install-plugin.version>3.1.2</install-plugin.version>
     <deploy-plugin.version>3.1.2</deploy-plugin.version>
     <invoker-plugin.version>3.7.0</invoker-plugin.version>
-    <gpg-plugin.version>3.2.4</gpg-plugin.version>
+    <gpg-plugin.version>3.2.5</gpg-plugin.version>
     <jacoco-plugin.verson>0.8.12</jacoco-plugin.verson>
     <flatten-maven-plugin.version>1.6.0</flatten-maven-plugin.version>
     <jdeps-plugin.version>3.1.2</jdeps-plugin.version>
