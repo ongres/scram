@@ -1,11 +1,16 @@
-![Maven Central Version](https://img.shields.io/maven-central/v/com.ongres.scram/scram-aggregator)
-[![Reproducible Builds](https://img.shields.io/badge/Reproducible_Builds-ok-success?labelColor=1e5b96)](https://github.com/jvm-repo-rebuild/reproducible-central/blob/master/content/com/ongres/scram/README.md)
-
 # SCRAM Java Implementation
+
+![Maven Central Version](https://img.shields.io/maven-central/v/com.ongres.scram/scram-aggregator)
+[![Reproducible Builds](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jvm-repo-rebuild/reproducible-central/master/content/com/ongres/scram/badge.json)](https://github.com/jvm-repo-rebuild/reproducible-central/blob/master/content/com/ongres/scram/README.md)
+![GitHub License](https://img.shields.io/github/license/ongres/scram)
+
+> Salted Challenge Response Authentication Mechanism (SCRAM)
+
+## Overview
 
 SCRAM (Salted Challenge Response Authentication Mechanism) is part of the family of
 Simple Authentication and Security Layer
-([SASL, RFC 4422](https://datatracker.ietf.org/doc/html/rfc44222)) authentication mechanisms. It is described as part of [RFC 5802](https://datatracker.ietf.org/doc/html/rfc5802) and
+([SASL, RFC 4422](https://datatracker.ietf.org/doc/html/rfc4422)) authentication mechanisms. It is described as part of [RFC 5802](https://datatracker.ietf.org/doc/html/rfc5802) and
 [RFC 7677](https://datatracker.ietf.org/doc/html/rfc7677).
 
 This project provides a robust and well-tested implementation of the Salted Challenge
@@ -27,6 +32,8 @@ The code is licensed under the BSD "Simplified 2 Clause" license (see [LICENSE](
 * Minimal Dependencies: The library operates with a single dependency based on the implementation of the [SASLprep](https://github.com/ongres/stringprep) required by the RFC 5802.
 
 ## How to use the SCRAM Client API
+
+[![Maven Central](https://img.shields.io/badge/maven--central-scram_client-informational?style=for-the-badge&logo=apache-maven&logoColor=red)](https://maven-badges.herokuapp.com/maven-central/com.ongres.scram/scram-client)
 
 Javadoc: [![Javadocs](http://javadoc.io/badge/com.ongres.scram/scram-client.svg?label=scram-client)](http://javadoc.io/doc/com.ongres.scram/scram-client)
 
