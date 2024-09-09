@@ -101,7 +101,7 @@
     <checkstyle-plugin.version>3.5.0</checkstyle-plugin.version>
     <errorprone.version>2.31.0</errorprone.version>
     <spotbugs.version>4.8.6</spotbugs.version>
-    <spotbugs-plugin.version>4.8.6.2</spotbugs-plugin.version>
+    <spotbugs-plugin.version>4.8.6.3</spotbugs-plugin.version>
     <findsecbugs.version>1.13.0</findsecbugs.version>
     <pmd.version>7.5.0</pmd.version>
     <pmd-plugin.version>3.25.0</pmd-plugin.version>
