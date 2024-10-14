@@ -74,7 +74,7 @@
     <maven.compiler.target>${base.java.version}</maven.compiler.target>
     <project.build.outputTimestamp>2024-06-26T00:50:00Z</project.build.outputTimestamp>
     <!-- Dependency versions -->
-    <jetbrains-annotations.version>25.0.0</jetbrains-annotations.version>
+    <jetbrains-annotations.version>26.0.0</jetbrains-annotations.version>
     <junit5.version>5.11.2</junit5.version>
     <saslprep.version>2.2</saslprep.version>
     <!-- Plugins versions -->
@@ -95,7 +95,7 @@
     <flatten-maven-plugin.version>1.6.0</flatten-maven-plugin.version>
     <jdeps-plugin.version>3.1.2</jdeps-plugin.version>
     <sortpom-plugin.version>4.0.0</sortpom-plugin.version>
-    <cyclonedx-plugin.version>2.8.2</cyclonedx-plugin.version>
+    <cyclonedx-plugin.version>2.9.0</cyclonedx-plugin.version>
     <!-- Checkstyle, SpotBugs and PMD properties -->
     <checkstyle.version>10.18.2</checkstyle.version>
     <checkstyle-plugin.version>3.5.0</checkstyle-plugin.version>
@@ -105,7 +105,7 @@
     <findsecbugs.version>1.13.0</findsecbugs.version>
     <pmd.version>7.6.0</pmd.version>
     <pmd-plugin.version>3.25.0</pmd-plugin.version>
-    <forbiddenapis.version>3.7</forbiddenapis.version>
+    <forbiddenapis.version>3.8</forbiddenapis.version>
     <checks.location>${rootDirectory}/checks</checks.location>
     <checkstyle.config.location>${checks.location}/checkstyle.xml</checkstyle.config.location>
     <checkstyle.suppressions.location>${checks.location}/checkstyle-suppressions.xml</checkstyle.suppressions.location>
