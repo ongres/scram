@@ -74,7 +74,7 @@
     <maven.compiler.target>${base.java.version}</maven.compiler.target>
     <project.build.outputTimestamp>2024-06-26T00:50:00Z</project.build.outputTimestamp>
     <!-- Dependency versions -->
-    <jetbrains-annotations.version>26.0.0</jetbrains-annotations.version>
+    <jetbrains-annotations.version>26.0.1</jetbrains-annotations.version>
     <junit5.version>5.11.2</junit5.version>
     <saslprep.version>2.2</saslprep.version>
     <!-- Plugins versions -->
@@ -99,7 +99,7 @@
     <!-- Checkstyle, SpotBugs and PMD properties -->
     <checkstyle.version>10.18.2</checkstyle.version>
     <checkstyle-plugin.version>3.5.0</checkstyle-plugin.version>
-    <errorprone.version>2.33.0</errorprone.version>
+    <errorprone.version>2.34.0</errorprone.version>
     <spotbugs.version>4.8.6</spotbugs.version>
     <spotbugs-plugin.version>4.8.6.4</spotbugs-plugin.version>
     <findsecbugs.version>1.13.0</findsecbugs.version>
