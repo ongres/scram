@@ -74,15 +74,15 @@
     <maven.compiler.target>${base.java.version}</maven.compiler.target>
     <project.build.outputTimestamp>2024-06-26T00:50:00Z</project.build.outputTimestamp>
     <!-- Dependency versions -->
-    <jetbrains-annotations.version>26.0.1</jetbrains-annotations.version>
-    <junit5.version>5.11.4</junit5.version>
+    <jetbrains-annotations.version>26.0.2</jetbrains-annotations.version>
+    <junit5.version>5.12.0</junit5.version>
     <saslprep.version>2.2</saslprep.version>
     <!-- Plugins versions -->
-    <compiler-plugin.version>3.13.0</compiler-plugin.version>
+    <compiler-plugin.version>3.14.0</compiler-plugin.version>
     <jar-plugin.version>3.4.2</jar-plugin.version>
     <source-plugin.version>3.3.1</source-plugin.version>
     <javadoc-plugin.version>3.11.2</javadoc-plugin.version>
-    <clean-plugin.version>3.4.0</clean-plugin.version>
+    <clean-plugin.version>3.4.1</clean-plugin.version>
     <resources-plugin.version>3.3.1</resources-plugin.version>
     <surefire-plugin.version>3.5.2</surefire-plugin.version>
     <failsafe-plugin.version>3.5.2</failsafe-plugin.version>
@@ -97,11 +97,11 @@
     <sortpom-plugin.version>4.0.0</sortpom-plugin.version>
     <cyclonedx-plugin.version>2.9.1</cyclonedx-plugin.version>
     <!-- Checkstyle, SpotBugs and PMD properties -->
-    <checkstyle.version>10.21.1</checkstyle.version>
+    <checkstyle.version>10.21.3</checkstyle.version>
     <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
     <errorprone.version>2.36.0</errorprone.version>
-    <spotbugs.version>4.8.6</spotbugs.version>
-    <spotbugs-plugin.version>4.8.6.6</spotbugs-plugin.version>
+    <spotbugs.version>4.9.1</spotbugs.version>
+    <spotbugs-plugin.version>4.9.1.0</spotbugs-plugin.version>
     <findsecbugs.version>1.13.0</findsecbugs.version>
     <pmd.version>7.10.0</pmd.version>
     <pmd-plugin.version>3.26.0</pmd-plugin.version>
