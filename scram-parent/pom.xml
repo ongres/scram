@@ -97,11 +97,11 @@
     <sortpom-plugin.version>4.0.0</sortpom-plugin.version>
     <cyclonedx-plugin.version>2.9.1</cyclonedx-plugin.version>
     <!-- Checkstyle, SpotBugs and PMD properties -->
-    <checkstyle.version>10.21.3</checkstyle.version>
+    <checkstyle.version>10.21.4</checkstyle.version>
     <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
     <errorprone.version>2.36.0</errorprone.version>
     <spotbugs.version>4.9.2</spotbugs.version>
-    <spotbugs-plugin.version>4.9.1.0</spotbugs-plugin.version>
+    <spotbugs-plugin.version>4.9.2.0</spotbugs-plugin.version>
     <findsecbugs.version>1.13.0</findsecbugs.version>
     <pmd.version>7.11.0</pmd.version>
     <pmd-plugin.version>3.26.0</pmd-plugin.version>
