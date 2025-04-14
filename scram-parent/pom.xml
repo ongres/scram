@@ -75,7 +75,7 @@
     <project.build.outputTimestamp>2024-06-26T00:50:00Z</project.build.outputTimestamp>
     <!-- Dependency versions -->
     <jetbrains-annotations.version>26.0.2</jetbrains-annotations.version>
-    <junit5.version>5.12.1</junit5.version>
+    <junit5.version>5.12.2</junit5.version>
     <saslprep.version>2.2</saslprep.version>
     <!-- Plugins versions -->
     <compiler-plugin.version>3.14.0</compiler-plugin.version>
@@ -84,28 +84,28 @@
     <javadoc-plugin.version>3.11.2</javadoc-plugin.version>
     <clean-plugin.version>3.4.1</clean-plugin.version>
     <resources-plugin.version>3.3.1</resources-plugin.version>
-    <surefire-plugin.version>3.5.2</surefire-plugin.version>
-    <failsafe-plugin.version>3.5.2</failsafe-plugin.version>
+    <surefire-plugin.version>3.5.3</surefire-plugin.version>
+    <failsafe-plugin.version>3.5.3</failsafe-plugin.version>
     <enforcer-plugin.version>3.5.0</enforcer-plugin.version>
     <install-plugin.version>3.1.4</install-plugin.version>
     <deploy-plugin.version>3.1.4</deploy-plugin.version>
     <invoker-plugin.version>3.9.0</invoker-plugin.version>
     <gpg-plugin.version>3.2.7</gpg-plugin.version>
-    <jacoco-plugin.verson>0.8.12</jacoco-plugin.verson>
+    <jacoco-plugin.verson>0.8.13</jacoco-plugin.verson>
     <flatten-maven-plugin.version>1.7.0</flatten-maven-plugin.version>
     <jdeps-plugin.version>3.1.2</jdeps-plugin.version>
     <sortpom-plugin.version>4.0.0</sortpom-plugin.version>
     <cyclonedx-plugin.version>2.9.1</cyclonedx-plugin.version>
     <!-- Checkstyle, SpotBugs and PMD properties -->
-    <checkstyle.version>10.21.4</checkstyle.version>
+    <checkstyle.version>10.23.0</checkstyle.version>
     <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
     <errorprone.version>2.37.0</errorprone.version>
     <spotbugs.version>4.9.3</spotbugs.version>
     <spotbugs-plugin.version>4.9.3.0</spotbugs-plugin.version>
     <findsecbugs.version>1.13.0</findsecbugs.version>
-    <pmd.version>7.11.0</pmd.version>
+    <pmd.version>7.12.0</pmd.version>
     <pmd-plugin.version>3.26.0</pmd-plugin.version>
-    <forbiddenapis.version>3.8</forbiddenapis.version>
+    <forbiddenapis.version>3.9</forbiddenapis.version>
     <checks.location>${rootDirectory}/checks</checks.location>
     <checkstyle.config.location>${checks.location}/checkstyle.xml</checkstyle.config.location>
     <checkstyle.suppressions.location>${checks.location}/checkstyle-suppressions.xml</checkstyle.suppressions.location>
