@@ -15,6 +15,7 @@
     <exclude name="ForLoopVariableCount" />
     <exclude name="AvoidReassigningLoopVariables" />
     <exclude name="AccessorClassGeneration" />
+    <exclude name="ImplicitFunctionalInterface" />
   </rule>
 
   <rule ref="category/java/errorprone.xml">
