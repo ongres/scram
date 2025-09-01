@@ -81,7 +81,7 @@
     <compiler-plugin.version>3.14.0</compiler-plugin.version>
     <jar-plugin.version>3.4.2</jar-plugin.version>
     <source-plugin.version>3.3.1</source-plugin.version>
-    <javadoc-plugin.version>3.11.2</javadoc-plugin.version>
+    <javadoc-plugin.version>3.11.3</javadoc-plugin.version>
     <clean-plugin.version>3.5.0</clean-plugin.version>
     <resources-plugin.version>3.3.1</resources-plugin.version>
     <surefire-plugin.version>3.5.3</surefire-plugin.version>
@@ -97,11 +97,11 @@
     <sortpom-plugin.version>4.0.0</sortpom-plugin.version>
     <cyclonedx-plugin.version>2.9.1</cyclonedx-plugin.version>
     <!-- Checkstyle, SpotBugs and PMD properties -->
-    <checkstyle.version>10.26.1</checkstyle.version>
+    <checkstyle.version>11.0.1</checkstyle.version>
     <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
     <errorprone.version>2.41.0</errorprone.version>
-    <spotbugs.version>4.9.3</spotbugs.version>
-    <spotbugs-plugin.version>4.9.3.2</spotbugs-plugin.version>
+    <spotbugs.version>4.9.4</spotbugs.version>
+    <spotbugs-plugin.version>4.9.4.0</spotbugs-plugin.version>
     <findsecbugs.version>1.14.0</findsecbugs.version>
     <pmd.version>7.16.0</pmd.version>
     <pmd-plugin.version>3.27.0</pmd-plugin.version>
