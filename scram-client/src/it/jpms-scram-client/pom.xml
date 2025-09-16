@@ -7,7 +7,7 @@
   <groupId>com.ongres.scram.it</groupId>
   <artifactId>jpms-scram-client</artifactId>
   <name>JPMS Scram Client</name>
-  <version>3.2</version>
+  <version>3.3-SNAPSHOT</version>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

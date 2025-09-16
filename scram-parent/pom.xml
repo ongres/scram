@@ -4,7 +4,7 @@
 
   <groupId>com.ongres.scram</groupId>
   <artifactId>scram-parent</artifactId>
-  <version>3.2</version>
+  <version>3.3-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>SCRAM - Parent</name>
@@ -44,7 +44,7 @@
   <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="false">
     <connection>scm:git:https://github.com/ongres/scram.git</connection>
     <developerConnection>scm:git:git@github.com:ongres/scram.git</developerConnection>
-    <tag>3.2</tag>
+    <tag>HEAD</tag>
     <url>https://github.com/ongres/scram</url>
   </scm>
 
@@ -59,7 +59,7 @@
     <base.java.version>8</base.java.version>
     <maven.compiler.source>${base.java.version}</maven.compiler.source>
     <maven.compiler.target>${base.java.version}</maven.compiler.target>
-    <project.build.outputTimestamp>2025-09-16T20:00:00Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-09-16T20:15:00Z</project.build.outputTimestamp>
     <!-- Dependency versions -->
     <jetbrains-annotations.version>26.0.2-1</jetbrains-annotations.version>
     <junit5.version>5.13.4</junit5.version>
