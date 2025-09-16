@@ -7,8 +7,8 @@ package com.ongres.scram.common;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import java.security.MessageDigest;
 import java.security.SecureRandom;
-import java.util.Arrays;
 
 import com.ongres.scram.common.util.Preconditions;
 import org.jetbrains.annotations.NotNull;
@@ -190,8 +190,7 @@ public final class ScramFunctions {
     byte[] clientSignature = clientSignature(scramMechanism, storedKey, authMessage);
     byte[] clientKey = CryptoUtil.xor(clientSignature, clientProof);
     byte[] computedStoredKey = hash(scramMechanism, clientKey);
-
-    return Arrays.equals(storedKey, computedStoredKey);
+    return MessageDigest.isEqual(storedKey, computedStoredKey);
   }
 
   /**
@@ -205,7 +204,8 @@ public final class ScramFunctions {
    */
   public static boolean verifyServerSignature(
       ScramMechanism scramMechanism, byte[] serverKey, String authMessage, byte[] serverSignature) {
-    return Arrays.equals(serverSignature(scramMechanism, serverKey, authMessage), serverSignature);
+    byte[] computedServerSignature = serverSignature(scramMechanism, serverKey, authMessage);
+    return MessageDigest.isEqual(serverSignature, computedServerSignature);
   }
 
   /**
