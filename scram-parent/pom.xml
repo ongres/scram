@@ -53,19 +53,6 @@
     <url>https://github.com/ongres/scram/issues</url>
   </issueManagement>
 
-  <distributionManagement>
-    <repository>
-      <id>ossrh</id>
-      <name>OSSRH Release repository</name>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
-    </repository>
-    <snapshotRepository>
-      <id>ossrh</id>
-      <name>OSSRH Snapshot repository</name>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
-  </distributionManagement>
-
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -74,7 +61,7 @@
     <maven.compiler.target>${base.java.version}</maven.compiler.target>
     <project.build.outputTimestamp>2024-06-26T00:50:00Z</project.build.outputTimestamp>
     <!-- Dependency versions -->
-    <jetbrains-annotations.version>26.0.2</jetbrains-annotations.version>
+    <jetbrains-annotations.version>26.0.2-1</jetbrains-annotations.version>
     <junit5.version>5.13.4</junit5.version>
     <saslprep.version>2.2</saslprep.version>
     <!-- Plugins versions -->
@@ -84,11 +71,11 @@
     <javadoc-plugin.version>3.11.3</javadoc-plugin.version>
     <clean-plugin.version>3.5.0</clean-plugin.version>
     <resources-plugin.version>3.3.1</resources-plugin.version>
-    <surefire-plugin.version>3.5.3</surefire-plugin.version>
-    <failsafe-plugin.version>3.5.3</failsafe-plugin.version>
+    <surefire-plugin.version>3.5.4</surefire-plugin.version>
+    <failsafe-plugin.version>3.5.4</failsafe-plugin.version>
     <enforcer-plugin.version>3.6.1</enforcer-plugin.version>
     <install-plugin.version>3.1.4</install-plugin.version>
-    <deploy-plugin.version>3.1.4</deploy-plugin.version>
+    <central-publishing-maven-plugin.version>0.8.0</central-publishing-maven-plugin.version>
     <invoker-plugin.version>3.9.1</invoker-plugin.version>
     <gpg-plugin.version>3.2.8</gpg-plugin.version>
     <jacoco-plugin.verson>0.8.13</jacoco-plugin.verson>
@@ -100,10 +87,10 @@
     <checkstyle.version>11.0.1</checkstyle.version>
     <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
     <errorprone.version>2.41.0</errorprone.version>
-    <spotbugs.version>4.9.4</spotbugs.version>
-    <spotbugs-plugin.version>4.9.4.0</spotbugs-plugin.version>
+    <spotbugs.version>4.9.5</spotbugs.version>
+    <spotbugs-plugin.version>4.9.5.0</spotbugs-plugin.version>
     <findsecbugs.version>1.14.0</findsecbugs.version>
-    <pmd.version>7.16.0</pmd.version>
+    <pmd.version>7.17.0</pmd.version>
     <pmd-plugin.version>3.27.0</pmd-plugin.version>
     <forbiddenapis.version>3.9</forbiddenapis.version>
     <checks.location>${rootDirectory}/checks</checks.location>
@@ -353,9 +340,13 @@
           <version>${install-plugin.version}</version>
         </plugin>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-deploy-plugin</artifactId>
-          <version>${deploy-plugin.version}</version>
+          <groupId>org.sonatype.central</groupId>
+          <artifactId>central-publishing-maven-plugin</artifactId>
+          <version>${central-publishing-maven-plugin.version}</version>
+          <extensions>true</extensions>
+          <configuration>
+            <publishingServerId>central</publishingServerId>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -695,6 +686,10 @@
           <plugin>
             <groupId>org.cyclonedx</groupId>
             <artifactId>cyclonedx-maven-plugin</artifactId>
+          </plugin>
+          <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
           </plugin>
         </plugins>
       </build>
