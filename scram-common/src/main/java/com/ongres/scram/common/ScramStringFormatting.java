@@ -43,40 +43,30 @@ final class ScramStringFormatting {
       return value;
     }
 
-    final char[] originalChars = SASL_PREP.prepareQuery(value.toCharArray());
+    final char[] prepared = SASL_PREP.prepareQuery(value.toCharArray());
+    final int length = prepared.length;
 
-    int comma = 0;
-    int equal = 0;
-    // Fast path
-    for (char c : originalChars) {
-      if (',' == c) {
-        comma++;
-      } else if ('=' == c) {
-        equal++;
-      }
-    }
-    if (comma == 0 && equal == 0) {
-      return new String(originalChars);
-    }
-
-    // Replace chars
-    char[] saslChars = new char[originalChars.length + comma * 2 + equal * 2];
-    int i = 0;
-    for (char c : originalChars) {
-      if (',' == c) {
-        saslChars[i++] = '=';
-        saslChars[i++] = '2';
-        saslChars[i++] = 'C';
-      } else if ('=' == c) {
-        saslChars[i++] = '=';
-        saslChars[i++] = '3';
-        saslChars[i++] = 'D';
-      } else {
-        saslChars[i++] = c;
+    for (int i = 0; i < length; i++) {
+      char c = prepared[i];
+      if (c == ',' || c == '=') {
+        // Slow-path for characters ',' and '='
+        final StringBuilder sb = new StringBuilder(length + 8); // NOPMD: AvoidInstantiatingObjectsInLoops
+        sb.append(prepared, 0, i);
+        for (int j = i; j < length; j++) {
+          c = prepared[j];
+          if (c == ',') {
+            sb.append("=2C");
+          } else if (c == '=') {
+            sb.append("=3D");
+          } else {
+            sb.append(c);
+          }
+        }
+        return sb.toString();
       }
     }
 
-    return new String(saslChars);
+    return new String(prepared);
   }
 
   /**
