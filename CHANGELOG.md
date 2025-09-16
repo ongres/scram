@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [3.2] - 2025-09-16
+### :lock: Security
+- Fix Timing Attack Vulnerability in SCRAM Authentication
+
+### :ghost: Maintenance
+- Updated dependencies and maven plugins.
+- Use `central-publishing-maven-plugin` to deploy to Maven Central.
+
 ## [3.1] - 2024-06-26
 ### :building_construction: Improvements
 - Ensure the `LICENSE` file is included in the Jar file.
@@ -38,4 +46,5 @@ All notable changes to this project will be documented in this file.
 
 [3.0]: https://github.com/ongres/scram/compare/2.1...3.0
 [3.1]: https://github.com/ongres/scram/compare/3.0...3.1
-[Unreleased]: https://github.com/ongres/scram/compare/3.1...main
+[3.2]: https://github.com/ongres/scram/compare/3.1...3.2
+[Unreleased]: https://github.com/ongres/scram/compare/3.2...main
