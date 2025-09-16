@@ -530,6 +530,9 @@
                 <!-- don't allow System.out or System.err: -->
                 <bundledSignature>jdk-system-out</bundledSignature>
               </bundledSignatures>
+              <signaturesFiles>
+                <signaturesFile>${checks.location}/forbiddenapis.txt</signaturesFile>
+              </signaturesFiles>
             </configuration>
             <executions>
               <execution>

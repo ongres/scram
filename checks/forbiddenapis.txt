@@ -1,0 +1,2 @@
+
+java.util.Arrays#equals(byte[],byte[]) @ Replace with java.security.MessageDigest#isEqual(byte[],byte[])
