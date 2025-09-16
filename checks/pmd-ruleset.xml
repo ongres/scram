@@ -24,6 +24,12 @@
     <exclude name="AvoidFieldNameMatchingMethodName" />
   </rule>
 
+  <rule ref="category/java/errorprone.xml/AssignmentInOperand">
+    <properties>
+      <property name="allowIncrementDecrement" value="true" />
+    </properties>
+  </rule>
+
   <rule ref="category/java/multithreading.xml" />
 
   <rule ref="category/java/performance.xml">
