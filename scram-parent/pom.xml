@@ -62,33 +62,33 @@
     <project.build.outputTimestamp>2025-09-16T20:15:00Z</project.build.outputTimestamp>
     <!-- Dependency versions -->
     <jetbrains-annotations.version>26.0.2-1</jetbrains-annotations.version>
-    <junit5.version>5.13.4</junit5.version>
+    <junit5.version>6.0.0</junit5.version>
     <saslprep.version>2.2</saslprep.version>
     <!-- Plugins versions -->
-    <compiler-plugin.version>3.14.0</compiler-plugin.version>
+    <compiler-plugin.version>3.14.1</compiler-plugin.version>
     <jar-plugin.version>3.4.2</jar-plugin.version>
     <source-plugin.version>3.3.1</source-plugin.version>
-    <javadoc-plugin.version>3.11.3</javadoc-plugin.version>
+    <javadoc-plugin.version>3.12.0</javadoc-plugin.version>
     <clean-plugin.version>3.5.0</clean-plugin.version>
     <resources-plugin.version>3.3.1</resources-plugin.version>
     <surefire-plugin.version>3.5.4</surefire-plugin.version>
     <failsafe-plugin.version>3.5.4</failsafe-plugin.version>
     <enforcer-plugin.version>3.6.1</enforcer-plugin.version>
     <install-plugin.version>3.1.4</install-plugin.version>
-    <central-publishing-maven-plugin.version>0.8.0</central-publishing-maven-plugin.version>
+    <central-publishing-maven-plugin.version>0.9.0</central-publishing-maven-plugin.version>
     <invoker-plugin.version>3.9.1</invoker-plugin.version>
     <gpg-plugin.version>3.2.8</gpg-plugin.version>
     <jacoco-plugin.verson>0.8.13</jacoco-plugin.verson>
-    <flatten-maven-plugin.version>1.7.2</flatten-maven-plugin.version>
+    <flatten-maven-plugin.version>1.7.3</flatten-maven-plugin.version>
     <jdeps-plugin.version>3.1.2</jdeps-plugin.version>
     <sortpom-plugin.version>4.0.0</sortpom-plugin.version>
     <cyclonedx-plugin.version>2.9.1</cyclonedx-plugin.version>
     <!-- Checkstyle, SpotBugs and PMD properties -->
-    <checkstyle.version>11.0.1</checkstyle.version>
+    <checkstyle.version>11.1.0</checkstyle.version>
     <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
-    <errorprone.version>2.41.0</errorprone.version>
-    <spotbugs.version>4.9.5</spotbugs.version>
-    <spotbugs-plugin.version>4.9.5.0</spotbugs-plugin.version>
+    <errorprone.version>2.42.0</errorprone.version>
+    <spotbugs.version>4.9.6</spotbugs.version>
+    <spotbugs-plugin.version>4.9.6.0</spotbugs-plugin.version>
     <findsecbugs.version>1.14.0</findsecbugs.version>
     <pmd.version>7.17.0</pmd.version>
     <pmd-plugin.version>3.27.0</pmd-plugin.version>
