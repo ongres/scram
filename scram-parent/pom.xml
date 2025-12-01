@@ -66,11 +66,11 @@
     <saslprep.version>2.2</saslprep.version>
     <!-- Plugins versions -->
     <compiler-plugin.version>3.14.1</compiler-plugin.version>
-    <jar-plugin.version>3.4.2</jar-plugin.version>
-    <source-plugin.version>3.3.1</source-plugin.version>
+    <jar-plugin.version>3.5.0</jar-plugin.version>
+    <source-plugin.version>3.4.0</source-plugin.version>
     <javadoc-plugin.version>3.12.0</javadoc-plugin.version>
     <clean-plugin.version>3.5.0</clean-plugin.version>
-    <resources-plugin.version>3.3.1</resources-plugin.version>
+    <resources-plugin.version>3.4.0</resources-plugin.version>
     <surefire-plugin.version>3.5.4</surefire-plugin.version>
     <failsafe-plugin.version>3.5.4</failsafe-plugin.version>
     <enforcer-plugin.version>3.6.2</enforcer-plugin.version>
@@ -84,13 +84,13 @@
     <sortpom-plugin.version>4.0.0</sortpom-plugin.version>
     <cyclonedx-plugin.version>2.9.1</cyclonedx-plugin.version>
     <!-- Checkstyle, SpotBugs and PMD properties -->
-    <checkstyle.version>12.1.1</checkstyle.version>
+    <checkstyle.version>12.2.0</checkstyle.version>
     <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
-    <errorprone.version>2.43.0</errorprone.version>
+    <errorprone.version>2.45.0</errorprone.version>
     <spotbugs.version>4.9.8</spotbugs.version>
-    <spotbugs-plugin.version>4.9.8.1</spotbugs-plugin.version>
+    <spotbugs-plugin.version>4.9.8.2</spotbugs-plugin.version>
     <findsecbugs.version>1.14.0</findsecbugs.version>
-    <pmd.version>7.18.0</pmd.version>
+    <pmd.version>7.19.0</pmd.version>
     <pmd-plugin.version>3.28.0</pmd-plugin.version>
     <forbiddenapis.version>3.10</forbiddenapis.version>
     <checks.location>${rootDirectory}/checks</checks.location>
