@@ -478,6 +478,7 @@
               <compilerArgs>
                 <arg>-Xlint:all</arg>
                 <arg>-XDcompilePolicy=simple</arg>
+                <arg>-XDaddTypeAnnotationsToSymbol=true</arg>
                 <arg>--should-stop=ifError=FLOW</arg>
                 <arg>-Xplugin:ErrorProne -XepAllErrorsAsWarnings -XepDisableWarningsInGeneratedCode</arg>
                 <!-- Required on JDK 16+ due to JEP 396 -->
