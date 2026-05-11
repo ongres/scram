@@ -59,6 +59,10 @@
     <base.java.version>8</base.java.version>
     <maven.compiler.source>${base.java.version}</maven.compiler.source>
     <maven.compiler.target>${base.java.version}</maven.compiler.target>
+    <maven.compiler.release>${base.java.version}</maven.compiler.release>
+    <maven.compiler.testSource>17</maven.compiler.testSource>
+    <maven.compiler.testTarget>17</maven.compiler.testTarget>
+    <maven.compiler.testRelease>17</maven.compiler.testRelease>
     <project.build.outputTimestamp>2025-09-16T20:15:00Z</project.build.outputTimestamp>
     <!-- Dependency versions -->
     <jetbrains-annotations.version>26.1.0</jetbrains-annotations.version>
@@ -169,15 +173,6 @@
                   <compileSourceRoot>${project.basedir}/src/main/java9</compileSourceRoot>
                 </compileSourceRoots>
                 <multiReleaseOutput>true</multiReleaseOutput>
-              </configuration>
-            </execution>
-            <execution>
-              <id>default-testCompile</id>
-              <goals>
-                <goal>testCompile</goal>
-              </goals>
-              <configuration>
-                <release>11</release>
               </configuration>
             </execution>
           </executions>

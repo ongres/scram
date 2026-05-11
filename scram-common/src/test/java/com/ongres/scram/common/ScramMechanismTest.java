@@ -12,7 +12,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
+
+import javax.crypto.Mac;
 
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -66,20 +70,23 @@ class ScramMechanismTest {
 
   @ParameterizedTest
   @EnumSource(ScramMechanism.class)
-  void testHashSupportedByJvm(ScramMechanism scramMechanism) {
+  void testHashSupportedByJvm(ScramMechanism scramMechanism) throws NoSuchAlgorithmException {
     byte[] digest = scramMechanism.digest(new byte[0]);
+    MessageDigest md = MessageDigest.getInstance(scramMechanism.getHashAlgorithmName());
     assertNotNull(digest, "got a null digest");
-    assertEquals(scramMechanism.getKeyLength() / 8, digest.length);
+    assertEquals(md.getDigestLength(), digest.length);
   }
 
   @ParameterizedTest
   @MethodSource("provideSupportedMechanisms")
-  void testHmacSupportedByJvm(@NotNull String mechanism) {
+  void testHmacSupportedByJvm(@NotNull String mechanism) throws NoSuchAlgorithmException {
     ScramMechanism scramMechanism = ScramMechanism.byName(mechanism);
+    String hmacAlgorithmName = scramMechanism.getHmacAlgorithmName();
+    Mac mac = Mac.getInstance(hmacAlgorithmName);
     assertNotNull(scramMechanism);
     byte[] hmac = scramMechanism.hmac(EMPTY_KEY, new byte[0]);
     assertNotNull(hmac, "got a null HMAC");
-    assertEquals(scramMechanism.getKeyLength() / 8, hmac.length);
+    assertEquals(mac.getMacLength(), hmac.length);
   }
 
   private static @NotNull List<@NotNull String> provideSupportedMechanisms() {

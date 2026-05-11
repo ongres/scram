@@ -9,15 +9,16 @@ import static com.ongres.scram.common.util.Preconditions.checkArgument;
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 import static com.ongres.scram.common.util.Preconditions.gt0;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.SecureRandom;
-import java.security.spec.InvalidKeySpecException;
+import java.util.Arrays;
 import java.util.Locale;
 
 import javax.crypto.Mac;
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.ShortBufferException;
 import javax.crypto.spec.SecretKeySpec;
 
 import com.ongres.scram.common.exception.ScramRuntimeException;
@@ -27,6 +28,9 @@ import org.jetbrains.annotations.NotNull;
  * Utility static methods for cryptography related tasks.
  */
 final class CryptoUtil {
+
+  private static final int INTERRUPT_CHECK_STRIDE = 1024;
+  private static final byte[] INT1 = new byte[] {0, 0, 0, 1};
 
   private CryptoUtil() {
     throw new IllegalStateException("Utility class");
@@ -55,26 +59,85 @@ final class CryptoUtil {
    *       HMAC() == output length of H().
    * }
    *
-   * @param secretKeyFactory The SecretKeyFactory to generate the SecretKey
-   * @param keyLength The length of the key (in bits)
+   * @param mac The Mac instance to use
    * @param password The char array to compute the Hi function
    * @param salt The salt
    * @param iterationCount The number of iterations
    * @return The bytes of the computed Hi value
-   * @throws ScramRuntimeException if unsupported PBEKeySpec
+   * @throws ScramRuntimeException if unsupported key for Mac algorithm, or if
+   *           thread is interrupted
    */
-  static byte[] hi(SecretKeyFactory secretKeyFactory, int keyLength, char[] password, byte[] salt,
-      int iterationCount) {
+  static byte[] hi(Mac mac, char[] password, byte[] salt, int iterationCount) {
+    checkNotNull(mac, "mac");
+    checkNotNull(password, "password");
+    checkNotNull(salt, "salt");
+    checkArgument(salt.length != 0, "salt");
+    gt0(iterationCount, "iterationCount");
     try {
-      PBEKeySpec spec = new PBEKeySpec(password, salt, iterationCount, keyLength);
-      SecretKey key = secretKeyFactory.generateSecret(spec);
-      spec.clearPassword();
-      return key.getEncoded();
-    } catch (InvalidKeySpecException ex) {
+      byte[] pwBytes = passwordToUtf8Bytes(password);
+      try {
+        mac.init(new SecretKeySpec(pwBytes, mac.getAlgorithm()));
+      } finally {
+        Arrays.fill(pwBytes, (byte) 0);
+      }
+    } catch (InvalidKeyException ex) {
       throw new ScramRuntimeException(
-          String.format(Locale.ROOT, "Platform error: unsupported PBEKeySpec for %s algorithm",
-              secretKeyFactory.getAlgorithm()),
+          String.format(Locale.ROOT, "Platform error: unsupported key for %s algorithm",
+              mac.getAlgorithm()),
           ex);
+    }
+
+    mac.update(salt);
+    mac.update(INT1);
+    byte[] ui = mac.doFinal();
+    byte[] result = Arrays.copyOf(ui, ui.length);
+
+    try {
+      for (int i = 2; i <= iterationCount; i++) {
+        if ((i & (INTERRUPT_CHECK_STRIDE - 1)) == 0 && Thread.interrupted()) {
+          Thread.currentThread().interrupt();
+          Arrays.fill(result, (byte) 0);
+          throw new ScramRuntimeException("PBKDF2 computation was interrupted");
+        }
+        mac.update(ui);
+        mac.doFinal(ui, 0);
+
+        for (int j = 0; j < result.length; j++) {
+          result[j] ^= ui[j];
+        }
+      }
+      return result;
+    } catch (ShortBufferException e) {
+      Arrays.fill(result, (byte) 0);
+      throw new AssertionError("Buffer sized by Mac.doFinal() is suddenly too short", e);
+    } finally {
+      Arrays.fill(ui, (byte) 0);
+    }
+  }
+
+  /**
+   * Convert password to UTF-8 bytes and secure clear the backing array.
+   *
+   * @param password The password to convert
+   * @return The UTF-8 bytes of the password
+   */
+  private static byte[] passwordToUtf8Bytes(char[] password) {
+    ByteBuffer bb = StandardCharsets.UTF_8.encode(CharBuffer.wrap(password));
+    try {
+      byte[] pwBytes = new byte[bb.remaining()];
+      bb.get(pwBytes);
+      return pwBytes;
+    } finally {
+      // Wipe of the intermediate buffer
+      if (bb.hasArray()) {
+        Arrays.fill(bb.array(), bb.arrayOffset(), bb.arrayOffset() + bb.capacity(), (byte) 0);
+      } else {
+        // Fallback just in case a future JDK returns a DirectBuffer here
+        bb.clear();
+        while (bb.hasRemaining()) {
+          bb.put((byte) 0);
+        }
+      }
     }
   }
 
