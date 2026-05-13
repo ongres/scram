@@ -6,7 +6,6 @@
 package com.ongres.scram.common;
 
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
-import static com.ongres.scram.common.util.Preconditions.gt0;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -18,7 +17,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.crypto.Mac;
-import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.SecretKeySpec;
 
 import com.ongres.scram.common.exception.ScramRuntimeException;
@@ -45,43 +43,43 @@ public enum ScramMechanism {
   /**
    * SCRAM-SHA-1 mechanism, defined in RFC-5802.
    */
-  SCRAM_SHA_1("SCRAM-SHA-1", "SHA-1", 160, "HmacSHA1", 4096),
+  SCRAM_SHA_1("SCRAM-SHA-1", "SHA-1", "HmacSHA1"),
   /**
    * SCRAM-SHA-1-PLUS mechanism, defined in RFC-5802.
    */
-  SCRAM_SHA_1_PLUS("SCRAM-SHA-1-PLUS", "SHA-1", 160, "HmacSHA1", 4096),
+  SCRAM_SHA_1_PLUS("SCRAM-SHA-1-PLUS", "SHA-1", "HmacSHA1"),
   /**
    * SCRAM-SHA-224 mechanism, not defined in an RFC.
    */
-  SCRAM_SHA_224("SCRAM-SHA-224", "SHA-224", 224, "HmacSHA224", 4096),
+  SCRAM_SHA_224("SCRAM-SHA-224", "SHA-224", "HmacSHA224"),
   /**
    * SCRAM-SHA-224-PLUS mechanism, not defined in an RFC.
    */
-  SCRAM_SHA_224_PLUS("SCRAM-SHA-224-PLUS", "SHA-224", 224, "HmacSHA224", 4096),
+  SCRAM_SHA_224_PLUS("SCRAM-SHA-224-PLUS", "SHA-224", "HmacSHA224"),
   /**
    * SCRAM-SHA-256 mechanism, defined in RFC-7677.
    */
-  SCRAM_SHA_256("SCRAM-SHA-256", "SHA-256", 256, "HmacSHA256", 4096),
+  SCRAM_SHA_256("SCRAM-SHA-256", "SHA-256", "HmacSHA256"),
   /**
    * SCRAM-SHA-256-PLUS mechanism, defined in RFC-7677.
    */
-  SCRAM_SHA_256_PLUS("SCRAM-SHA-256-PLUS", "SHA-256", 256, "HmacSHA256", 4096),
+  SCRAM_SHA_256_PLUS("SCRAM-SHA-256-PLUS", "SHA-256", "HmacSHA256"),
   /**
    * SCRAM-SHA-384 mechanism, not defined in an RFC.
    */
-  SCRAM_SHA_384("SCRAM-SHA-384", "SHA-384", 384, "HmacSHA384", 4096),
+  SCRAM_SHA_384("SCRAM-SHA-384", "SHA-384", "HmacSHA384"),
   /**
    * SCRAM-SHA-384-PLUS mechanism, not defined in an RFC.
    */
-  SCRAM_SHA_384_PLUS("SCRAM-SHA-384-PLUS", "SHA-384", 384, "HmacSHA384", 4096),
+  SCRAM_SHA_384_PLUS("SCRAM-SHA-384-PLUS", "SHA-384", "HmacSHA384"),
   /**
    * SCRAM-SHA-512 mechanism.
    */
-  SCRAM_SHA_512("SCRAM-SHA-512", "SHA-512", 512, "HmacSHA512", 10000),
+  SCRAM_SHA_512("SCRAM-SHA-512", "SHA-512", "HmacSHA512"),
   /**
    * SCRAM-SHA-512-PLUS mechanism.
    */
-  SCRAM_SHA_512_PLUS("SCRAM-SHA-512-PLUS", "SHA-512", 512, "HmacSHA512", 10000);
+  SCRAM_SHA_512_PLUS("SCRAM-SHA-512-PLUS", "SHA-512", "HmacSHA512");
 
   private static final @Unmodifiable Map<String, ScramMechanism> BY_NAME_MAPPING =
       Arrays.stream(values())
@@ -95,21 +93,14 @@ public enum ScramMechanism {
 
   private final @NotNull String mechanismName;
   private final @NotNull String hashAlgorithmName;
-  private final int keyLength;
   private final @NotNull String hmacAlgorithmName;
-  private final @NotNull String keyFactoryAlgorithmName;
   private final boolean channelBinding;
-  private final int iterationCount;
 
-  ScramMechanism(String name, String hashAlgorithmName, int keyLength, String hmacAlgorithmName,
-      int iterationCount) {
+  ScramMechanism(String name, String hashAlgorithmName, String hmacAlgorithmName) {
     this.mechanismName = checkNotNull(name, "name");
     this.hashAlgorithmName = checkNotNull(hashAlgorithmName, "hashAlgorithmName");
-    this.keyLength = gt0(keyLength, "keyLength");
     this.hmacAlgorithmName = checkNotNull(hmacAlgorithmName, "hmacAlgorithmName");
-    this.keyFactoryAlgorithmName = "PBKDF2With" + hmacAlgorithmName;
     this.channelBinding = name.endsWith("-PLUS");
-    this.iterationCount = gt0(iterationCount, "iterationCount");
   }
 
   /**
@@ -157,19 +148,6 @@ public enum ScramMechanism {
    */
   public boolean isPlus() {
     return channelBinding;
-  }
-
-  /**
-   * Returns the length of the key length of the algorithm.
-   *
-   * @return The length (in bits)
-   */
-  int getKeyLength() {
-    return keyLength;
-  }
-
-  int getIterationCount() {
-    return iterationCount;
   }
 
   /**
@@ -224,14 +202,13 @@ public enum ScramMechanism {
     final char[] normalizedPassword = stringPreparation.normalize(password);
     try {
       return CryptoUtil.hi(
-          SecretKeyFactory.getInstance(keyFactoryAlgorithmName),
-          keyLength,
+          Mac.getInstance(hmacAlgorithmName),
           normalizedPassword,
           salt,
           iterationCount);
     } catch (NoSuchAlgorithmException ex) {
       throw new ScramRuntimeException(
-          "Unsupported " + keyFactoryAlgorithmName + " for " + mechanismName, ex);
+          "Unsupported " + hmacAlgorithmName + " for " + mechanismName, ex);
     }
   }
 
@@ -262,7 +239,6 @@ public enum ScramMechanism {
     try {
       MessageDigest.getInstance(mechanism.hashAlgorithmName);
       Mac.getInstance(mechanism.hmacAlgorithmName);
-      SecretKeyFactory.getInstance(mechanism.keyFactoryAlgorithmName);
       return true;
     } catch (NoSuchAlgorithmException e) {
       return false;
