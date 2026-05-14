@@ -25,6 +25,7 @@ import javax.crypto.Mac;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
+import com.ongres.scram.common.exception.ScramInterruptedException;
 import com.ongres.scram.common.exception.ScramRuntimeException;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
@@ -37,11 +38,13 @@ class HiFunctionTest {
   private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
   // Character sets for different edge cases
-  private static final String ALPHANUMERIC = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  private static final String ALPHANUMERIC =
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   private static final String SPECIAL = "!@#$%^&*()-_=+[{]}\\|;:'\",.<>/?`~ ";
   private static final String UNICODE_EMOJI = "🚀🔥🛡️🔑";
   private static final String UNICODE_EXTENDED = "こんにちは世界"; // "Hello World" in Japanese
-  private static final String COMBINED_POOL = ALPHANUMERIC + SPECIAL + UNICODE_EXTENDED + UNICODE_EMOJI;
+  private static final String COMBINED_POOL =
+      ALPHANUMERIC + SPECIAL + UNICODE_EXTENDED + UNICODE_EMOJI;
   private static final int[] VALID_CODE_POINTS = COMBINED_POOL.codePoints().toArray();
 
   private static char[] generateRandom(int length) {
@@ -124,10 +127,10 @@ class HiFunctionTest {
     try {
       Thread.currentThread().interrupt();
 
-      ScramRuntimeException exception = assertThrows(ScramRuntimeException.class,
+      ScramInterruptedException exception = assertThrows(ScramInterruptedException.class,
           () -> CryptoUtil.hi(mac, password, salt, iterations));
 
-      assertTrue(exception.getMessage().contains("interrupted"),
+      assertTrue(exception.getMessage().contains("PBKDF2 computation interrupted"),
           "Expected interruption error but got: " + exception.getMessage());
     } finally {
       // CRITICAL: Clear the interrupt flag so it doesn't bleed into other tests!
@@ -171,10 +174,8 @@ class HiFunctionTest {
     // 6. Verify the captured exception
     Throwable caught = actualError.get();
     assertNotNull(caught, "Expected an exception, but the task completed normally.");
-    assertInstanceOf(ScramRuntimeException.class, caught,
-        "Expected ScramRuntimeException but got: " + caught.getClass().getName());
-    assertTrue(caught.getMessage().contains("interrupted"),
-        "Unexpected error message: " + caught.getMessage());
+    assertInstanceOf(ScramInterruptedException.class, caught,
+        "Expected ScramInterruptedException but got: " + caught.getClass().getName());
   }
 
 }

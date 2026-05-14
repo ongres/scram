@@ -21,6 +21,7 @@ import javax.crypto.Mac;
 import javax.crypto.ShortBufferException;
 import javax.crypto.spec.SecretKeySpec;
 
+import com.ongres.scram.common.exception.ScramInterruptedException;
 import com.ongres.scram.common.exception.ScramRuntimeException;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,8 +30,19 @@ import org.jetbrains.annotations.NotNull;
  */
 final class CryptoUtil {
 
+  /**
+   * The interval at which the PBKDF2 loop checks for thread interruption.
+   *
+   * <p>Checking the thread state via {@link Thread#isInterrupted()} on every
+   * iteration requires a native JVM call, which significantly degrades hashing
+   * throughput. This stride value batches iterations, allowing the loop to execute
+   * rapidly while remaining responsive to shutdown signals.
+   *
+   * <p><b>Note:</b> This value MUST be a power of two. This allows the compiler
+   * to use a highly optimized bitwise AND operation {@code (i & (STRIDE - 1))}
+   * rather than a slower modulo operator.
+   */
   private static final int INTERRUPT_CHECK_STRIDE = 1024;
-  private static final byte[] INT1 = new byte[] {0, 0, 0, 1};
 
   private CryptoUtil() {
     throw new IllegalStateException("Utility class");
@@ -88,16 +100,20 @@ final class CryptoUtil {
     }
 
     mac.update(salt);
-    mac.update(INT1);
+    // The 4-octet encoding of the integer 1 INT(1).
+    mac.update((byte) 0);
+    mac.update((byte) 0);
+    mac.update((byte) 0);
+    mac.update((byte) 1);
+
     byte[] ui = mac.doFinal();
     byte[] result = Arrays.copyOf(ui, ui.length);
+    boolean success = false;
 
     try {
       for (int i = 2; i <= iterationCount; i++) {
-        if ((i & (INTERRUPT_CHECK_STRIDE - 1)) == 0 && Thread.interrupted()) {
-          Thread.currentThread().interrupt();
-          Arrays.fill(result, (byte) 0);
-          throw new ScramRuntimeException("PBKDF2 computation was interrupted");
+        if ((i & (INTERRUPT_CHECK_STRIDE - 1)) == 0 && Thread.currentThread().isInterrupted()) {
+          throw new ScramInterruptedException("PBKDF2 computation interrupted at iteration " + i);
         }
         mac.update(ui);
         mac.doFinal(ui, 0);
@@ -106,12 +122,16 @@ final class CryptoUtil {
           result[j] ^= ui[j];
         }
       }
+
+      success = true;
       return result;
     } catch (ShortBufferException e) {
-      Arrays.fill(result, (byte) 0);
       throw new AssertionError("Buffer sized by Mac.doFinal() is suddenly too short", e);
     } finally {
       Arrays.fill(ui, (byte) 0);
+      if (!success) {
+        Arrays.fill(result, (byte) 0);
+      }
     }
   }
 
