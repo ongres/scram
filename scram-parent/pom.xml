@@ -66,8 +66,8 @@
     <project.build.outputTimestamp>2025-09-16T20:15:00Z</project.build.outputTimestamp>
     <!-- Dependency versions -->
     <jetbrains-annotations.version>26.1.0</jetbrains-annotations.version>
-    <junit5.version>6.0.3</junit5.version>
-    <saslprep.version>2.2</saslprep.version>
+    <junit5.version>6.1.0</junit5.version>
+    <saslprep.version>2.3</saslprep.version>
     <!-- Plugins versions -->
     <compiler-plugin.version>3.15.0</compiler-plugin.version>
     <jar-plugin.version>3.5.0</jar-plugin.version>
@@ -77,10 +77,10 @@
     <resources-plugin.version>3.5.0</resources-plugin.version>
     <surefire-plugin.version>3.5.5</surefire-plugin.version>
     <failsafe-plugin.version>3.5.5</failsafe-plugin.version>
-    <enforcer-plugin.version>3.6.2</enforcer-plugin.version>
+    <enforcer-plugin.version>3.6.3</enforcer-plugin.version>
     <install-plugin.version>3.1.4</install-plugin.version>
     <central-publishing-maven-plugin.version>0.10.0</central-publishing-maven-plugin.version>
-    <invoker-plugin.version>3.10.0</invoker-plugin.version>
+    <invoker-plugin.version>3.10.1</invoker-plugin.version>
     <gpg-plugin.version>3.2.8</gpg-plugin.version>
     <jacoco-plugin.verson>0.8.14</jacoco-plugin.verson>
     <flatten-maven-plugin.version>1.7.3</flatten-maven-plugin.version>
@@ -88,7 +88,7 @@
     <sortpom-plugin.version>4.0.0</sortpom-plugin.version>
     <cyclonedx-plugin.version>2.9.1</cyclonedx-plugin.version>
     <!-- Checkstyle, SpotBugs and PMD properties -->
-    <checkstyle.version>13.4.1</checkstyle.version>
+    <checkstyle.version>13.4.2</checkstyle.version>
     <checkstyle-plugin.version>3.6.0</checkstyle-plugin.version>
     <errorprone.version>2.49.0</errorprone.version>
     <spotbugs.version>4.9.8</spotbugs.version>
