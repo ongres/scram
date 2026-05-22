@@ -113,9 +113,9 @@ public final class ScramClient implements MessageFlow {
     this.stringPreparation = builder.stringPreparation;
     this.username = builder.username;
     this.password = builder.password != null ? builder.password.clone() : null;
-    this.saltedPassword = builder.saltedPassword;
-    this.clientKey = builder.clientKey;
-    this.serverKey = builder.serverKey;
+    this.saltedPassword = builder.saltedPassword != null ? builder.saltedPassword.clone() : null;
+    this.clientKey = builder.clientKey != null ? builder.clientKey.clone() : null;
+    this.serverKey = builder.serverKey != null ? builder.serverKey.clone() : null;
     this.nonce = builder.nonce;
     this.cbindType = builder.cbindType;
     this.cbindData = builder.cbindData;
@@ -181,13 +181,28 @@ public final class ScramClient implements MessageFlow {
     if (currentState != Stage.SERVER_FIRST || serverFirstProcessor == null) {
       throw new IllegalStateException("Invalid state for processing client final message");
     }
-    if (password != null) {
-      this.clientFinalProcessor = serverFirstProcessor.clientFinalProcessor(password);
-      Arrays.fill(password, (char) 0); // clear password after use
-    } else if (saltedPassword != null) {
-      this.clientFinalProcessor = serverFirstProcessor.clientFinalProcessor(saltedPassword);
-    } else if (clientKey != null && serverKey != null) {
-      this.clientFinalProcessor = serverFirstProcessor.clientFinalProcessor(clientKey, serverKey);
+    try {
+      if (password != null) {
+        this.clientFinalProcessor = serverFirstProcessor.clientFinalProcessor(password);
+      } else if (saltedPassword != null) {
+        this.clientFinalProcessor = serverFirstProcessor.clientFinalProcessor(saltedPassword);
+      } else if (clientKey != null && serverKey != null) {
+        this.clientFinalProcessor = serverFirstProcessor.clientFinalProcessor(clientKey, serverKey);
+      }
+    } finally {
+      // Wipe the sensitive data, even if an exception was thrown above
+      if (password != null) {
+        Arrays.fill(password, (char) 0);
+      }
+      if (saltedPassword != null) {
+        Arrays.fill(saltedPassword, (byte) 0);
+      }
+      if (clientKey != null) {
+        Arrays.fill(clientKey, (byte) 0);
+      }
+      if (serverKey != null) {
+        Arrays.fill(serverKey, (byte) 0);
+      }
     }
     ClientFinalMessage clientFinalMessage = clientFinalProcessor.clientFinalMessage(cbindData);
     this.currentState = Stage.CLIENT_FINAL;
