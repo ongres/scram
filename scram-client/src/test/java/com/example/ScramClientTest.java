@@ -7,14 +7,9 @@ package com.example;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.Base64;
 
 import com.ongres.scram.client.ScramClient;
 import com.ongres.scram.common.ClientFinalMessage;
@@ -23,17 +18,16 @@ import org.junit.jupiter.api.Test;
 
 class ScramClientTest {
 
-  @Test
-  void completeTest()
-      throws CertificateException, IOException {
-    final X509Certificate cert = getCert();
-    final byte[] channelBindingData = TlsServerEndpoint.getChannelBindingData(cert);
+  private static final byte[] CBIND_DATA = Base64.getDecoder().decode("Dv4abLuK1TiHcq3tJXrHODILGF"
+      + "QuC1M4kfP4w7dyRvjadaqGq8D/Po1XeJZpzUqal+mAKXNGytneo5KPOsJnYA==");
 
+  @Test
+  void completeTest() {
     ScramClient scramSession = ScramClient.builder()
         .advertisedMechanisms(Arrays.asList("SCRAM-SHA-256", "SCRAM-SHA-256-PLUS"))
         .username("user")
         .password("pencil".toCharArray())
-        .channelBinding(TlsServerEndpoint.TLS_SERVER_END_POINT, channelBindingData)
+        .channelBinding(TlsServerEndpoint.TLS_SERVER_END_POINT, CBIND_DATA)
         .nonceSupplier(() -> "rOprNGfwEbeRWgbNEkqO")
         .build();
     assertEquals("SCRAM-SHA-256-PLUS", scramSession.getScramMechanism().getName());
@@ -58,34 +52,41 @@ class ScramClientTest {
         () -> scramSession.serverFinalMessage("v=9k31qsYXd74d6BnbFf9jE+r9un6a8ou85FYeNxDAdqc="));
   }
 
-  private X509Certificate getCert() throws CertificateException, IOException {
-    String pemFilePath = "/SHA512withRSA.pem";
-    // Create a CertificateFactory object for X.509
-    CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
-    final X509Certificate cert;
-    try (InputStream inputStream = getClass().getResourceAsStream(pemFilePath)) {
-      // Check if the file exists
-      assertNotNull(inputStream, "Certificate file not found");
-      // Load the PEM file as an X.509 certificate
-      cert = (X509Certificate) certFactory.generateCertificate(inputStream);
-      // Perform your assertions or further tests here
-      assertNotNull(cert);
-      assertEquals("SHA512withRSA", cert.getSigAlgName());
-    }
-    return cert;
+  @Test
+  void completeTestWithoutChannelBinding() {
+    ScramClient scramSession = ScramClient.builder()
+        .advertisedMechanisms(Arrays.asList("SCRAM-SHA-256", "SCRAM-SHA-256-PLUS"))
+        .username("user")
+        .password("pencil".toCharArray())
+        .nonceSupplier(() -> "rOprNGfwEbeRWgbNEkqO")
+        .build();
+    assertEquals("SCRAM-SHA-256", scramSession.getScramMechanism().getName());
+    assertEquals("n,,n=user,r=rOprNGfwEbeRWgbNEkqO",
+        scramSession.clientFirstMessage().toString());
+
+    assertDoesNotThrow(
+        () -> scramSession.serverFirstMessage(
+            "r=rOprNGfwEbeRWgbNEkqO%hvYDpWUa2RaTCAfuxFIlj)hNlF$k0,"
+                + "s=W22ZaJ0SNY7soEsUEjb6gQ==,"
+                + "i=4096"));
+
+    ClientFinalMessage clientFinalMessage = scramSession.clientFinalMessage();
+    assertEquals(
+        "c=biws,r=rOprNGfwEbeRWgbNEkqO%hvYDpWUa2RaTCAfuxFIlj)hNlF$k0"
+            + ",p=dHzbZapWIk4jUhN+Ute9ytag9zjfMHgsqmmiz7AndVQ=",
+        clientFinalMessage.toString());
+
+    assertDoesNotThrow(
+        () -> scramSession.serverFinalMessage("v=6rriTRBi23WpRR/wtup+mMhUZUn/dB5nLTJRsjl95G4="));
   }
 
   @Test
-  void iterationTest()
-      throws CertificateException, IOException {
-    final X509Certificate cert = getCert();
-    final byte[] channelBindingData = TlsServerEndpoint.getChannelBindingData(cert);
-
+  void iterationTest() {
     ScramClient scramSession = ScramClient.builder()
         .advertisedMechanisms(Arrays.asList("SCRAM-SHA-256"))
         .username("postgres")
         .password("pencil".toCharArray())
-        .channelBinding(TlsServerEndpoint.TLS_SERVER_END_POINT, channelBindingData)
+        .channelBinding(TlsServerEndpoint.TLS_SERVER_END_POINT, CBIND_DATA)
         .nonceSupplier(() -> "1q^MGrWUi{etW+H7(#k431kB")
         .build();
     assertEquals("SCRAM-SHA-256", scramSession.getScramMechanism().getName());
@@ -108,4 +109,5 @@ class ScramClientTest {
     assertDoesNotThrow(
         () -> scramSession.serverFinalMessage("v=sz/isCwVSUn/TBWeYABz6WaoZIcfsui9NPaJCoxxAjY="));
   }
+
 }

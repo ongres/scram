@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
 import com.ongres.scram.common.ScramFunctions;
@@ -27,7 +26,7 @@ class NonceTest {
   }
 
   @Test
-  void nonceValid() throws NoSuchAlgorithmException {
+  void nonceValid() {
     int nonces = 1000;
     int nonceMaxSize = 100;
     SecureRandom random = new SecureRandom();
