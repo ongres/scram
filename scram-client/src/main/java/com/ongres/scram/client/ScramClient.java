@@ -43,7 +43,8 @@ import org.jetbrains.annotations.Nullable;
  *     .advertisedMechanisms(Arrays.asList("SCRAM-SHA-256", "SCRAM-SHA-256-PLUS"))
  *     .username("user")
  *     .password("pencil".toCharArray())
- *     .channelBinding("tls-server-end-point", channelBindingData) // client supports channel binding
+ *     .channelBindingPolicy(ChannelBindingPolicy.REQUIRE) // client requires channel binding
+ *     .channelBinding("tls-server-end-point", channelBindingData)
  *     .build();
  *
  *   // The build() call negotiates the SCRAM mechanism to be used. In this example,
@@ -305,6 +306,15 @@ public final class ScramClient implements MessageFlow {
   public interface FinalBuildStage {
 
     /**
+     * Sets the channel binding policy to determine how the client negotiates
+     * security layers with the server. By default is ALLOW.
+     *
+     * @param policy the channel binding policy (DISABLE, ALLOW, REQUIRE)
+     * @return {@code this} builder for use in a chained invocation
+     */
+    FinalBuildStage channelBindingPolicy(@NotNull ChannelBindingPolicy policy);
+
+    /**
      * If the client supports channel binding negotiation, this method sets the type and data used
      * for channel binding.
      *
@@ -375,16 +385,21 @@ public final class ScramClient implements MessageFlow {
         @Nullable String provider);
 
     /**
-     * Returns the fully contructed ScramClient ready to start the message flow with the server.
+     * Returns the fully constructed {@link ScramClient} ready to start the message flow
+     * with the server.
      *
-     * @return ScramClient specific for the set of parameters
-     * @throws IllegalArgumentException if any parameter set is invalid
+     * @return a ScramClient instance configured with the specified parameters
+     * @throws IllegalArgumentException if a parameter is null or empty
+     * @throws MechanismNegotiationException if the local mechanism configuration is incompatible
+     *           with the client state engine or missing core fallback options
+     * @throws ChannelBindingException if a channel binding policy mismatch or cryptographic
+     *           negotiation failure occurs
      */
     ScramClient build();
   }
 
   /**
-   * Builds instances of type {@link ScramClient ScramClient}. Initialize attributes and then invoke
+   * Builds instances of type {@link ScramClient}. Initialize attributes and then invoke
    * the {@link #build()} method to create an instance.
    *
    * @apiNote {@code Builder} is not thread-safe and generally should not be stored in a field or
@@ -396,6 +411,7 @@ public final class ScramClient implements MessageFlow {
     ScramMechanism selectedScramMechanism;
     Collection<String> scramMechanisms;
     Gs2CbindFlag channelBinding = Gs2CbindFlag.CLIENT_NOT;
+    ChannelBindingPolicy bindingPolicy = ChannelBindingPolicy.ALLOW;
     StringPreparation stringPreparation = StringPreparation.SASL_PREPARATION;
     int nonceLength = 24;
     String nonce;
@@ -421,13 +437,15 @@ public final class ScramClient implements MessageFlow {
     }
 
     @Override
+    public FinalBuildStage channelBindingPolicy(@NotNull ChannelBindingPolicy policy) {
+      this.bindingPolicy = checkNotNull(policy, "policy");
+      return this;
+    }
+
+    @Override
     public FinalBuildStage channelBinding(@Nullable String cbindType, byte @Nullable [] cbindData) {
       this.cbindType = cbindType;
       this.cbindData = cbindData != null ? cbindData.clone() : null;
-      this.channelBinding = cbindType != null && cbindData != null
-          && !cbindType.isEmpty() && cbindData.length > 0
-              ? Gs2CbindFlag.CLIENT_YES_SERVER_NOT
-              : Gs2CbindFlag.CLIENT_NOT;
       return this;
     }
 
@@ -510,30 +528,54 @@ public final class ScramClient implements MessageFlow {
     private ScramMechanism mechanismNegotiation() {
       final ScramMechanism cbind = selectMechanism(scramMechanisms, true);
       final ScramMechanism noncbind = selectMechanism(scramMechanisms, false);
-      ScramMechanism mechanismNegotiaion = cbind != null ? cbind : noncbind;
-      if (mechanismNegotiaion == null) {
-        throw new IllegalArgumentException("Either a bare or plus mechanism must be present");
+
+      ScramMechanism mechanismNegotiation = cbind != null ? cbind : noncbind;
+      if (mechanismNegotiation == null) {
+        throw new MechanismNegotiationException("Either a bare or -PLUS mechanism must be present");
       }
 
-      if (channelBinding == Gs2CbindFlag.CLIENT_YES_SERVER_NOT
-          && mechanismNegotiaion.isPlus()) {
-        // Client and server supports channel binding
-        this.channelBinding = Gs2CbindFlag.CHANNEL_BINDING_REQUIRED;
-      } else {
-        // Client or server does not support channel binding
-        if (noncbind == null) {
-          throw new IllegalArgumentException("A non-PLUS mechanism was not advertised");
-        }
+      // If explicitly DISABLED, strip any passed data immediately to enforce standard SCRAM
+      if (bindingPolicy == ChannelBindingPolicy.DISABLE) {
         this.cbindType = null;
         this.cbindData = null;
-        mechanismNegotiaion = noncbind;
-      }
-      if (channelBinding == Gs2CbindFlag.CHANNEL_BINDING_REQUIRED
-          && (cbindType == null || cbindData == null)) {
-        throw new IllegalArgumentException("Channel Binding type and data are required");
       }
 
-      return mechanismNegotiaion;
+      // Check client capability constraints
+      boolean serverSupportsPlus = cbind != null;
+      boolean clientHasData = cbindType != null && cbindData != null
+          && !cbindType.isEmpty() && cbindData.length > 0;
+
+      // Strict Enforcement Policy
+      if (bindingPolicy == ChannelBindingPolicy.REQUIRE) {
+        if (!serverSupportsPlus) {
+          throw new ChannelBindingException(
+              "Channel binding is required, but the server does not support -PLUS mechanisms");
+        }
+        if (!clientHasData) {
+          throw new ChannelBindingException(
+              "Channel binding is required, but no channel binding data or type was provided");
+        }
+        this.channelBinding = Gs2CbindFlag.CHANNEL_BINDING_REQUIRED;
+        mechanismNegotiation = cbind;
+      } else if (bindingPolicy == ChannelBindingPolicy.ALLOW && serverSupportsPlus && clientHasData) {
+        // Flexible Upgrade Policy
+        this.channelBinding = Gs2CbindFlag.CHANNEL_BINDING_REQUIRED;
+        mechanismNegotiation = cbind;
+      } else {
+        // Safe Downgrade
+        if (noncbind == null) {
+          throw new MechanismNegotiationException("A non-PLUS mechanism was not advertised by the server");
+        }
+
+        // RFC 5802 Protection: If the client possesses data but is forced to fallback
+        // because the server lacks -PLUS, it MUST emit 'y' to intercept mid-flight downgrade attacks.
+        this.channelBinding = clientHasData ? Gs2CbindFlag.CLIENT_YES_SERVER_NOT : Gs2CbindFlag.CLIENT_NOT;
+        this.cbindType = null;
+        this.cbindData = null;
+        mechanismNegotiation = noncbind;
+      }
+
+      return mechanismNegotiation;
     }
 
     /**

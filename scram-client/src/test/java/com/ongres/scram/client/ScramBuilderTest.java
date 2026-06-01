@@ -17,12 +17,12 @@ import com.ongres.scram.common.ClientFinalMessage;
 import com.ongres.scram.common.ScramFunctions;
 import com.ongres.scram.common.ScramMechanism;
 import com.ongres.scram.common.StringPreparation;
-import com.ongres.scram.common.exception.ScramParseException;
+import com.ongres.scram.common.exception.ScramRuntimeException;
 import org.junit.jupiter.api.Test;
 
 class ScramBuilderTest {
   @Test
-  void getValid() throws ScramParseException {
+  void getValid() {
     ScramClient client1 = ScramClient.builder()
         .advertisedMechanisms(Arrays.asList("SCRAM-SHA-1"))
         .username("*")
@@ -114,12 +114,27 @@ class ScramBuilderTest {
 
   @Test
   void getInvalid() {
-    assertThrows(IllegalArgumentException.class, () -> ScramClient.builder()
-        .advertisedMechanisms(Arrays.asList("SCRAM-SHA-1-PLUS"))
-        .username("*")
-        .password("*".toCharArray())
-        .stringPreparation(StringPreparation.NO_PREPARATION)
-        .build());
+    MechanismNegotiationException assertThrows = assertThrows(MechanismNegotiationException.class,
+        () -> ScramClient.builder()
+            .advertisedMechanisms(Arrays.asList("SCRAM-SHA-1-PLUS"))
+            .username("*")
+            .password("*".toCharArray())
+            .stringPreparation(StringPreparation.NO_PREPARATION)
+            .build());
+
+    assertEquals("A non-PLUS mechanism was not advertised by the server", assertThrows.getMessage());
+  }
+
+  @Test
+  void invalidMechanismsTests() {
+    MechanismNegotiationException assertThrows = assertThrows(MechanismNegotiationException.class,
+        () -> ScramClient.builder()
+            .advertisedMechanisms(Arrays.asList("SCRAM-MD5-128"))
+            .username("postgres")
+            .password("pencil".toCharArray())
+            .build());
+
+    assertEquals("Either a bare or -PLUS mechanism must be present", assertThrows.getMessage());
   }
 
 }

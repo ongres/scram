@@ -17,6 +17,8 @@ package com.ongres.scram.common.exception;
  * @see Thread#isInterrupted()
  * @see InterruptedException
  * @see ScramRuntimeException
+ *
+ * @since 3.3
  */
 public class ScramInterruptedException extends ScramRuntimeException {
 
