@@ -79,7 +79,15 @@ public enum ScramMechanism {
   /**
    * SCRAM-SHA-512-PLUS mechanism.
    */
-  SCRAM_SHA_512_PLUS("SCRAM-SHA-512-PLUS", "SHA-512", "HmacSHA512");
+  SCRAM_SHA_512_PLUS("SCRAM-SHA-512-PLUS", "SHA-512", "HmacSHA512"),
+  /**
+   * SCRAM-SHA3-512 mechanism.
+   */
+  SCRAM_SHA3_512("SCRAM-SHA3-512", "SHA3-512", "HmacSHA3-512"),
+  /**
+   * SCRAM-SHA3-512-PLUS mechanism.
+   */
+  SCRAM_SHA3_512_PLUS("SCRAM-SHA3-512-PLUS", "SHA3-512", "HmacSHA3-512");
 
   private static final @Unmodifiable Map<String, ScramMechanism> BY_NAME_MAPPING =
       Arrays.stream(values())

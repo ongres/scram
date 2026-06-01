@@ -12,9 +12,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Base64;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -26,7 +28,6 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
 import com.ongres.scram.common.exception.ScramInterruptedException;
-import com.ongres.scram.common.exception.ScramRuntimeException;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -38,13 +39,11 @@ class HiFunctionTest {
   private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
   // Character sets for different edge cases
-  private static final String ALPHANUMERIC =
-      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  private static final String ALPHANUMERIC = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   private static final String SPECIAL = "!@#$%^&*()-_=+[{]}\\|;:'\",.<>/?`~ ";
   private static final String UNICODE_EMOJI = "🚀🔥🛡️🔑";
   private static final String UNICODE_EXTENDED = "こんにちは世界"; // "Hello World" in Japanese
-  private static final String COMBINED_POOL =
-      ALPHANUMERIC + SPECIAL + UNICODE_EXTENDED + UNICODE_EMOJI;
+  private static final String COMBINED_POOL = ALPHANUMERIC + SPECIAL + UNICODE_EXTENDED + UNICODE_EMOJI;
   private static final int[] VALID_CODE_POINTS = COMBINED_POOL.codePoints().toArray();
 
   private static char[] generateRandom(int length) {
@@ -176,6 +175,29 @@ class HiFunctionTest {
     assertNotNull(caught, "Expected an exception, but the task completed normally.");
     assertInstanceOf(ScramInterruptedException.class, caught,
         "Expected ScramInterruptedException but got: " + caught.getClass().getName());
+  }
+
+  @Test
+  void testHmacSHA3_512() throws Exception {
+    // Derived key generated via "golang.org/x/crypto/pbkdf2"
+    String expectedHex = "AVe/93um8jge6rPdfKvlV11zTpETcH56COQ+GToe4F3tv+99LYkIYYY4rLFbjbAz+6mdbZXVBbphDmgN2o3LSQ==";
+    byte[] expected = Base64.getDecoder().decode(expectedHex);
+
+    // Gracefully skip on JVMs (like Java 8) that lack native SHA-3 support
+    Mac mac;
+    try {
+      mac = Mac.getInstance("HmacSHA3-512");
+    } catch (NoSuchAlgorithmException e) {
+      Assumptions.abort("Skipping test: JVM does not support HmacSHA3-512");
+      return;
+    }
+
+    char[] password = "my_super_secret_password".toCharArray();
+    byte[] salt = "my_random_salt_value".getBytes(StandardCharsets.UTF_8);
+    int iterations = 100_000;
+    byte[] actual = CryptoUtil.hi(mac, password, salt, iterations);
+
+    assertArrayEquals(expected, actual, "Hi mismatch for HmacSHA3-512");
   }
 
 }
