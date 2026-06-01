@@ -8,8 +8,6 @@ package com.ongres.scram.common;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.ongres.scram.common.Gs2CbindFlag;
-import com.ongres.scram.common.Gs2Header;
 import org.junit.jupiter.api.Test;
 
 class Gs2HeaderTest {
