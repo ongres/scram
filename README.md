@@ -37,13 +37,15 @@ The code is licensed under the BSD "Simplified 2 Clause" license (see [LICENSE](
 
 Javadoc: [![Javadocs](http://javadoc.io/badge/com.ongres.scram/scram-client.svg?label=scram-client)](http://javadoc.io/doc/com.ongres.scram/scram-client)
 
-### Example of use:
+### Example of use
+
 ```java
-byte[] cbindData = ...
+byte[] cbindData = ... // Get the channel binding data
 ScramClient scramClient = ScramClient.builder()
     .advertisedMechanisms(Arrays.asList("SCRAM-SHA-256", "SCRAM-SHA-256-PLUS"))
     .username("user")
     .password("pencil".toCharArray())
+    .channelBindingPolicy(ChannelBindingPolicy.ALLOW) // enforce a channel binding policy
     .channelBinding("tls-server-end-point", cbindData) // client supports channel binding
     .build();
   // The build() call negotiates the SCRAM mechanism to be used. In this example,
