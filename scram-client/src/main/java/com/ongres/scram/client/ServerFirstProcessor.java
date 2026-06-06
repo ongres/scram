@@ -7,7 +7,6 @@ package com.ongres.scram.client;
 
 import static com.ongres.scram.common.util.Preconditions.checkNotEmpty;
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.util.Base64;
 
@@ -56,7 +55,7 @@ final class ServerFirstProcessor {
         scramMechanism,
         stringPreparation,
         checkNotEmpty(password, "password"),
-        Base64.getDecoder().decode(serverFirstMessage.getSalt().getBytes(UTF_8)),
+        Base64.getDecoder().decode(serverFirstMessage.getSalt()),
         clientFirstMessage,
         serverFirstMessage);
   }

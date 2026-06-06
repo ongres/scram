@@ -9,15 +9,18 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collection;
+import java.util.Collections;
 
 import com.ongres.scram.common.ClientFinalMessage;
+import com.ongres.scram.common.ClientFirstMessage;
 import com.ongres.scram.common.ScramFunctions;
 import com.ongres.scram.common.ScramMechanism;
 import com.ongres.scram.common.StringPreparation;
-import com.ongres.scram.common.exception.ScramRuntimeException;
 import org.junit.jupiter.api.Test;
 
 class ScramBuilderTest {
@@ -135,6 +138,52 @@ class ScramBuilderTest {
             .build());
 
     assertEquals("Either a bare or -PLUS mechanism must be present", assertThrows.getMessage());
+  }
+
+  @Test
+  void testSecureRandomAlgorithmProvider() {
+    assertDoesNotThrow(() -> ScramClient.builder()
+        .advertisedMechanisms(Arrays.asList("SCRAM-SHA-256"))
+        .username("user")
+        .password("pencil".toCharArray())
+        .secureRandomAlgorithmProvider("DRBG", null)
+        .build());
+  }
+
+  @Test
+  void testSecureRandomAlgorithmProviderThrows() {
+    assertThrows(IllegalArgumentException.class, () -> ScramClient.builder()
+        .advertisedMechanisms(Arrays.asList("SCRAM-SHA-256"))
+        .username("user")
+        .password("pencil".toCharArray())
+        .secureRandomAlgorithmProvider("DRBG", "invalid")
+        .build());
+  }
+
+  @Test
+  void testEmptyMechanisms() {
+    IllegalArgumentException assertThrows = assertThrows(IllegalArgumentException.class,
+        () -> ScramClient.builder()
+            .advertisedMechanisms(Arrays.asList())
+            .username("user")
+            .password("pencil".toCharArray())
+            .build());
+
+    assertEquals("Argument 'scramMechanisms' is not valid", assertThrows.getMessage());
+  }
+
+  @Test
+  void testAuthzid() {
+    ScramClient scramClient = ScramClient.builder()
+        .advertisedMechanisms(Arrays.asList("SCRAM-SHA-256"))
+        .username("user")
+        .password("pencil".toCharArray())
+        .authzid("postgres")
+        .build();
+
+    ClientFirstMessage clientFirstMessage = scramClient.clientFirstMessage();
+    assertEquals("postgres", clientFirstMessage.getGs2Header().getAuthzid());
+    assertTrue(clientFirstMessage.toString().startsWith("n,a=postgres,n=user"));
   }
 
 }
