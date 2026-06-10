@@ -225,7 +225,10 @@ final class CryptoUtil {
    * @throws IllegalArgumentException if the saltSize is not positive, or if random is null
    */
   static byte @NotNull [] salt(int saltSize, @NotNull SecureRandom random) {
-    gt0(saltSize, "saltSize");
+    if (saltSize < 2) {
+      // Errata-ID: 2652
+      throw new IllegalArgumentException("'saltSize' must be at least 2, was: " + saltSize);
+    }
     checkNotNull(random, "random");
     byte[] randomSalt = new byte[saltSize];
     random.nextBytes(randomSalt);

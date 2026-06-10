@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### :bug: Bug Fixes
+
+- Resolve regression when passing pre-computed keys `.clientAndServerKey(clientKey, serverKey)`.
+
+### :rocket: New features
+
+- Introduces a static OID-to-Digest mapping table for `TlsServerEndpoint` to guarantee resolution when friendly algorithm names are unavailable or provider-specific.
+
 ## [3.3] - 2026-06-04
 
 ### :lock: Security

@@ -6,11 +6,13 @@
 package com.ongres.scram.common;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Locale;
 
@@ -265,5 +267,11 @@ class ScramFunctionsTest {
             ScramMechanism.SCRAM_SHA_256, generateServerKeySha256(),
             com.ongres.scram.common.RfcExampleSha256.AUTH_MESSAGE,
             generateServerSignatureSha256()));
+  }
+
+  @Test
+  void verifySaltHigherThan2() {
+    assertThrows(IllegalArgumentException.class, () -> ScramFunctions.salt(1, new SecureRandom()));
+    assertDoesNotThrow(() -> ScramFunctions.salt(2, new SecureRandom()));
   }
 }
