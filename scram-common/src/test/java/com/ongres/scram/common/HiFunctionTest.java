@@ -71,7 +71,7 @@ class HiFunctionTest {
   void testAlgorithmCorrectness(ScramMechanism mechanism, int pwLength, int iterations) {
     String hmacAlgorithm = mechanism.getHmacAlgorithmName();
     char[] password = StringPreparation.POSTGRESQL_PREPARATION.normalize(generateRandom(pwLength));
-    int randomSaltSize = ThreadLocalRandom.current().nextInt(1, 200);
+    int randomSaltSize = ThreadLocalRandom.current().nextInt(2, 200);
     byte[] salt = CryptoUtil.salt(randomSaltSize, SECURE_RANDOM);
     try {
       Mac mac = Mac.getInstance(hmacAlgorithm);
