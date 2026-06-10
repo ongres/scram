@@ -124,8 +124,7 @@ class ScramClientTest {
 
     // Pre-computed clientKey/serverKey
     byte[] saltedPassword = ScramFunctions.saltedPassword(
-        mechanism, StringPreparation.SASL_PREPARATION, "pencil".toCharArray(), salt, iterationCount
-    );
+        mechanism, StringPreparation.SASL_PREPARATION, "pencil".toCharArray(), salt, iterationCount);
     byte[] clientKey = ScramFunctions.clientKey(mechanism, saltedPassword);
     byte[] serverKey = ScramFunctions.serverKey(mechanism, saltedPassword);
 
