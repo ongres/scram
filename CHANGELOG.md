@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [3.4] - 2026-06-10
+
 ### :bug: Bug Fixes
 
 - Resolve regression when passing pre-computed keys `.clientAndServerKey(clientKey, serverKey)`.
@@ -88,4 +90,5 @@ All notable changes to this project will be documented in this file.
 [3.1]: https://github.com/ongres/scram/compare/3.0...3.1
 [3.2]: https://github.com/ongres/scram/compare/3.1...3.2
 [3.3]: https://github.com/ongres/scram/compare/3.2...3.3
-[Unreleased]: https://github.com/ongres/scram/compare/3.3...main
+[3.4]: https://github.com/ongres/scram/compare/3.4...3.4
+[Unreleased]: https://github.com/ongres/scram/compare/3.4...main
