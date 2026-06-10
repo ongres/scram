@@ -20,7 +20,6 @@ import com.ongres.scram.client.ScramClient;
 import com.ongres.scram.common.ClientFirstMessage;
 import com.ongres.scram.common.Gs2CbindFlag;
 import com.ongres.scram.common.Gs2Header;
-import com.ongres.scram.common.exception.ScramRuntimeException;
 import com.ongres.scram.common.util.TlsServerEndpoint;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.DisplayName;

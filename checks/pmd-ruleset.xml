@@ -16,12 +16,19 @@
     <exclude name="AvoidReassigningLoopVariables" />
     <exclude name="AccessorClassGeneration" />
     <exclude name="ImplicitFunctionalInterface" />
+    <exclude name="AvoidUsingHardCodedIP" />
   </rule>
 
   <rule ref="category/java/errorprone.xml">
     <exclude name="AvoidLiteralsInIfCondition" />
     <exclude name="NullAssignment" />
     <exclude name="AvoidFieldNameMatchingMethodName" />
+  </rule>
+
+  <rule ref="category/java/errorprone.xml/AvoidDuplicateLiterals">
+    <properties>
+      <property name="maxDuplicateLiterals" value="6" />
+    </properties>
   </rule>
 
   <rule ref="category/java/errorprone.xml/AssignmentInOperand">

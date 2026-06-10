@@ -18,6 +18,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Locale;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assumptions;
@@ -38,10 +39,16 @@ class TlsServerEndpointTest {
             "MD5withRSA", "SHA-256"),
 
         // Standard explicit algorithms
+        Arguments.of(loadCertificate("/SHA224withRSA.pem"),
+            "SHA224withRSA", "SHA-224"),
         Arguments.of(loadCertificate("/SHA256withECDSA.pem"),
             "SHA256withECDSA", "SHA-256"),
         Arguments.of(loadCertificate("/SHA512withRSA.pem"),
             "SHA512withRSA", "SHA-512"),
+        Arguments.of(loadCertificate("/SHA512_224withRSA.pem"),
+            "SHA512/224withRSA", "SHA-512/224"),
+        Arguments.of(loadCertificate("/SHA512_256withRSA.pem"),
+            "SHA512/256withRSA", "SHA-512/256"),
 
         // Modern algorithms (Might be skipped on Java 8 if provider is missing)
         Arguments.of(loadCertificate("/SHA3-512withECDSA.pem"),
@@ -99,7 +106,9 @@ class TlsServerEndpointTest {
     NoSuchAlgorithmException exception = assertThrows(NoSuchAlgorithmException.class,
         () -> TlsServerEndpoint.getChannelBindingHash(cert));
 
-    assertEquals("Could not determine server certificate signature algorithm: " + sigAlg,
+    assertEquals(String.format(Locale.ROOT,
+        "Could not determine server certificate signature algorithm. Name: %s, OID: %s",
+        cert.getSigAlgName(), cert.getSigAlgOID()),
         exception.getMessage());
 
     // 2. Ensure the deprecated method swallows the exception and returns an empty array
