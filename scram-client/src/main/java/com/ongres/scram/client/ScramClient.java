@@ -583,8 +583,8 @@ public final class ScramClient implements MessageFlow {
      * This method classifies SCRAM mechanisms by two properties: whether they support channel
      * binding; and a priority, which is higher for safer algorithms (like SHA-256 vs SHA-1).
      *
-     * @param channelBinding True to select {@code -PLUS} mechanisms.
      * @param scramMechanisms The mechanisms supported by the other peer
+     * @param channelBinding True to select {@code -PLUS} mechanisms.
      * @return The selected mechanism, or null if no mechanism matched
      */
     private static @Nullable ScramMechanism selectMechanism(
