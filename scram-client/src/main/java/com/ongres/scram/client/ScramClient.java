@@ -13,6 +13,7 @@ import static com.ongres.scram.common.util.Preconditions.gt0;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Supplier;
@@ -486,7 +487,7 @@ public final class ScramClient implements MessageFlow {
         @NotNull Collection<@NotNull String> scramMechanisms) {
       checkNotNull(scramMechanisms, "scramMechanisms");
       checkArgument(!scramMechanisms.isEmpty(), "scramMechanisms");
-      this.scramMechanisms = scramMechanisms;
+      this.scramMechanisms = new ArrayList<>(scramMechanisms);
       return this;
     }
 
