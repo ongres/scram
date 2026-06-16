@@ -14,10 +14,9 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.security.spec.PSSParameterSpec;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -38,10 +37,14 @@ public final class TlsServerEndpoint {
    * A static mapping of universally standard signature OIDs to their underlying digest algorithms.
    * This guarantees resolution even if the JCE provider fails to provide a friendly string name.
    */
-  private static final Map<String, String> OID_TO_DIGEST;
+  private static final Map<String, String> OID_TO_DIGEST = digestAlgorithmByOid();
 
-  static {
-    ConcurrentMap<String, String> map = new ConcurrentHashMap<>();
+  private TlsServerEndpoint() {
+    throw new IllegalStateException("Utility class");
+  }
+
+  private static Map<String, String> digestAlgorithmByOid() {
+    Map<String, String> map = new HashMap<>(64);
     // OIDs associated with RSA Signatures
     map.put("1.2.840.113549.1.1.4", "MD5"); // MD5withRSA
     map.put("1.2.840.113549.1.1.5", "SHA-1"); // SHA1withRSA
@@ -75,12 +78,7 @@ public final class TlsServerEndpoint {
     map.put("2.16.840.1.101.3.4.3.6", "SHA3-256"); // SHA3-256withDSA
     map.put("2.16.840.1.101.3.4.3.7", "SHA3-384"); // SHA3-384withDSA
     map.put("2.16.840.1.101.3.4.3.8", "SHA3-512"); // SHA3-512withDSA
-
-    OID_TO_DIGEST = Collections.unmodifiableMap(map);
-  }
-
-  private TlsServerEndpoint() {
-    throw new IllegalStateException("Utility class");
+    return Collections.unmodifiableMap(map);
   }
 
   /**
@@ -146,15 +144,17 @@ public final class TlsServerEndpoint {
 
     // Normalize the hash name (Applies to both Traditional and RSASSA-PSS)
     switch (algorithmName) {
-      // Enforce RFC 5929 Mandatory Upgrades to SHA-256
       case "MD5":
       case "SHA1":
       case "SHA-1":
-      case "SHA256":
+        // Enforce RFC 5929 Mandatory Upgrades to SHA-256
         algorithmName = "SHA-256";
         break;
       case "SHA224":
         algorithmName = "SHA-224";
+        break;
+      case "SHA256":
+        algorithmName = "SHA-256";
         break;
       case "SHA384":
         algorithmName = "SHA-384";
@@ -175,28 +175,6 @@ public final class TlsServerEndpoint {
     }
 
     return MessageDigest.getInstance(algorithmName);
-  }
-
-  /**
-   * The hash of the TLS server's certificate [RFC5280] as it appears, octet for octet, in the
-   * server's Certificate message.
-   *
-   * @param serverCert the TLS server's peer certificate
-   * @return the hash of the TLS server's peer certificate
-   * @throws CertificateEncodingException if an encoding error occurs.
-   * @deprecated this method silently swallows {@link NoSuchAlgorithmException} and returns an
-   *             empty array. It is replaced by {@link #getChannelBindingHash(X509Certificate)}
-   *             and will be removed in a future release.
-   */
-  @Deprecated
-  public static byte @NotNull [] getChannelBindingData(final @NotNull X509Certificate serverCert)
-      throws CertificateEncodingException {
-    try {
-      return getChannelBindingHash(serverCert);
-    } catch (NoSuchAlgorithmException e) {
-      // Preserve the old (and dangerous) silent-failure behavior for backward compatibility
-      return new byte[0];
-    }
   }
 
   /**
