@@ -150,6 +150,9 @@ public final class ServerFirstMessage extends AbstractScramMessage {
       throw new ScramParseException(
           "nonce must be the 1st element of the server-first-message");
     }
+    if (!isValidNonce(nonce.getValue())) {
+      throw new ScramParseException("nonce contains invalid characters");
+    }
     if (!nonce.getValue().startsWith(clientNonce)) {
       throw new ScramParseException("parsed nonce does not start with client nonce");
     }
@@ -174,6 +177,17 @@ public final class ServerFirstMessage extends AbstractScramMessage {
 
     return new ServerFirstMessage(clientNonce, nonce.getValue().substring(clientNonce.length()),
         salt.getValue(), iterationInt);
+  }
+
+  // RFC 5802 Section 7: printable = %x21-2B / %x2D-7E (printable ASCII excluding comma)
+  private static boolean isValidNonce(String nonce) {
+    for (int i = 0; i < nonce.length(); i++) {
+      char c = nonce.charAt(i);
+      if (c < 0x21 || c > 0x7E || c == ',') {
+        return false;
+      }
+    }
+    return true;
   }
 
   @Override
