@@ -10,7 +10,7 @@ package com.ongres.scram.client;
  * enforcement of SASL SCRAM Channel Binding.
  *
  * <p>This exception typically indicates a mismatch between the client's configured
- * {@code ChannelBindingPolicy} and the server's advertised mechanisms, or a failure
+ * {@link ChannelBindingPolicy} and the server's advertised mechanisms, or a failure
  * in processing cryptographic channel binding data (e.g., TLS server endpoint data).
  *
  * @since 3.3
@@ -22,10 +22,20 @@ public class ChannelBindingException extends MechanismNegotiationException {
   /**
    * Constructs a new {@code ChannelBindingException} with the specified detail message.
    *
-   * @param detail the detail message explaining the cause of the negotiation failure.
+   * @param message A String containing details about the exception
    */
-  public ChannelBindingException(String detail) {
-    super(detail);
+  public ChannelBindingException(String message) {
+    super(message);
   }
 
+  /**
+   * Constructs a new {@code ChannelBindingException} with the specified detail message and cause.
+   *
+   * @param message the detail message (which is saved for later retrieval by the Throwable.getMessage() method).
+   * @param cause the cause (which is saved for later retrieval by the Throwable.getCause() method).
+   *        (A null value is permitted,and indicates that the cause is nonexistent or unknown.)
+   */
+  public ChannelBindingException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

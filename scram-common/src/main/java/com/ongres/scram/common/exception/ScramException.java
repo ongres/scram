@@ -13,21 +13,22 @@ public class ScramException extends Exception {
   private static final long serialVersionUID = 1L;
 
   /**
-   * Constructs a new instance of ScramException with a detailed message.
+   * Constructs a new {@code ScramException} with the specified detail message.
    *
-   * @param detail A String containing details about the exception
+   * @param message A String containing details about the exception
    */
-  public ScramException(String detail) {
-    super(detail);
+  public ScramException(String message) {
+    super(message);
   }
 
   /**
-   * Constructs a new instance of ScramException with a detailed message and a root cause.
+   * Constructs a new {@code ScramException} with the specified detail message and cause.
    *
-   * @param detail A String containing details about the exception
-   * @param ex The root exception
+   * @param message the detail message (which is saved for later retrieval by the Throwable.getMessage() method).
+   * @param cause the cause (which is saved for later retrieval by the Throwable.getCause() method).
+   *        (A null value is permitted,and indicates that the cause is nonexistent or unknown.)
    */
-  public ScramException(String detail, Throwable ex) {
-    super(detail, ex);
+  public ScramException(String message, Throwable cause) {
+    super(message, cause);
   }
 }

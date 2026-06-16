@@ -17,22 +17,22 @@ public class ScramInvalidServerSignatureException extends ScramException {
   private static final long serialVersionUID = 1L;
 
   /**
-   * Constructs a new instance of ScramInvalidServerSignatureException with a detailed message.
+   * Constructs a new {@code ScramInvalidServerSignatureException} with the specified detail message.
    *
-   * @param detail A String containing details about the exception
+   * @param message A String containing details about the exception
    */
-  public ScramInvalidServerSignatureException(String detail) {
-    super(detail);
+  public ScramInvalidServerSignatureException(String message) {
+    super(message);
   }
 
   /**
-   * Constructs a new instance of ScramInvalidServerSignatureException with a detailed message and a
-   * root cause.
+   * Constructs a new {@code ScramInvalidServerSignatureException} with the specified detail message and cause.
    *
-   * @param detail A String containing details about the exception
-   * @param ex The root exception
+   * @param message the detail message (which is saved for later retrieval by the Throwable.getMessage() method).
+   * @param cause the cause (which is saved for later retrieval by the Throwable.getCause() method).
+   *        (A null value is permitted,and indicates that the cause is nonexistent or unknown.)
    */
-  public ScramInvalidServerSignatureException(String detail, Throwable ex) {
-    super(detail, ex);
+  public ScramInvalidServerSignatureException(String message, Throwable cause) {
+    super(message, cause);
   }
 }
