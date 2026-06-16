@@ -27,20 +27,20 @@ public class ScramInterruptedException extends ScramRuntimeException {
   /**
    * Constructs a new {@code ScramInterruptedException} with the specified detail message.
    *
-   * @param detail the detail message explaining the context of the interruption.
+   * @param message A String containing details about the exception
    */
-  public ScramInterruptedException(String detail) {
-    super(detail);
+  public ScramInterruptedException(String message) {
+    super(message);
   }
 
   /**
-   * Constructs a new {@code ScramInterruptedException} with the specified detail
-   * message and the underlying cause.
+   * Constructs a new {@code ScramInterruptedException} with the specified detail message and cause.
    *
-   * @param detail the detail message explaining the context.
-   * @param ex the cause (which is saved for later retrieval by the {@link #getCause()} method).
+   * @param message the detail message (which is saved for later retrieval by the Throwable.getMessage() method).
+   * @param cause the cause (which is saved for later retrieval by the Throwable.getCause() method).
+   *        (A null value is permitted,and indicates that the cause is nonexistent or unknown.)
    */
-  public ScramInterruptedException(String detail, Throwable ex) {
-    super(detail, ex);
+  public ScramInterruptedException(String message, Throwable cause) {
+    super(message, cause);
   }
 }

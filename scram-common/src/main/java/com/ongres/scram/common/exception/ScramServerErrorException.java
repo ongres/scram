@@ -27,7 +27,7 @@ public class ScramServerErrorException extends ScramException {
    * @param serverError The SCRAM error in the message
    */
   public ScramServerErrorException(String serverError) {
-    super(ServerErrorValue.getErrorMessage(serverError));
+    super(buildMessage(serverError));
     this.serverError = serverError;
   }
 
@@ -39,8 +39,17 @@ public class ScramServerErrorException extends ScramException {
    * @param ex The root exception
    */
   public ScramServerErrorException(String serverError, Throwable ex) {
-    super(ServerErrorValue.getErrorMessage(serverError), ex);
+    super(buildMessage(serverError), ex);
     this.serverError = serverError;
+  }
+
+  private static String buildMessage(String serverError) {
+    String description = ServerErrorValue.getErrorMessage(serverError);
+    if (description != null) {
+      return serverError + ": " + description;
+    }
+    String otherError = ServerErrorValue.getErrorMessage("other-error");
+    return serverError + ": " + otherError;
   }
 
   /**

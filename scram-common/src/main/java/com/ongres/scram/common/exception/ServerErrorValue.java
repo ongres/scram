@@ -5,8 +5,9 @@
 
 package com.ongres.scram.common.exception;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This attribute specifies an error that occurred during authentication exchange. It is sent by the
@@ -15,14 +16,14 @@ import java.util.concurrent.ConcurrentMap;
  */
 public final class ServerErrorValue {
 
-  private static final ConcurrentMap<String, String> ERROR_MESSAGE = initServerErrorValue();
+  private static final Map<String, String> ERROR_MESSAGE = buildErrorMessages();
 
   private ServerErrorValue() {
     throw new IllegalStateException();
   }
 
-  private static ConcurrentMap<String, String> initServerErrorValue() {
-    ConcurrentMap<String, String> map = new ConcurrentHashMap<>();
+  private static Map<String, String> buildErrorMessages() {
+    Map<String, String> map = new HashMap<>(16);
     map.put("invalid-encoding", "The message format or encoding is incorrect");
     map.put("extensions-not-supported", "Requested extensions are not recognized by the server");
     map.put("invalid-proof", "The client-provided proof is invalid");
@@ -38,14 +39,14 @@ public final class ServerErrorValue {
         "The username encoding is invalid (either invalid UTF-8 or SASLprep failure)");
     map.put("no-resources", "The server lacks resources to process the request");
     map.put("other-error", "A generic error occurred that doesn't fit into other categories");
-    return map;
+    return Collections.unmodifiableMap(map);
   }
 
   /**
    * This get the error message used in a {@link ScramServerErrorException}.
    *
    * @param errorValue the {@code server-error-value} send by the server
-   * @return String with a user friendly message about the error
+   * @return String with a user friendly message about the error, or {@code null} if not recognized
    */
   public static String getErrorMessage(String errorValue) {
     return ERROR_MESSAGE.get(errorValue);
