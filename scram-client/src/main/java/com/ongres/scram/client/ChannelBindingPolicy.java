@@ -5,6 +5,10 @@
 
 package com.ongres.scram.client;
 
+import java.util.Locale;
+
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Defines the client-side security policies for negotiating channel binding during a SCRAM
  * authentication execution.
@@ -46,9 +50,10 @@ public enum ChannelBindingPolicy {
    * <li>If the server advertises a {@code -PLUS} mechanism and channel binding data is provided,
    * the negotiation upgrades to channel binding and uses the {@code 'p'} GS2 flag.</li>
    * <li>If the server lacks {@code -PLUS} support, the client gracefully downgrades to standard
-   * SCRAM but transmits the {@code 'y'} GS2 flag. This explicitly declares to the server
-   * that the client possesses channel binding capabilities, allowing the server to catch
-   * and terminate malicious downgrade attacks mid-flight.</li>
+   * SCRAM. If channel binding data was provided, the {@code 'y'} GS2 flag is transmitted to
+   * explicitly declare that the client possesses channel binding capabilities, allowing the server
+   * to catch and terminate malicious downgrade attacks mid-flight. If no binding data was
+   * configured, {@code 'n'} is used instead.</li>
    * </ul>
    */
   ALLOW,
@@ -70,5 +75,37 @@ public enum ChannelBindingPolicy {
    * applications requiring strict compliance matching database configurations like PostgreSQL's
    * {@code channel_binding=require}).
    */
-  REQUIRE
+  REQUIRE;
+
+  /**
+   * Returns the {@link ChannelBindingPolicy} constant for the given string value
+   * (case-insensitive).
+   *
+   * <p>Accepted values:
+   * <ul>
+   * <li>{@code "disable"} → {@link #DISABLE}</li>
+   * <li>{@code "allow"} → {@link #ALLOW}</li>
+   * <li>{@code "prefer"} → {@link #ALLOW} (alias for PostgreSQL {@code channel_binding=prefer}
+   * compatibility)</li>
+   * <li>{@code "require"} → {@link #REQUIRE}</li>
+   * </ul>
+   *
+   * @param value the string representation of the policy
+   * @return the matching {@link ChannelBindingPolicy}
+   * @throws IllegalArgumentException if {@code value} does not match any known policy
+   */
+  public static ChannelBindingPolicy of(@NotNull String value) {
+    String lowerValue = value.toLowerCase(Locale.ROOT);
+    switch (lowerValue) {
+      case "disable":
+        return DISABLE;
+      case "allow":
+      case "prefer":
+        return ALLOW;
+      case "require":
+        return REQUIRE;
+      default:
+        throw new IllegalArgumentException("Invalid channel binding value: " + value);
+    }
+  }
 }

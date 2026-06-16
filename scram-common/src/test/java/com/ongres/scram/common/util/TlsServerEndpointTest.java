@@ -54,9 +54,13 @@ class TlsServerEndpointTest {
         Arguments.of(loadCertificate("/SHA3-512withECDSA.pem"),
             "SHA3-512withECDSA", "SHA3-512"),
 
-        // Parameterized RSASSA-PSS (The generated PEM uses SHA-384)
+        // Parameterized RSASSA-PSS with SHA-384 digest
         Arguments.of(loadCertificate("/RSASSA-PSS.pem"),
-            "RSASSA-PSS", "SHA-384"));
+            "RSASSA-PSS", "SHA-384"),
+
+        // RSASSA-PSS with SHA-1 digest: RFC 5929 mandatory upgrade SHA-1 -> SHA-256
+        Arguments.of(loadCertificate("/RSASSA-PSS-SHA1.pem"),
+            "RSASSA-PSS", "SHA-256"));
   }
 
   /**
@@ -68,7 +72,6 @@ class TlsServerEndpointTest {
         Arguments.of(loadCertificate("/Ed448.pem"), "Ed448"));
   }
 
-  @SuppressWarnings("deprecation")
   @ParameterizedTest(name = "Extracts correct binding hash for {1} -> expects {2}")
   @MethodSource("provideValidCertificates")
   void testValidCertificateChannelBinding(X509Certificate cert, String sigAlg,
@@ -87,14 +90,8 @@ class TlsServerEndpointTest {
     byte[] actualHash = assertDoesNotThrow(() -> TlsServerEndpoint.getChannelBindingHash(cert));
     assertArrayEquals(expectedHash, actualHash,
         "getChannelBindingHash did not return the expected digest bytes");
-
-    // 4. Test the deprecated method
-    byte[] actualDeprecatedData = assertDoesNotThrow(() -> TlsServerEndpoint.getChannelBindingData(cert));
-    assertArrayEquals(expectedHash, actualDeprecatedData,
-        "Deprecated getChannelBindingData did not match expected digest bytes");
   }
 
-  @SuppressWarnings({ "deprecation" })
   @ParameterizedTest(name = "Rejects unsupported/pure algorithm {1} (Postgres parity)")
   @MethodSource("provideUnsupportedCertificates")
   void testUnsupportedCertificatesFail(X509Certificate cert, String sigAlg) {
@@ -102,7 +99,7 @@ class TlsServerEndpointTest {
     assertEquals(sigAlg, cert.getSigAlgName(),
         "Loaded certificate does not match expected algorithm");
 
-    // 1. Ensure the modern method throws an exception
+    // Ensure the modern method throws an exception
     NoSuchAlgorithmException exception = assertThrows(NoSuchAlgorithmException.class,
         () -> TlsServerEndpoint.getChannelBindingHash(cert));
 
@@ -110,11 +107,6 @@ class TlsServerEndpointTest {
         "Could not determine server certificate signature algorithm. Name: %s, OID: %s",
         cert.getSigAlgName(), cert.getSigAlgOID()),
         exception.getMessage());
-
-    // 2. Ensure the deprecated method swallows the exception and returns an empty array
-    byte[] deprecatedResult = assertDoesNotThrow(() -> TlsServerEndpoint.getChannelBindingData(cert));
-    assertArrayEquals(new byte[0], deprecatedResult,
-        "Deprecated method must return byte[0] on unsupported algorithms");
   }
 
   /**
