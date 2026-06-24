@@ -376,12 +376,13 @@ public final class ScramClient implements MessageFlow {
      *          supply a binding type or data this builder does not compute itself, such as
      *          {@code tls-exporter} from a non-JDK TLS stack.
      *
-     * @param serverCertificate the server's end-entity (leaf) TLS certificate to bind to
+     * @param serverCertificate the server's end-entity (leaf) TLS certificate to bind to,
+     *        or {@code null} to configure no binding
      * @return {@code this} builder for use in a chained invocation
      * @see #channelBinding(String, byte[])
      * @see ChannelBindingPolicy
      */
-    FinalBuildStage channelBinding(@NotNull X509Certificate serverCertificate);
+    FinalBuildStage channelBinding(@Nullable X509Certificate serverCertificate);
 
     /**
      * Sets the StringPreparation, is recommended to leave the default SASL_PREPARATION.
@@ -501,14 +502,17 @@ public final class ScramClient implements MessageFlow {
     }
 
     @Override
-    public FinalBuildStage channelBinding(@NotNull X509Certificate serverCertificate) {
+    public FinalBuildStage channelBinding(@Nullable X509Certificate serverCertificate) {
+      if (serverCertificate == null) {
+        return this;
+      }
       if (cbindConfigured) {
         throw new IllegalStateException(
             "channelBinding(X509Certificate) called but channel binding was already configured "
                 + "via channelBinding(String, byte[])");
       }
       cbindConfigured = true;
-      this.serverCertificate = checkNotNull(serverCertificate, "serverCertificate");
+      this.serverCertificate = serverCertificate;
       return this;
     }
 
