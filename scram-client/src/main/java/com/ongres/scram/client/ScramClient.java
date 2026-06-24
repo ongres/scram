@@ -13,6 +13,8 @@ import static com.ongres.scram.common.util.Preconditions.gt0;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -29,6 +31,7 @@ import com.ongres.scram.common.StringPreparation;
 import com.ongres.scram.common.exception.ScramInvalidServerSignatureException;
 import com.ongres.scram.common.exception.ScramParseException;
 import com.ongres.scram.common.exception.ScramServerErrorException;
+import com.ongres.scram.common.util.TlsServerEndpoint;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -144,8 +147,7 @@ public final class ScramClient implements MessageFlow {
     if (currentState != Stage.NONE) {
       throw new IllegalStateException("Invalid state for processing client first message");
     }
-    this.clientFirstMessage =
-        new ClientFirstMessage(channelBinding, cbindType, authzid, username, nonce);
+    this.clientFirstMessage = new ClientFirstMessage(channelBinding, cbindType, authzid, username, nonce);
     this.currentState = Stage.CLIENT_FIRST;
     return clientFirstMessage;
   }
@@ -165,9 +167,8 @@ public final class ScramClient implements MessageFlow {
       throw new IllegalStateException("Invalid state for processing server first message");
     }
     checkNotEmpty(serverFirstMessage, "serverFirstMessage");
-    this.serverFirstProcessor =
-        new ServerFirstProcessor(scramMechanism, stringPreparation, serverFirstMessage, nonce,
-            clientFirstMessage);
+    this.serverFirstProcessor = new ServerFirstProcessor(scramMechanism, stringPreparation, serverFirstMessage, nonce,
+        clientFirstMessage);
     this.currentState = Stage.SERVER_FIRST;
     return serverFirstProcessor.getServerFirstMessage();
   }
@@ -227,8 +228,7 @@ public final class ScramClient implements MessageFlow {
     if (currentState != Stage.CLIENT_FINAL || clientFinalProcessor == null) {
       throw new IllegalStateException("Invalid state for processing server final message");
     }
-    ServerFinalMessage receiveServerFinalMessage =
-        clientFinalProcessor.receiveServerFinalMessage(serverFinalMessage);
+    ServerFinalMessage receiveServerFinalMessage = clientFinalProcessor.receiveServerFinalMessage(serverFinalMessage);
     this.currentState = Stage.SERVER_FINAL;
     return receiveServerFinalMessage;
   }
@@ -307,26 +307,81 @@ public final class ScramClient implements MessageFlow {
   public interface FinalBuildStage {
 
     /**
-     * Sets the channel binding policy to determine how the client negotiates
-     * security layers with the server. By default is ALLOW.
+     * Sets the channel binding policy for this client. Defaults to {@link ChannelBindingPolicy#ALLOW}.
      *
-     * @param policy the channel binding policy (DISABLE, ALLOW, REQUIRE)
+     * <p>The policy controls the gs2-cbind-flag sent in the SCRAM exchange and how the client
+     * reacts when the server does or does not advertise a {@code -PLUS} mechanism:
+     * <ul>
+     * <li>{@link ChannelBindingPolicy#DISABLE}: never use channel binding (gs2-cbind-flag {@code "n"}).</li>
+     * <li>{@link ChannelBindingPolicy#ALLOW}: use channel binding when both sides support it,
+     * otherwise proceed without it.</li>
+     * <li>{@link ChannelBindingPolicy#REQUIRE}: fail at {@link #build()} if channel binding
+     * cannot be established.</li>
+     * </ul>
+     *
+     * @param policy the channel binding policy; must not be {@code null}
      * @return {@code this} builder for use in a chained invocation
+     * @see ChannelBindingPolicy
      */
     FinalBuildStage channelBindingPolicy(@NotNull ChannelBindingPolicy policy);
 
     /**
-     * If the client supports channel binding negotiation, this method sets the type and data used
-     * for channel binding.
+     * Sets the channel binding type and data for this client.
      *
-     * @apiNote If {@code cbindType} or {@code cbindData} are null, sets the gs2-cbind-flag to 'n'
-     *          and does not use channel binding.
+     * <p>If either argument is {@code null} or empty, no channel binding data is configured and the
+     * gs2-cbind-flag is determined solely by the {@link ChannelBindingPolicy}: {@code "n"} for
+     * {@link ChannelBindingPolicy#DISABLE} or {@link ChannelBindingPolicy#ALLOW} without server
+     * support, {@code "y"} for {@code ALLOW} when the server advertises {@code -PLUS} but no data
+     * is available.
      *
-     * @param cbindType channel bynding type name
-     * @param cbindData channel binding data
+     * @apiNote Prefer {@link #channelBinding(X509Certificate)} for {@code tls-server-end-point}
+     *          bindings; this overload is intended for binding types the builder does not compute
+     *          itself, such as {@code tls-exporter}. Calling both overloads throws
+     *          {@link IllegalStateException}.
+     *
+     * @param cbindType the channel binding type name (e.g. {@code "tls-server-end-point"}),
+     *        or {@code null} to configure no binding
+     * @param cbindData the channel binding data, or {@code null} to configure no binding
      * @return {@code this} builder for use in a chained invocation
+     * @see #channelBinding(X509Certificate)
+     * @see ChannelBindingPolicy
      */
     FinalBuildStage channelBinding(@Nullable String cbindType, byte @Nullable [] cbindData);
+
+    /**
+     * Configures {@code tls-server-end-point} channel binding (RFC 5929) from the given TLS server
+     * certificate.
+     *
+     * <p>This is a convenience over {@link #channelBinding(String, byte[])}: the binding type is fixed
+     * to {@code "tls-server-end-point"} and the binding data is derived from {@code serverCertificate}
+     * as the hash of its DER encoding, computed with the digest mandated by RFC 5929 for the
+     * certificate's signature algorithm. The argument must be the server's end-entity (leaf)
+     * certificate &mdash; for example, the first element of
+     * {@link javax.net.ssl.SSLSession#getPeerCertificates()} &mdash; not an issuer or CA certificate.
+     *
+     * <p>The certificate is only recorded by this call. The binding data is computed during
+     * {@link #build()}, where it is reconciled with the configured {@link ChannelBindingPolicy} and the
+     * mechanisms advertised by the server.
+     *
+     * <p>Binding data cannot be derived from every certificate. When the certificate's signature
+     * algorithm has no channel binding defined by RFC 5929 &mdash; for example EdDSA certificates,
+     * whose signatures use no separate hash &mdash; no data is produced: under {@code ALLOW} the client
+     * silently continues without channel binding, and under {@code REQUIRE} {@link #build()} fails. This
+     * method itself never fails for such reasons; the outcome is always decided by the policy at build
+     * time.
+     *
+     * @apiNote This method and {@link #channelBinding(String, byte[])} are two ways of configuring the
+     *          same binding and are mutually exclusive; configuring channel binding more than once
+     *          throws {@link IllegalStateException}. Use {@link #channelBinding(String, byte[])} to
+     *          supply a binding type or data this builder does not compute itself, such as
+     *          {@code tls-exporter} from a non-JDK TLS stack.
+     *
+     * @param serverCertificate the server's end-entity (leaf) TLS certificate to bind to
+     * @return {@code this} builder for use in a chained invocation
+     * @see #channelBinding(String, byte[])
+     * @see ChannelBindingPolicy
+     */
+    FinalBuildStage channelBinding(@NotNull X509Certificate serverCertificate);
 
     /**
      * Sets the StringPreparation, is recommended to leave the default SASL_PREPARATION.
@@ -362,9 +417,9 @@ public final class ScramClient implements MessageFlow {
      * @apiNote you should rely on the default randomly generated nonce instead of this, this call
      *          exists mostly for testing with a predefined nonce
      * @param nonceSupplier A supplier of valid nonce Strings. Please note that according to the <a
-     *          href="https://tools.ietf.org/html/rfc5802#section-7">SCRAM RFC</a> only ASCII
-     *          printable characters (except the comma, ',') are permitted on a nonce. Length is not
-     *          limited.
+     *        href="https://tools.ietf.org/html/rfc5802#section-7">SCRAM RFC</a> only ASCII
+     *        printable characters (except the comma, ',') are permitted on a nonce. Length is not
+     *        limited.
      * @return {@code this} builder for use in a chained invocation
      * @throws IllegalArgumentException If nonceSupplier is null
      */
@@ -380,7 +435,7 @@ public final class ScramClient implements MessageFlow {
      * @param provider The name of the provider of SecureRandom. Might be null
      * @return {@code this} builder for use in a chained invocation
      * @throws IllegalArgumentException If algorithm is null, or either the algorithm or provider
-     *           are not supported
+     *         are not supported
      */
     FinalBuildStage secureRandomAlgorithmProvider(@NotNull String algorithm,
         @Nullable String provider);
@@ -392,9 +447,9 @@ public final class ScramClient implements MessageFlow {
      * @return a ScramClient instance configured with the specified parameters
      * @throws IllegalArgumentException if a parameter is null or empty
      * @throws MechanismNegotiationException if the local mechanism configuration is incompatible
-     *           with the client state engine or missing core fallback options
+     *         with the client state engine or missing core fallback options
      * @throws ChannelBindingException if a channel binding policy mismatch or cryptographic
-     *           negotiation failure occurs
+     *         negotiation failure occurs
      */
     ScramClient build();
   }
@@ -414,6 +469,7 @@ public final class ScramClient implements MessageFlow {
     Gs2CbindFlag channelBinding = Gs2CbindFlag.CLIENT_NOT;
     ChannelBindingPolicy bindingPolicy = ChannelBindingPolicy.ALLOW;
     StringPreparation stringPreparation = StringPreparation.SASL_PREPARATION;
+    X509Certificate serverCertificate;
     int nonceLength = 24;
     String nonce;
     SecureRandom secureRandom;
@@ -426,6 +482,7 @@ public final class ScramClient implements MessageFlow {
     byte[] cbindData;
     String authzid;
     Supplier<String> nonceSupplier;
+    private boolean cbindConfigured;
 
     private Builder() {
       // called from ScramClient.builder()
@@ -444,7 +501,25 @@ public final class ScramClient implements MessageFlow {
     }
 
     @Override
+    public FinalBuildStage channelBinding(@NotNull X509Certificate serverCertificate) {
+      if (cbindConfigured) {
+        throw new IllegalStateException(
+            "channelBinding(X509Certificate) called but channel binding was already configured "
+                + "via channelBinding(String, byte[])");
+      }
+      cbindConfigured = true;
+      this.serverCertificate = checkNotNull(serverCertificate, "serverCertificate");
+      return this;
+    }
+
+    @Override
     public FinalBuildStage channelBinding(@Nullable String cbindType, byte @Nullable [] cbindData) {
+      if (cbindConfigured) {
+        throw new IllegalStateException(
+            "channelBinding(String, byte[]) called but channel binding was already configured "
+                + "via channelBinding(X509Certificate)");
+      }
+      cbindConfigured = true;
       this.cbindType = cbindType;
       this.cbindData = cbindData != null ? cbindData.clone() : null;
       return this;
@@ -541,6 +616,19 @@ public final class ScramClient implements MessageFlow {
         this.cbindData = null;
       }
 
+      Exception cbindFailure = null;
+      // Extract the TLS_SERVER_END_POINT from the serverCertificate
+      if (bindingPolicy != ChannelBindingPolicy.DISABLE && serverCertificate != null) {
+        try {
+          this.cbindType = TlsServerEndpoint.TLS_SERVER_END_POINT;
+          this.cbindData = TlsServerEndpoint.getChannelBindingHash(serverCertificate);
+        } catch (NoSuchAlgorithmException | CertificateEncodingException e) {
+          this.cbindType = null;
+          this.cbindData = null; // e.g. Ed25519: can't bind → "no data"
+          cbindFailure = e; // keep the reason for REQUIRE
+        }
+      }
+
       // Check client capability constraints
       boolean serverSupportsPlus = cbind != null;
       boolean clientHasData = cbindType != null && cbindData != null
@@ -554,7 +642,7 @@ public final class ScramClient implements MessageFlow {
         }
         if (!clientHasData) {
           throw new ChannelBindingException(
-              "Channel binding is required, but no channel binding data or type was provided");
+              "Channel binding is required, but no channel binding data or type was provided", cbindFailure);
         }
         this.channelBinding = Gs2CbindFlag.CHANNEL_BINDING_REQUIRED;
         mechanismNegotiation = cbind;

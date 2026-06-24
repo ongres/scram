@@ -4,6 +4,28 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### :rocket: New features
+
+- Add `channelBinding(X509Certificate)` convenience overload to the client
+  builder. Passing the server's leaf TLS certificate automatically configures
+  `tls-server-end-point` channel binding (RFC 5929) without manually computing the binding data.
+- Add `ChannelBindingPolicy.of(String)` factory method to resolve a policy by name, accepting
+  `"disable"`, `"allow"`, `"require"`, and `"prefer"` (alias for `"allow"`, for PostgreSQL
+  `channel_binding=prefer` compatibility).
+
+### :bug: Bug Fixes
+
+- Fix RFC 5802 compliance for unknown `server-error-value` tokens: unrecognized values are now
+  silently normalized to `"other-error"` instead of throwing `IllegalArgumentException`.
+
+### :building_construction: Improvements
+
+- `ScramServerErrorException` now includes the raw RFC token in `getMessage()` (e.g.
+  `"invalid-proof: The client-provided proof is invalid"`) so the error is self-describing without
+  needing to call `getServerError()` separately. `getMessage()` no longer returns `null`.
+- Replace `ConcurrentHashMap` with `Collections.unmodifiableMap(HashMap)` in `ServerErrorValue`
+  since the map is initialized once at class-load time and never mutated.
+
 ## [3.4] - 2026-06-10
 
 ### :bug: Bug Fixes
