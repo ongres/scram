@@ -254,6 +254,16 @@ class ChannelBindingNegotiationTest {
     }
 
     @Test
+    @DisplayName("Allows null channel binding certificate")
+    void policyRequire_DualSet_NullCertificate() {
+      assertDoesNotThrow(
+          () -> createBaseBuilder(BARE_AND_PLUS)
+              .channelBinding(null)
+              .channelBinding(null, null)
+              .build());
+    }
+
+    @Test
     @DisplayName("REQUIRE: Aborts initialization if the server fails to advertise a -PLUS mechanism")
     void policyRequire_ServerLacksPlus_ThrowsException() {
       ChannelBindingException ex = assertThrows(ChannelBindingException.class,
