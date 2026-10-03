@@ -6,9 +6,11 @@ All notable changes to this project will be documented in this file.
 
 ### :rocket: New features
 
-- Add `channelBinding(X509Certificate)` convenience overload to the client
-  builder. Passing the server's leaf TLS certificate automatically configures
-  `tls-server-end-point` channel binding (RFC 5929) without manually computing the binding data.
+- Add `channelBinding(X509Certificate)` convenience overload to the client builder. Passing the
+  server's leaf TLS certificate automatically configures `tls-server-end-point` channel binding
+  (RFC 5929) without manually computing the binding data. If binding data cannot be derived from
+  the certificate (e.g. EdDSA), the client continues without channel binding under `ALLOW`, and
+  `build()` fails under `REQUIRE` with the underlying cause attached.
 - Add `ChannelBindingPolicy.of(String)` factory method to resolve a policy by name, accepting
   `"disable"`, `"allow"`, `"require"`, and `"prefer"` (alias for `"allow"`, for PostgreSQL
   `channel_binding=prefer` compatibility).
@@ -18,14 +20,24 @@ All notable changes to this project will be documented in this file.
 - Fix RFC 5802 compliance for unknown `server-error-value` tokens: unrecognized values in the
   server-final-message are now reported as `ScramServerErrorException` (treated as `other-error`,
   with the raw token preserved in `getServerError()`) instead of throwing `IllegalArgumentException`.
+- Validate that the server nonce in the server-first-message contains only RFC 5802 printable
+  characters; non-compliant nonces are now rejected with `ScramParseException` instead of being
+  echoed back in the client-final-message.
 
 ### :building_construction: Improvements
 
 - `ScramServerErrorException` now includes the raw RFC token in `getMessage()` (e.g.
   `"invalid-proof: The client-provided proof is invalid"`) so the error is self-describing without
   needing to call `getServerError()` separately. `getMessage()` no longer returns `null`.
-- Replace `ConcurrentHashMap` with `Collections.unmodifiableMap(HashMap)` in `ServerErrorValue`
-  since the map is initialized once at class-load time and never mutated.
+- Add `(String, Throwable)` constructors to `MechanismNegotiationException` and
+  `ChannelBindingException`.
+
+### :ghost: Maintenance
+
+- Replace `ConcurrentHashMap` with an unmodifiable `HashMap` for the static lookup tables in
+  `ServerErrorValue` and `TlsServerEndpoint`.
+- Updated Maven plugins, static analysis tools, test dependencies, GitHub Actions, and the Maven
+  wrapper (3.10.0).
 
 ## [3.4] - 2026-06-10
 

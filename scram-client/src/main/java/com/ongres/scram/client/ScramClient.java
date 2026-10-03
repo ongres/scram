@@ -328,11 +328,11 @@ public final class ScramClient implements MessageFlow {
     /**
      * Sets the channel binding type and data for this client.
      *
-     * <p>If either argument is {@code null} or empty, no channel binding data is configured and the
-     * gs2-cbind-flag is determined solely by the {@link ChannelBindingPolicy}: {@code "n"} for
-     * {@link ChannelBindingPolicy#DISABLE} or {@link ChannelBindingPolicy#ALLOW} without server
-     * support, {@code "y"} for {@code ALLOW} when the server advertises {@code -PLUS} but no data
-     * is available.
+     * <p>If either argument is {@code null} or empty, no channel binding data is configured: under
+     * {@link ChannelBindingPolicy#DISABLE} or {@link ChannelBindingPolicy#ALLOW} the gs2-cbind-flag
+     * is {@code "n"}, and under {@link ChannelBindingPolicy#REQUIRE} {@link #build()} fails. The
+     * {@code "y"} flag is only sent under {@code ALLOW} when binding data is configured but the
+     * server does not advertise a {@code -PLUS} mechanism.
      *
      * @apiNote Prefer {@link #channelBinding(X509Certificate)} for {@code tls-server-end-point}
      *          bindings; this overload is intended for binding types the builder does not compute
