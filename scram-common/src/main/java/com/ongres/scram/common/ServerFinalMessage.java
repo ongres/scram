@@ -100,7 +100,7 @@ public final class ServerFinalMessage extends AbstractScramMessage {
    * @return the {@code verifier}
    */
   public byte @Nullable [] getVerifier() {
-    return verifier != null ? checkNotNull(verifier, "verifier").clone() : null;
+    return verifier != null ? checkNotNull(verifier, "verifier").clone() : null; //NOPMD
   }
 
   /**
