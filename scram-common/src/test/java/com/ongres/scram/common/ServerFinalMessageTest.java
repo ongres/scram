@@ -64,6 +64,21 @@ class ServerFinalMessageTest {
   }
 
   @Test
+  void serverErrorWithReservedCharacters() {
+    // RFC 5802: value-char excludes ',' and '='
+    assertThrows(IllegalArgumentException.class, () -> new ServerFinalMessage("foo,bar"));
+    assertThrows(IllegalArgumentException.class, () -> new ServerFinalMessage("foo=bar"));
+    assertThrows(ScramParseException.class, () -> ServerFinalMessage.parseFrom("e=foo=bar"));
+  }
+
+  @Test
+  void serverErrorFollowedByExtension() throws ScramParseException {
+    // RFC 5802: server-final-message = (server-error / verifier) ["," extensions]
+    ServerFinalMessage serverFinalMessage = ServerFinalMessage.parseFrom("e=foo,x=bar");
+    assertEquals("foo", serverFinalMessage.getServerError());
+  }
+
+  @Test
   void emptyServerError() {
     assertThrows(ScramParseException.class, () -> ServerFinalMessage.parseFrom("e="));
     assertThrows(IllegalArgumentException.class, () -> new ServerFinalMessage(""));

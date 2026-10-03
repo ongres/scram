@@ -5,6 +5,8 @@
 
 package com.ongres.scram.client;
 
+import static com.ongres.scram.common.util.Preconditions.checkNotNull;
+
 import java.util.Locale;
 
 import org.jetbrains.annotations.NotNull;
@@ -92,10 +94,10 @@ public enum ChannelBindingPolicy {
    *
    * @param value the string representation of the policy
    * @return the matching {@link ChannelBindingPolicy}
-   * @throws IllegalArgumentException if {@code value} does not match any known policy
+   * @throws IllegalArgumentException if {@code value} is null or does not match any known policy
    */
   public static ChannelBindingPolicy of(@NotNull String value) {
-    String lowerValue = value.toLowerCase(Locale.ROOT);
+    String lowerValue = checkNotNull(value, "value").toLowerCase(Locale.ROOT);
     switch (lowerValue) {
       case "disable":
         return DISABLE;

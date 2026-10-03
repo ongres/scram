@@ -38,4 +38,9 @@ class ChannelBindingPolicyTest {
         () -> ChannelBindingPolicy.of("unknown"));
     assertEquals("Invalid channel binding value: unknown", ex.getMessage());
   }
+
+  @Test
+  void ofNullThrows() {
+    assertThrows(IllegalArgumentException.class, () -> ChannelBindingPolicy.of(null));
+  }
 }

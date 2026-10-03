@@ -80,10 +80,14 @@ public final class ServerFinalMessage extends AbstractScramMessage {
    * are accepted and preserved as-is; per the RFC they should be treated as {@code "other-error"}.
    *
    * @param serverError The error message
-   * @throws IllegalArgumentException If the error is null or empty
+   * @throws IllegalArgumentException If the error is null, empty, or contains ',' or '='
    */
   public ServerFinalMessage(@NotNull String serverError) {
-    this.serverError = checkNotEmpty(serverError, "serverError");
+    checkNotEmpty(serverError, "serverError");
+    if (!isValidServerErrorValue(serverError)) {
+      throw new IllegalArgumentException("serverError must not contain ',' or '='");
+    }
+    this.serverError = serverError;
     this.verifier = null;
   }
 
@@ -137,11 +141,20 @@ public final class ServerFinalMessage extends AbstractScramMessage {
       byte[] verifier = ScramStringFormatting.base64Decode(attributeValue.getValue());
       return new ServerFinalMessage(verifier);
     } else if (ScramAttributes.ERROR.getChar() == attributeValue.getChar()) {
+      if (!isValidServerErrorValue(attributeValue.getValue())) {
+        throw new ScramParseException(
+            "Invalid server-final-message: server-error-value must not contain '='");
+      }
       return new ServerFinalMessage(attributeValue.getValue());
     } else {
       throw new ScramParseException(
           "Invalid server-final-message: it must contain either a verifier or an error attribute");
     }
+  }
+
+  // RFC 5802 Section 7: server-error-value-ext = value; value-char excludes "," and "="
+  private static boolean isValidServerErrorValue(String serverError) {
+    return serverError.indexOf(',') < 0 && serverError.indexOf('=') < 0;
   }
 
   @Override

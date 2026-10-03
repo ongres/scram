@@ -122,8 +122,8 @@ public final class ScramClient implements MessageFlow {
     this.clientKey = builder.clientKey != null ? builder.clientKey.clone() : null;
     this.serverKey = builder.serverKey != null ? builder.serverKey.clone() : null;
     this.nonce = builder.nonce;
-    this.cbindType = builder.cbindType;
-    this.cbindData = builder.cbindData;
+    this.cbindType = builder.negotiatedCbindType;
+    this.cbindData = builder.negotiatedCbindData;
     this.authzid = builder.authzid;
   }
 
@@ -482,6 +482,8 @@ public final class ScramClient implements MessageFlow {
     byte[] serverKey;
     String cbindType;
     byte[] cbindData;
+    String negotiatedCbindType;
+    byte[] negotiatedCbindData;
     String authzid;
     Supplier<String> nonceSupplier;
 
@@ -612,29 +614,34 @@ public final class ScramClient implements MessageFlow {
         throw new MechanismNegotiationException("Either a bare or -PLUS mechanism must be present");
       }
 
-      // If explicitly DISABLED, strip any passed data immediately to enforce standard SCRAM
+      // Negotiate on local copies so build() never alters the configured channel binding,
+      // which keeps the builder reusable
+      String type = cbindType;
+      byte[] data = cbindData;
+
+      // If explicitly DISABLED, ignore any passed data to enforce standard SCRAM
       if (bindingPolicy == ChannelBindingPolicy.DISABLE) {
-        this.cbindType = null;
-        this.cbindData = null;
+        type = null;
+        data = null;
       }
 
       Exception cbindFailure = null;
       // Extract the TLS_SERVER_END_POINT from the serverCertificate
       if (bindingPolicy != ChannelBindingPolicy.DISABLE && serverCertificate != null) {
         try {
-          this.cbindType = TlsServerEndpoint.TLS_SERVER_END_POINT;
-          this.cbindData = TlsServerEndpoint.getChannelBindingHash(serverCertificate);
+          type = TlsServerEndpoint.TLS_SERVER_END_POINT;
+          data = TlsServerEndpoint.getChannelBindingHash(serverCertificate);
         } catch (NoSuchAlgorithmException | CertificateEncodingException e) {
-          this.cbindType = null;
-          this.cbindData = null; // e.g. Ed25519: can't bind → "no data"
+          type = null;
+          data = null; // e.g. Ed25519: can't bind → "no data"
           cbindFailure = e; // keep the reason for REQUIRE
         }
       }
 
       // Check client capability constraints
       boolean serverSupportsPlus = cbind != null;
-      boolean clientHasData = cbindType != null && cbindData != null
-          && !cbindType.isEmpty() && cbindData.length > 0;
+      boolean clientHasData = type != null && data != null
+          && !type.isEmpty() && data.length > 0;
 
       // Strict Enforcement Policy
       if (bindingPolicy == ChannelBindingPolicy.REQUIRE) {
@@ -647,10 +654,14 @@ public final class ScramClient implements MessageFlow {
               "Channel binding is required, but no channel binding data or type was provided", cbindFailure);
         }
         this.channelBinding = Gs2CbindFlag.CHANNEL_BINDING_REQUIRED;
+        this.negotiatedCbindType = type;
+        this.negotiatedCbindData = data;
         mechanismNegotiation = cbind;
       } else if (bindingPolicy == ChannelBindingPolicy.ALLOW && serverSupportsPlus && clientHasData) {
         // Flexible Upgrade Policy
         this.channelBinding = Gs2CbindFlag.CHANNEL_BINDING_REQUIRED;
+        this.negotiatedCbindType = type;
+        this.negotiatedCbindData = data;
         mechanismNegotiation = cbind;
       } else {
         // Safe Downgrade
@@ -661,8 +672,8 @@ public final class ScramClient implements MessageFlow {
         // RFC 5802 Protection: If the client possesses data but is forced to fallback
         // because the server lacks -PLUS, it MUST emit 'y' to intercept mid-flight downgrade attacks.
         this.channelBinding = clientHasData ? Gs2CbindFlag.CLIENT_YES_SERVER_NOT : Gs2CbindFlag.CLIENT_NOT;
-        this.cbindType = null;
-        this.cbindData = null;
+        this.negotiatedCbindType = null;
+        this.negotiatedCbindData = null;
         mechanismNegotiation = noncbind;
       }
 
