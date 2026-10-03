@@ -56,8 +56,16 @@ class ServerFinalMessageTest {
   }
 
   @Test
-  void invalidServerError() throws ScramParseException {
-    assertThrows(IllegalArgumentException.class,
-        () -> ServerFinalMessage.parseFrom("e=binding-et-supported"));
+  void unknownServerErrorIsPreserved() throws ScramParseException {
+    ServerFinalMessage serverFinalMessage = ServerFinalMessage.parseFrom("e=some-future-error");
+    assertTrue(serverFinalMessage.isError());
+    assertEquals("some-future-error", serverFinalMessage.getServerError());
+    assertEquals("e=some-future-error", serverFinalMessage.toString());
+  }
+
+  @Test
+  void emptyServerError() {
+    assertThrows(ScramParseException.class, () -> ServerFinalMessage.parseFrom("e="));
+    assertThrows(IllegalArgumentException.class, () -> new ServerFinalMessage(""));
   }
 }

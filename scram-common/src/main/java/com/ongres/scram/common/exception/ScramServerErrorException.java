@@ -55,6 +55,10 @@ public class ScramServerErrorException extends ScramException {
   /**
    * Return the "e=" server-error-value from the server-final-message.
    *
+   * <p>The value is returned exactly as sent by the server and may be a token not defined by
+   * RFC 5802 ({@code server-error-value-ext}); callers should treat any unrecognized value as
+   * {@code "other-error"}.
+   *
    * @return the error type returned in the server-final-message
    */
   public String getServerError() {

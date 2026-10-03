@@ -10,7 +10,6 @@ import static com.ongres.scram.common.util.Preconditions.checkNotEmpty;
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 
 import com.ongres.scram.common.exception.ScramParseException;
-import com.ongres.scram.common.exception.ServerErrorValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -77,11 +76,14 @@ public final class ServerFinalMessage extends AbstractScramMessage {
   /**
    * Constructs a server-final-message which represents a SCRAM error.
    *
+   * <p>Unrecognized {@code server-error-value} tokens ({@code server-error-value-ext} in RFC 5802)
+   * are accepted and preserved as-is; per the RFC they should be treated as {@code "other-error"}.
+   *
    * @param serverError The error message
-   * @throws IllegalArgumentException If the error is null
+   * @throws IllegalArgumentException If the error is null or empty
    */
   public ServerFinalMessage(@NotNull String serverError) {
-    this.serverError = validateServerErrorType(serverError);
+    this.serverError = checkNotEmpty(serverError, "serverError");
     this.verifier = null;
   }
 
@@ -150,14 +152,5 @@ public final class ServerFinalMessage extends AbstractScramMessage {
             ? new ScramAttributeValue(ScramAttributes.ERROR, castNonNull(serverError))
             : new ScramAttributeValue(ScramAttributes.SERVER_SIGNATURE,
                 ScramStringFormatting.base64Encode(castNonNull(verifier))));
-  }
-
-  private static String validateServerErrorType(@NotNull String serverError) {
-    checkNotNull(serverError, "serverError");
-    if (ServerErrorValue.getErrorMessage(serverError) == null) {
-      throw new IllegalArgumentException(
-          "Invalid server-error-value '" + serverError + "'");
-    }
-    return serverError;
   }
 }

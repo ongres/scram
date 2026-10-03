@@ -15,8 +15,9 @@ All notable changes to this project will be documented in this file.
 
 ### :bug: Bug Fixes
 
-- Fix RFC 5802 compliance for unknown `server-error-value` tokens: unrecognized values are now
-  silently normalized to `"other-error"` instead of throwing `IllegalArgumentException`.
+- Fix RFC 5802 compliance for unknown `server-error-value` tokens: unrecognized values in the
+  server-final-message are now reported as `ScramServerErrorException` (treated as `other-error`,
+  with the raw token preserved in `getServerError()`) instead of throwing `IllegalArgumentException`.
 
 ### :building_construction: Improvements
 
