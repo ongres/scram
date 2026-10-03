@@ -254,6 +254,34 @@ class ChannelBindingNegotiationTest {
     }
 
     @Test
+    @DisplayName("Repeated channelBinding(String, byte[]) calls keep 3.4 behavior (last call wins)")
+    void repeatedChannelBindingData_LastCallWins() {
+      ScramClient client = createBaseBuilder(BARE_AND_PLUS)
+          .channelBindingPolicy(ChannelBindingPolicy.REQUIRE)
+          .channelBinding("tls-unique", new byte[] {1, 2, 3})
+          .channelBinding(TlsServerEndpoint.TLS_SERVER_END_POINT, VALID_CBIND_DATA)
+          .build();
+
+      Gs2Header gs2Header = getGs2Header(client);
+      assertEquals(Gs2CbindFlag.CHANNEL_BINDING_REQUIRED, gs2Header.getChannelBindingFlag());
+      assertEquals(TlsServerEndpoint.TLS_SERVER_END_POINT, gs2Header.getChannelBindingName());
+    }
+
+    @Test
+    @DisplayName("Null binding data does not block a later certificate")
+    void nullChannelBindingData_ThenCertificate() {
+      ScramClient client = createBaseBuilder(BARE_AND_PLUS)
+          .channelBindingPolicy(ChannelBindingPolicy.REQUIRE)
+          .channelBinding(null, null)
+          .channelBinding(loadCertificate("/SHA256withECDSA.pem"))
+          .build();
+
+      Gs2Header gs2Header = getGs2Header(client);
+      assertEquals(Gs2CbindFlag.CHANNEL_BINDING_REQUIRED, gs2Header.getChannelBindingFlag());
+      assertEquals(TlsServerEndpoint.TLS_SERVER_END_POINT, gs2Header.getChannelBindingName());
+    }
+
+    @Test
     @DisplayName("Allows null channel binding certificate")
     void policyRequire_DualSet_NullCertificate() {
       assertDoesNotThrow(

@@ -371,8 +371,9 @@ public final class ScramClient implements MessageFlow {
      * time.
      *
      * @apiNote This method and {@link #channelBinding(String, byte[])} are two ways of configuring the
-     *          same binding and are mutually exclusive; configuring channel binding more than once
-     *          throws {@link IllegalStateException}. Use {@link #channelBinding(String, byte[])} to
+     *          same binding and are mutually exclusive; calling this method after
+     *          {@link #channelBinding(String, byte[])}, or vice versa, throws
+     *          {@link IllegalStateException}. Use {@link #channelBinding(String, byte[])} to
      *          supply a binding type or data this builder does not compute itself, such as
      *          {@code tls-exporter} from a non-JDK TLS stack.
      *
@@ -483,7 +484,6 @@ public final class ScramClient implements MessageFlow {
     byte[] cbindData;
     String authzid;
     Supplier<String> nonceSupplier;
-    private boolean cbindConfigured;
 
     private Builder() {
       // called from ScramClient.builder()
@@ -506,24 +506,22 @@ public final class ScramClient implements MessageFlow {
       if (serverCertificate == null) {
         return this;
       }
-      if (cbindConfigured) {
+      if (cbindType != null || cbindData != null) {
         throw new IllegalStateException(
             "channelBinding(X509Certificate) called but channel binding was already configured "
                 + "via channelBinding(String, byte[])");
       }
-      cbindConfigured = true;
       this.serverCertificate = serverCertificate;
       return this;
     }
 
     @Override
     public FinalBuildStage channelBinding(@Nullable String cbindType, byte @Nullable [] cbindData) {
-      if (cbindConfigured) {
+      if (serverCertificate != null) {
         throw new IllegalStateException(
             "channelBinding(String, byte[]) called but channel binding was already configured "
                 + "via channelBinding(X509Certificate)");
       }
-      cbindConfigured = true;
       this.cbindType = cbindType;
       this.cbindData = cbindData != null ? cbindData.clone() : null;
       return this;
