@@ -23,6 +23,11 @@ All notable changes to this project will be documented in this file.
 - Validate that the server nonce in the server-first-message contains only RFC 5802 printable
   characters; non-compliant nonces are now rejected with `ScramParseException` instead of being
   echoed back in the client-final-message.
+- Validate the nonce returned by a custom `nonceSupplier` in the client builder: `build()` now throws
+  `IllegalArgumentException` if it is empty or contains characters not permitted by RFC 5802,
+  instead of producing an invalid client-first-message.
+- The client builder no longer discards the configured channel binding during `build()` (under
+  `DISABLE` or when falling back to a non-PLUS mechanism), so a builder can be reused.
 
 ### :building_construction: Improvements
 

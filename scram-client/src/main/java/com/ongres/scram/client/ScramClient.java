@@ -10,10 +10,10 @@ import static com.ongres.scram.common.util.Preconditions.checkNotEmpty;
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 import static com.ongres.scram.common.util.Preconditions.gt0;
 
+import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -447,7 +447,9 @@ public final class ScramClient implements MessageFlow {
      * with the server.
      *
      * @return a ScramClient instance configured with the specified parameters
-     * @throws IllegalArgumentException if a parameter is null or empty
+     * @throws IllegalArgumentException if a parameter is null or empty, or if the nonce returned by
+     *         the {@link #nonceSupplier(Supplier) nonceSupplier} is empty or contains characters not
+     *         permitted by RFC 5802
      * @throws MechanismNegotiationException if the local mechanism configuration is incompatible
      *         with the client state engine or missing core fallback options
      * @throws ChannelBindingException if a channel binding policy mismatch or cryptographic
@@ -599,10 +601,22 @@ public final class ScramClient implements MessageFlow {
     public ScramClient build() {
       final SecureRandom random = secureRandom != null ? secureRandom : new SecureRandom();
       this.nonce = nonceSupplier != null
-          ? nonceSupplier.get()
+          ? checkValidNonce(nonceSupplier.get())
           : ScramFunctions.nonce(nonceLength, random);
       this.selectedScramMechanism = mechanismNegotiation();
       return new ScramClient(this);
+    }
+
+    // RFC 5802 Section 7: printable = %x21-2B / %x2D-7E (printable ASCII excluding comma)
+    private static String checkValidNonce(String nonce) {
+      checkNotEmpty(nonce, "nonce");
+      for (int i = 0; i < nonce.length(); i++) {
+        char c = nonce.charAt(i);
+        if (c < 0x21 || c > 0x7E || c == ',') {
+          throw new IllegalArgumentException("nonce contains invalid characters");
+        }
+      }
+      return nonce;
     }
 
     private ScramMechanism mechanismNegotiation() {
@@ -631,7 +645,9 @@ public final class ScramClient implements MessageFlow {
         try {
           type = TlsServerEndpoint.TLS_SERVER_END_POINT;
           data = TlsServerEndpoint.getChannelBindingHash(serverCertificate);
-        } catch (NoSuchAlgorithmException | CertificateEncodingException e) {
+        } catch (GeneralSecurityException | RuntimeException e) {
+          // RuntimeException covers provider failures (e.g. ProviderException) so that ALLOW
+          // always degrades to "no data" instead of failing build()
           type = null;
           data = null; // e.g. Ed25519: can't bind → "no data"
           cbindFailure = e; // keep the reason for REQUIRE
