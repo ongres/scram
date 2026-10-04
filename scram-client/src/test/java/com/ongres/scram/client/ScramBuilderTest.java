@@ -14,14 +14,28 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Arrays;
 import java.util.Base64;
 
+import com.ongres.scram.client.ScramClient.FinalBuildStage;
 import com.ongres.scram.common.ClientFinalMessage;
 import com.ongres.scram.common.ClientFirstMessage;
 import com.ongres.scram.common.ScramFunctions;
 import com.ongres.scram.common.ScramMechanism;
 import com.ongres.scram.common.StringPreparation;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class ScramBuilderTest {
+  @ParameterizedTest(name = "invalid nonce from supplier: ''{0}''")
+  @ValueSource(strings = { "", "with space", "with,comma", "non-ascii-ñ", "del-\u007f" })
+  void invalidNonceSupplierRejected(String invalidNonce) {
+    FinalBuildStage builder = ScramClient.builder()
+        .advertisedMechanisms(Arrays.asList("SCRAM-SHA-256"))
+        .username("user")
+        .password("pencil".toCharArray())
+        .nonceSupplier(() -> invalidNonce);
+    assertThrows(IllegalArgumentException.class, builder::build);
+  }
+
   @Test
   void getValid() {
     ScramClient client1 = ScramClient.builder()

@@ -10,7 +10,6 @@ import static com.ongres.scram.common.util.Preconditions.checkNotEmpty;
 import static com.ongres.scram.common.util.Preconditions.checkNotNull;
 
 import com.ongres.scram.common.exception.ScramParseException;
-import com.ongres.scram.common.exception.ServerErrorValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -77,11 +76,18 @@ public final class ServerFinalMessage extends AbstractScramMessage {
   /**
    * Constructs a server-final-message which represents a SCRAM error.
    *
+   * <p>Unrecognized {@code server-error-value} tokens ({@code server-error-value-ext} in RFC 5802)
+   * are accepted and preserved as-is; per the RFC they should be treated as {@code "other-error"}.
+   *
    * @param serverError The error message
-   * @throws IllegalArgumentException If the error is null
+   * @throws IllegalArgumentException If the error is null, empty, or contains ',' or '='
    */
   public ServerFinalMessage(@NotNull String serverError) {
-    this.serverError = validateServerErrorType(serverError);
+    checkNotEmpty(serverError, "serverError");
+    if (!isValidServerErrorValue(serverError)) {
+      throw new IllegalArgumentException("serverError must not contain ',' or '='");
+    }
+    this.serverError = serverError;
     this.verifier = null;
   }
 
@@ -135,11 +141,20 @@ public final class ServerFinalMessage extends AbstractScramMessage {
       byte[] verifier = ScramStringFormatting.base64Decode(attributeValue.getValue());
       return new ServerFinalMessage(verifier);
     } else if (ScramAttributes.ERROR.getChar() == attributeValue.getChar()) {
+      if (!isValidServerErrorValue(attributeValue.getValue())) {
+        throw new ScramParseException(
+            "Invalid server-final-message: server-error-value must not contain '='");
+      }
       return new ServerFinalMessage(attributeValue.getValue());
     } else {
       throw new ScramParseException(
           "Invalid server-final-message: it must contain either a verifier or an error attribute");
     }
+  }
+
+  // RFC 5802 Section 7: server-error-value-ext = value; value-char excludes "," and "="
+  private static boolean isValidServerErrorValue(String serverError) {
+    return serverError.indexOf(',') < 0 && serverError.indexOf('=') < 0;
   }
 
   @Override
@@ -150,14 +165,5 @@ public final class ServerFinalMessage extends AbstractScramMessage {
             ? new ScramAttributeValue(ScramAttributes.ERROR, castNonNull(serverError))
             : new ScramAttributeValue(ScramAttributes.SERVER_SIGNATURE,
                 ScramStringFormatting.base64Encode(castNonNull(verifier))));
-  }
-
-  private static String validateServerErrorType(@NotNull String serverError) {
-    checkNotNull(serverError, "serverError");
-    if (ServerErrorValue.getErrorMessage(serverError) == null) {
-      throw new IllegalArgumentException(
-          "Invalid server-error-value '" + serverError + "'");
-    }
-    return serverError;
   }
 }

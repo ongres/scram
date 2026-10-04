@@ -19,6 +19,7 @@ import com.ongres.scram.common.ScramMechanism;
 import com.ongres.scram.common.StringPreparation;
 import com.ongres.scram.common.exception.ScramInvalidServerSignatureException;
 import com.ongres.scram.common.exception.ScramServerErrorException;
+import com.ongres.scram.common.exception.ServerErrorValue;
 import com.ongres.scram.common.util.TlsServerEndpoint;
 import org.junit.jupiter.api.Test;
 
@@ -200,6 +201,31 @@ class ScramClientTest {
     // Simulate that the server returns an error
     assertThrows(ScramServerErrorException.class,
         () -> scramSession.serverFinalMessage("e=invalid-proof"));
+  }
+
+  @Test
+  void throwScramServerErrorExceptionOnUnknownError() {
+    ScramClient scramSession = ScramClient.builder()
+        .advertisedMechanisms(Arrays.asList("SCRAM-SHA-256", "SCRAM-SHA-512"))
+        .username("postgres")
+        .password("pencil".toCharArray())
+        .nonceSupplier(() -> "1q^MGrWUi{etW+H7(#k431kB")
+        .build();
+
+    scramSession.clientFirstMessage();
+    assertDoesNotThrow(
+        () -> scramSession.serverFirstMessage(
+            "r=1q^MGrWUi{etW+H7(#k431kBdAr3CWX7B6houDP4f7Z2XEpZ,"
+                + "s=Fgh8JU2AlRjBHUsIU/GgtQ==,"
+                + "i=10"));
+    scramSession.clientFinalMessage();
+
+    // RFC 5802: unrecognized errors should be treated as "other-error"
+    ScramServerErrorException ex = assertThrows(ScramServerErrorException.class,
+        () -> scramSession.serverFinalMessage("e=some-future-error"));
+    assertEquals("some-future-error", ex.getServerError());
+    assertEquals("some-future-error: " + ServerErrorValue.getErrorMessage("other-error"),
+        ex.getMessage());
   }
 
 }

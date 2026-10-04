@@ -178,6 +178,28 @@ public final class TlsServerEndpoint {
   }
 
   /**
+   * The hash of the TLS server's certificate [RFC5280] as it appears, octet for octet, in the
+   * server's Certificate message.
+   *
+   * @param serverCert the TLS server's peer certificate
+   * @return the hash of the TLS server's peer certificate
+   * @throws CertificateEncodingException if an encoding error occurs.
+   * @deprecated this method silently swallows {@link NoSuchAlgorithmException} and returns an
+   *             empty array. It is replaced by {@link #getChannelBindingHash(X509Certificate)}
+   *             and will be removed in a future release.
+   */
+  @Deprecated
+  public static byte @NotNull [] getChannelBindingData(final @NotNull X509Certificate serverCert)
+      throws CertificateEncodingException {
+    try {
+      return getChannelBindingHash(serverCert);
+    } catch (NoSuchAlgorithmException e) {
+      // Preserve the old (and dangerous) silent-failure behavior for backward compatibility
+      return new byte[0];
+    }
+  }
+
+  /**
    * Computes the hash of the TLS server's certificate [RFC5280] as it appears, octet for octet, in
    * the server's Certificate message, for use as {@code "tls-server-end-point"} channel binding.
    *
