@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### :lock: Security
+- Prevent silent downgrade of channel binding via unsupported certificate signature algorithms. [GHSA-p9jg-fcr6-3mhf](https://github.com/ongres/scram/security/advisories/GHSA-p9jg-fcr6-3mhf)
+  - Add `TlsServerEndpoint.getChannelBindingHash(X509Certificate)`, which throws `NoSuchAlgorithmException` when no `tls-server-end-point` hash can be derived (e.g. Ed25519, Ed448, RSASSA-PSS), instead of returning an empty array like `getChannelBindingData`. Clients that require channel binding should use it.
+  - `getChannelBindingData` keeps its 3.2 behavior.
 
 ## [3.2] - 2025-09-16
 ### :lock: Security
