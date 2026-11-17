@@ -68,11 +68,13 @@ import org.jetbrains.annotations.Nullable;
  * mechanisms to the client via some facility provided by the protocol, and the client will then
  * select the "best" mechanism from this list that it supports and finds suitable.
  *
- * <p>When building the ScramClient, it provides mechanism negotiation based on parameters, if
+ * <p>When building the ScramClient with the default {@link ChannelBindingPolicy#ALLOW} policy,
+ * it provides mechanism negotiation based on parameters, if
  * channel binding is missing the client will use {@code "n"} as gs2-cbind-flag, if the channel
  * binding is set, but the mechanisms send by the server do not advertise the {@code -PLUS}
  * version, it will use {@code "y"} as gs2-cbind-flag, when both client and server support channel
- * binding, it will use {@code "p=" cb-name} as gs2-cbind-flag.
+ * binding, it will use {@code "p=" cb-name} as gs2-cbind-flag. The other policies are described in
+ * {@link ChannelBindingPolicy}.
  *
  * @see <a href="https://www.rfc-editor.org/rfc/rfc5802.html">RFC-5802: Salted Challenge Response
  *      Authentication Mechanism (SCRAM) SASL and GSS-API Mechanisms</a>
@@ -117,8 +119,8 @@ public final class ScramClient implements MessageFlow {
     this.clientKey = builder.clientKey;
     this.serverKey = builder.serverKey;
     this.nonce = builder.nonce;
-    this.cbindType = builder.cbindType;
-    this.cbindData = builder.cbindData;
+    this.cbindType = builder.negotiatedCbindType;
+    this.cbindData = builder.negotiatedCbindData;
     this.authzid = builder.authzid;
   }
 
@@ -290,11 +292,22 @@ public final class ScramClient implements MessageFlow {
   public interface FinalBuildStage {
 
     /**
+     * Sets the channel binding policy to determine how the client negotiates
+     * security layers with the server. By default is ALLOW.
+     *
+     * @param policy the channel binding policy (DISABLE, ALLOW, REQUIRE)
+     * @return {@code this} builder for use in a chained invocation
+     * @since 3.2.1
+     */
+    FinalBuildStage channelBindingPolicy(@NotNull ChannelBindingPolicy policy);
+
+    /**
      * If the client supports channel binding negotiation, this method sets the type and data used
      * for channel binding.
      *
-     * @apiNote If {@code cbindType} or {@code cbindData} are null, sets the gs2-cbind-flag to 'n'
-     *          and does not use channel binding.
+     * @apiNote Under the default {@link ChannelBindingPolicy#ALLOW} policy, if {@code cbindType}
+     *          or {@code cbindData} are null, sets the gs2-cbind-flag to 'n' and does not use
+     *          channel binding.
      *
      * @param cbindType channel bynding type name
      * @param cbindData channel binding data
@@ -363,7 +376,14 @@ public final class ScramClient implements MessageFlow {
      * Returns the fully contructed ScramClient ready to start the message flow with the server.
      *
      * @return ScramClient specific for the set of parameters
-     * @throws IllegalArgumentException if any parameter set is invalid
+     * @throws IllegalArgumentException if any parameter set is invalid; if the server advertises no
+     *         mechanism this client supports, whatever the policy; or if the policy is
+     *         {@link ChannelBindingPolicy#ALLOW}, the server advertises only {@code -PLUS}
+     *         mechanisms, and no channel binding data is set
+     * @throws ChannelBindingException if the policy is {@link ChannelBindingPolicy#REQUIRE} and
+     *         the server advertises no {@code -PLUS} mechanism or no channel binding data is set
+     * @throws MechanismNegotiationException if the policy is {@link ChannelBindingPolicy#DISABLE}
+     *         and the server advertises no non-PLUS mechanism
      */
     ScramClient build();
   }
@@ -381,6 +401,7 @@ public final class ScramClient implements MessageFlow {
     ScramMechanism selectedScramMechanism;
     Collection<String> scramMechanisms;
     Gs2CbindFlag channelBinding = Gs2CbindFlag.CLIENT_NOT;
+    ChannelBindingPolicy bindingPolicy = ChannelBindingPolicy.ALLOW;
     StringPreparation stringPreparation = StringPreparation.SASL_PREPARATION;
     int nonceLength = 24;
     String nonce;
@@ -392,6 +413,8 @@ public final class ScramClient implements MessageFlow {
     byte[] serverKey;
     String cbindType;
     byte[] cbindData;
+    String negotiatedCbindType;
+    byte[] negotiatedCbindData;
     String authzid;
     Supplier<String> nonceSupplier;
 
@@ -406,13 +429,15 @@ public final class ScramClient implements MessageFlow {
     }
 
     @Override
+    public FinalBuildStage channelBindingPolicy(@NotNull ChannelBindingPolicy policy) {
+      this.bindingPolicy = checkNotNull(policy, "policy");
+      return this;
+    }
+
+    @Override
     public FinalBuildStage channelBinding(@Nullable String cbindType, byte @Nullable [] cbindData) {
       this.cbindType = cbindType;
       this.cbindData = cbindData != null ? cbindData.clone() : null;
-      this.channelBinding = cbindType != null && cbindData != null
-          && !cbindType.isEmpty() && cbindData.length > 0
-              ? Gs2CbindFlag.CLIENT_YES_SERVER_NOT
-              : Gs2CbindFlag.CLIENT_NOT;
       return this;
     }
 
@@ -495,30 +520,46 @@ public final class ScramClient implements MessageFlow {
     private ScramMechanism mechanismNegotiation() {
       final ScramMechanism cbind = selectMechanism(scramMechanisms, true);
       final ScramMechanism noncbind = selectMechanism(scramMechanisms, false);
-      ScramMechanism mechanismNegotiaion = cbind != null ? cbind : noncbind;
-      if (mechanismNegotiaion == null) {
+      if (cbind == null && noncbind == null) {
         throw new IllegalArgumentException("Either a bare or plus mechanism must be present");
       }
 
-      if (channelBinding == Gs2CbindFlag.CLIENT_YES_SERVER_NOT
-          && mechanismNegotiaion.isPlus()) {
+      final boolean clientHasData = bindingPolicy != ChannelBindingPolicy.DISABLE
+          && cbindType != null && cbindData != null
+          && !cbindType.isEmpty() && cbindData.length > 0;
+
+      if (bindingPolicy == ChannelBindingPolicy.REQUIRE) {
+        if (cbind == null) {
+          throw new ChannelBindingException(
+              "Channel binding is required, but the server does not support -PLUS mechanisms");
+        }
+        if (!clientHasData) {
+          throw new ChannelBindingException(
+              "Channel binding is required, but no channel binding data or type was provided");
+        }
+      }
+      if (cbind != null && clientHasData) {
         // Client and server supports channel binding
         this.channelBinding = Gs2CbindFlag.CHANNEL_BINDING_REQUIRED;
-      } else {
-        // Client or server does not support channel binding
-        if (noncbind == null) {
-          throw new IllegalArgumentException("A non-PLUS mechanism was not advertised");
-        }
-        this.cbindType = null;
-        this.cbindData = null;
-        mechanismNegotiaion = noncbind;
-      }
-      if (channelBinding == Gs2CbindFlag.CHANNEL_BINDING_REQUIRED
-          && (cbindType == null || cbindData == null)) {
-        throw new IllegalArgumentException("Channel Binding type and data are required");
+        this.negotiatedCbindType = cbindType;
+        this.negotiatedCbindData = cbindData;
+        return cbind;
       }
 
-      return mechanismNegotiaion;
+      // Client or server does not support channel binding
+      if (noncbind == null) {
+        if (bindingPolicy == ChannelBindingPolicy.DISABLE) {
+          throw new MechanismNegotiationException(
+              "A non-PLUS mechanism was not advertised by the server");
+        }
+        throw new IllegalArgumentException("A non-PLUS mechanism was not advertised");
+      }
+      this.channelBinding = clientHasData
+          ? Gs2CbindFlag.CLIENT_YES_SERVER_NOT
+          : Gs2CbindFlag.CLIENT_NOT;
+      this.negotiatedCbindType = null;
+      this.negotiatedCbindData = null;
+      return noncbind;
     }
 
     /**

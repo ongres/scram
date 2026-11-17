@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### :lock: Security
+- Prevent silent downgrade attacks during channel binding negotiation via unsupported certificate algorithms. Add `TlsServerEndpoint.getChannelBindingHash`, which throws `NoSuchAlgorithmException` where `getChannelBindingData` returns an empty array, and `.channelBindingPolicy()` on the client builder with `DISABLE`, `ALLOW` (default), and `REQUIRE`. A client that keeps passing the result of `getChannelBindingData` under the default `ALLOW` policy still falls back to SCRAM without channel binding when the certificate signature algorithm yields no digest: to prevent the downgrade, use `getChannelBindingHash` and stop on its exception, or set `REQUIRE`. Backported from 3.3; `build()` failures that 3.2 reported as `IllegalArgumentException` keep that type. [GHSA-p9jg-fcr6-3mhf](https://github.com/ongres/scram/security/advisories/GHSA-p9jg-fcr6-3mhf)
+
+### :bug: Bug Fixes
+- Compute `tls-server-end-point` channel binding data for `RSASSA-PSS` server certificates, for which `getChannelBindingData` returned an empty array.
+- Compute `tls-server-end-point` channel binding data when the security provider spells the signature algorithm name in upper case, as BouncyCastle does (`SHA256WITHRSA`), or gives no name the client recognizes but a known OID. `getChannelBindingData` returned an empty array for such certificates.
 
 ## [3.2] - 2025-09-16
 ### :lock: Security
