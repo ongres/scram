@@ -1,0 +1,175 @@
+/*
+ * Copyright (c) 2026 OnGres, Inc.
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+package com.ongres.scram.common.util;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.Locale;
+import java.util.stream.Stream;
+
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
+
+class TlsServerEndpointTest {
+
+  /**
+   * Provides valid certificates that SHOULD succeed in generating a channel binding hash.
+   * Format: Arguments.of(Certificate, Expected Signature Algorithm, Expected Hash Algorithm)
+   */
+  private static Stream<Arguments> provideValidCertificates() {
+    return Stream.of(
+        // RFC 5929 Mandatory Upgrades (MD5 -> SHA-256)
+        Arguments.of(loadCertificate("/MD5withRSA.pem"),
+            "MD5withRSA", "SHA-256"),
+
+        // Standard explicit algorithms
+        Arguments.of(loadCertificate("/SHA224withRSA.pem"),
+            "SHA224withRSA", "SHA-224"),
+        Arguments.of(loadCertificate("/SHA256withECDSA.pem"),
+            "SHA256withECDSA", "SHA-256"),
+        Arguments.of(loadCertificate("/SHA512withRSA.pem"),
+            "SHA512withRSA", "SHA-512"),
+        Arguments.of(loadCertificate("/SHA512_224withRSA.pem"),
+            "SHA512/224withRSA", "SHA-512/224"),
+        Arguments.of(loadCertificate("/SHA512_256withRSA.pem"),
+            "SHA512/256withRSA", "SHA-512/256"),
+
+        // Modern algorithms (Might be skipped on Java 8 if provider is missing)
+        Arguments.of(loadCertificate("/SHA3-512withECDSA.pem"),
+            "SHA3-512withECDSA", "SHA3-512"),
+
+        // Parameterized RSASSA-PSS with SHA-384 digest
+        Arguments.of(loadCertificate("/RSASSA-PSS.pem"),
+            "RSASSA-PSS", "SHA-384"),
+
+        // RSASSA-PSS with SHA-1 digest: RFC 5929 mandatory upgrade SHA-1 -> SHA-256
+        Arguments.of(loadCertificate("/RSASSA-PSS-SHA1.pem"),
+            "RSASSA-PSS", "SHA-256"));
+  }
+
+  /**
+   * Provides certificates that MUST fail to maintain parity with PostgreSQL / OpenSSL behavior.
+   */
+  private static Stream<Arguments> provideUnsupportedCertificates() {
+    return Stream.of(
+        Arguments.of(loadCertificate("/Ed25519.pem"), "Ed25519"),
+        Arguments.of(loadCertificate("/Ed448.pem"), "Ed448"));
+  }
+
+  @ParameterizedTest(name = "Extracts correct binding hash for {1} -> expects {2}")
+  @MethodSource("provideValidCertificates")
+  void testValidCertificateChannelBinding(X509Certificate cert, String sigAlg,
+      String expectedHashAlg) {
+    // Ensure the generated PEM matches the test expectation
+    assertEquals(sigAlg, cert.getSigAlgName(),
+        "Loaded certificate does not match expected algorithm");
+
+    // 1. Check if the current JDK/Provider supports the required hash (e.g., SHA3-512 on Java 8)
+    MessageDigest expectedDigest = getDigestOrSkipTest(expectedHashAlg);
+
+    // 2. Calculate the expected hash manually
+    byte[] expectedHash = expectedDigest.digest(assertDoesNotThrow(cert::getEncoded));
+
+    // 3. Test the primary method
+    byte[] actualHash = assertDoesNotThrow(() -> TlsServerEndpoint.getChannelBindingHash(cert));
+    assertArrayEquals(expectedHash, actualHash,
+        "getChannelBindingHash did not return the expected digest bytes");
+
+    // 4. Test getChannelBindingData
+    byte[] actualLegacyData = assertDoesNotThrow(() -> TlsServerEndpoint.getChannelBindingData(cert));
+    assertArrayEquals(expectedHash, actualLegacyData,
+        "getChannelBindingData did not match expected digest bytes");
+  }
+
+  @ParameterizedTest(name = "Rejects unsupported/pure algorithm {1} (Postgres parity)")
+  @MethodSource("provideUnsupportedCertificates")
+  void testUnsupportedCertificatesFail(X509Certificate cert, String sigAlg) {
+    // Ensure the generated PEM matches the test expectation
+    assertEquals(sigAlg, cert.getSigAlgName(),
+        "Loaded certificate does not match expected algorithm");
+
+    // 1. Ensure the modern method throws an exception
+    NoSuchAlgorithmException exception = assertThrows(NoSuchAlgorithmException.class,
+        () -> TlsServerEndpoint.getChannelBindingHash(cert));
+
+    assertEquals(String.format(Locale.ROOT,
+        "Could not determine server certificate signature algorithm. Name: %s, OID: %s",
+        cert.getSigAlgName(), cert.getSigAlgOID()),
+        exception.getMessage());
+
+    // 2. Ensure getChannelBindingData swallows the exception and returns an empty array
+    byte[] legacyResult = assertDoesNotThrow(() -> TlsServerEndpoint.getChannelBindingData(cert));
+    assertArrayEquals(new byte[0], legacyResult,
+        "getChannelBindingData must return byte[0] on unsupported algorithms");
+  }
+
+  /**
+   * A provider that names the algorithm differently, such as BouncyCastle's upper-case
+   * {@code SHA512WITHRSA}, or that gives an unrecognized name with a known OID, gets the same digest
+   * as the SUN provider's {@code SHA512withRSA}. The unknown OID {@code 0.0} forces resolution by
+   * name, and the unknown name forces resolution by OID.
+   */
+  @ParameterizedTest(name = "Resolves the digest from name {0} and OID {1}")
+  @CsvSource({
+      "SHA512WITHRSA, 0.0",
+      "SHA512withRSA, 0.0",
+      "UNKNOWN-NAME, 1.2.840.113549.1.1.13",
+  })
+  void resolvesDigestFromProviderSpecificNameOrOid(String sigAlgName, String sigAlgOid)
+      throws Exception {
+    X509Certificate cert = new RenamedSigAlgCertificate(
+        loadCertificate("/SHA512withRSA.pem"), sigAlgName, sigAlgOid);
+    byte[] expectedHash = MessageDigest.getInstance("SHA-512").digest(cert.getEncoded());
+
+    assertArrayEquals(expectedHash, TlsServerEndpoint.getChannelBindingHash(cert),
+        () -> "getChannelBindingHash(" + cert + ")");
+    assertArrayEquals(expectedHash, TlsServerEndpoint.getChannelBindingData(cert),
+        () -> "getChannelBindingData(" + cert + ")");
+  }
+
+  /**
+   * Helper method to load a certificate from the classpath.
+   */
+  private static X509Certificate loadCertificate(String pemFilePath) {
+    try (InputStream inputStream = TlsServerEndpointTest.class.getResourceAsStream(pemFilePath)) {
+      assertNotNull(inputStream);
+
+      CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+      X509Certificate cert = (X509Certificate) certFactory.generateCertificate(inputStream);
+
+      assertNotNull(cert);
+      return cert;
+    } catch (CertificateException | IOException e) {
+      throw new RuntimeException("Failed to load test certificate: " + pemFilePath, e);
+    }
+  }
+
+  /**
+   * Attempts to load the MessageDigest. If the JVM does not support it, it skips the test.
+   */
+  private MessageDigest getDigestOrSkipTest(String digestAlgorithm) {
+    try {
+      return MessageDigest.getInstance(digestAlgorithm);
+    } catch (NoSuchAlgorithmException e) {
+      Assumptions.abort("Skipping test: Current JVM/Provider does not support " + digestAlgorithm);
+      return null; // Unreachable
+    }
+  }
+}

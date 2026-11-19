@@ -24,13 +24,21 @@
     <exclude name="AvoidFieldNameMatchingMethodName" />
   </rule>
 
+  <rule ref="category/java/errorprone.xml/AvoidDuplicateLiterals">
+    <properties>
+      <property name="maxDuplicateLiterals" value="6" />
+    </properties>
+  </rule>
+
   <rule ref="category/java/errorprone.xml/AssignmentInOperand">
     <properties>
       <property name="allowIncrementDecrement" value="true" />
     </properties>
   </rule>
 
-  <rule ref="category/java/multithreading.xml" />
+  <rule ref="category/java/multithreading.xml">
+    <exclude name="UseConcurrentHashMap" />
+  </rule>
 
   <rule ref="category/java/performance.xml">
     <exclude name="StringInstantiation" />
